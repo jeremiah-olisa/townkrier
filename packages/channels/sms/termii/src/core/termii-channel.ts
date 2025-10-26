@@ -5,7 +5,6 @@ import {
   SendSmsResponse,
   NotificationStatus,
   NotificationConfigurationException,
-  NotificationProviderException,
   NotificationInvalidResponseError,
   generateReference,
   isValidPhone,
