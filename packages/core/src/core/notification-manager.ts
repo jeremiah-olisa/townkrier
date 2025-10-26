@@ -5,7 +5,19 @@ import {
   ChannelEnvConfig,
   ChannelFactory,
   NotificationManagerConfig,
+  SendEmailRequest,
+  SendSmsRequest,
+  SendPushRequest,
+  SendInAppRequest,
 } from '../interfaces';
+import {
+  NotificationEventDispatcher,
+  NotificationSending,
+  NotificationSent,
+  NotificationFailed,
+} from './notification-events';
+import { Notification } from './notification';
+import { NotificationChannel } from '../types';
 
 /**
  * Notification Manager - Factory pattern for managing multiple notification channels
@@ -16,8 +28,9 @@ export class NotificationManager {
   private readonly channelConfigs: Map<string, ChannelConfig> = new Map();
   private defaultChannel?: string;
   private enableFallback: boolean = false;
+  private eventDispatcher?: NotificationEventDispatcher;
 
-  constructor(config?: NotificationManagerConfig) {
+  constructor(config?: NotificationManagerConfig, eventDispatcher?: NotificationEventDispatcher) {
     if (config) {
       this.defaultChannel = config.defaultChannel;
       this.enableFallback = config.enableFallback ?? false;
@@ -27,6 +40,7 @@ export class NotificationManager {
         this.channelConfigs.set(channelConfig.name, channelConfig);
       });
     }
+    this.eventDispatcher = eventDispatcher;
   }
 
   /**
@@ -258,5 +272,170 @@ export class NotificationManager {
       const priorityB = configB?.priority ?? 0;
       return priorityB - priorityA; // Higher priority first
     });
+  }
+
+  /**
+   * Set the event dispatcher
+   */
+  setEventDispatcher(dispatcher: NotificationEventDispatcher): this {
+    this.eventDispatcher = dispatcher;
+    return this;
+  }
+
+  /**
+   * Send a notification through specified channels
+   * @param notification - The notification to send
+   * @param recipient - The recipient's routing information
+   */
+  async send(
+    notification: Notification,
+    recipient: Record<NotificationChannel, unknown>,
+  ): Promise<Map<NotificationChannel, unknown>> {
+    const channels = notification.via();
+    const responses = new Map<NotificationChannel, unknown>();
+
+    // Dispatch sending event
+    if (this.eventDispatcher) {
+      await this.eventDispatcher.dispatch(new NotificationSending(notification, channels));
+    }
+
+    try {
+      for (const channelType of channels) {
+        try {
+          const channel = this.getChannelByType(channelType);
+          const request = this.buildRequest(notification, channelType, recipient);
+
+          if (request) {
+            const response = await channel.send(request);
+            responses.set(channelType, response);
+          }
+        } catch (error) {
+          // Dispatch failed event for this channel
+          if (this.eventDispatcher) {
+            await this.eventDispatcher.dispatch(
+              new NotificationFailed(
+                notification,
+                channels,
+                error instanceof Error ? error : new Error(String(error)),
+                channelType,
+              ),
+            );
+          }
+
+          // Re-throw if fallback is not enabled
+          if (!this.enableFallback) {
+            throw error;
+          }
+        }
+      }
+
+      // Dispatch sent event if at least one channel succeeded
+      if (responses.size > 0 && this.eventDispatcher) {
+        await this.eventDispatcher.dispatch(
+          new NotificationSent(notification, channels, responses),
+        );
+      }
+
+      return responses;
+    } catch (error) {
+      // Dispatch failed event
+      if (this.eventDispatcher) {
+        await this.eventDispatcher.dispatch(
+          new NotificationFailed(
+            notification,
+            channels,
+            error instanceof Error ? error : new Error(String(error)),
+          ),
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Get a channel by its type
+   */
+  private getChannelByType(channelType: NotificationChannel): INotificationChannel {
+    // Try to find a channel that matches the type
+    for (const [, channel] of this.channels) {
+      if (channel.getChannelType() === channelType) {
+        return channel;
+      }
+    }
+
+    throw new NotificationConfigurationException(`No channel found for type: ${channelType}`, {
+      channelType,
+      availableChannels: this.getAvailableChannels(),
+    });
+  }
+
+  /**
+   * Build a request object for a specific channel
+   */
+  private buildRequest(
+    notification: Notification,
+    channelType: NotificationChannel,
+    recipient: Record<NotificationChannel, unknown>,
+  ): SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest | null {
+    const routingInfo = recipient[channelType];
+
+    switch (channelType) {
+      case NotificationChannel.EMAIL:
+        if (notification.toEmail) {
+          const emailData = notification.toEmail();
+          return {
+            ...emailData,
+            to: routingInfo,
+            reference: notification.reference,
+            metadata: notification.metadata,
+            priority: notification.priority,
+          } as SendEmailRequest;
+        }
+        break;
+
+      case NotificationChannel.SMS:
+        if (notification.toSms) {
+          const smsData = notification.toSms();
+          return {
+            ...smsData,
+            to: routingInfo,
+            reference: notification.reference,
+            metadata: notification.metadata,
+            priority: notification.priority,
+          } as SendSmsRequest;
+        }
+        break;
+
+      case NotificationChannel.PUSH:
+        if (notification.toPush) {
+          const pushData = notification.toPush();
+          return {
+            ...pushData,
+            to: routingInfo,
+            reference: notification.reference,
+            metadata: notification.metadata,
+            priority: notification.priority,
+          } as SendPushRequest;
+        }
+        break;
+
+      case NotificationChannel.IN_APP:
+        if (notification.toInApp) {
+          const inAppData = notification.toInApp();
+          return {
+            ...inAppData,
+            to: routingInfo,
+            reference: notification.reference,
+            metadata: notification.metadata,
+            priority: notification.priority,
+          } as SendInAppRequest;
+        }
+        break;
+
+      default:
+        return null;
+    }
+
+    return null;
   }
 }

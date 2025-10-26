@@ -39,32 +39,11 @@ importers:
         specifier: ^5.3.3
         version: 5.9.3
 
-  packages/core:
-    devDependencies:
-      '@types/jest':
-        specifier: ^30.0.0
-        version: 30.0.0
-      '@types/mocha':
-        specifier: ^10.0.10
-        version: 10.0.10
-      '@types/node':
-        specifier: ^24.9.1
-        version: 24.9.1
-      jest:
-        specifier: ^30.2.0
-        version: 30.2.0(@types/node@24.9.1)
-      ts-jest:
-        specifier: ^29.4.5
-        version: 29.4.5(@babel/core@7.28.5)(jest@30.2.0)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  packages/fcm:
+  packages/channels/push/fcm:
     dependencies:
       '@townkrier/core':
         specifier: workspace:*
-        version: link:../core
+        version: link:../../../core
       firebase-admin:
         specifier: ^13.0.1
         version: 13.5.0
@@ -88,11 +67,35 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/in-app:
+  packages/channels/sms/termii:
     dependencies:
       '@townkrier/core':
         specifier: workspace:*
-        version: link:../core
+        version: link:../../../core
+      axios:
+        specifier: ^1.12.2
+        version: 1.12.2
+    devDependencies:
+      '@types/jest':
+        specifier: ^30.0.0
+        version: 30.0.0
+      '@types/mocha':
+        specifier: ^10.0.10
+        version: 10.0.10
+      '@types/node':
+        specifier: ^24.9.1
+        version: 24.9.1
+      jest:
+        specifier: ^30.2.0
+        version: 30.2.0(@types/node@24.9.1)
+      ts-jest:
+        specifier: ^29.4.5
+        version: 29.4.5(@babel/core@7.28.5)(jest@30.2.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/core:
     devDependencies:
       '@types/jest':
         specifier: ^30.0.0
@@ -121,34 +124,6 @@ importers:
       resend:
         specifier: ^4.0.1
         version: 4.8.0(react-dom@19.2.0)(react@19.2.0)
-    devDependencies:
-      '@types/jest':
-        specifier: ^30.0.0
-        version: 30.0.0
-      '@types/mocha':
-        specifier: ^10.0.10
-        version: 10.0.10
-      '@types/node':
-        specifier: ^24.9.1
-        version: 24.9.1
-      jest:
-        specifier: ^30.2.0
-        version: 30.2.0(@types/node@24.9.1)
-      ts-jest:
-        specifier: ^29.4.5
-        version: 29.4.5(@babel/core@7.28.5)(jest@30.2.0)(typescript@5.9.3)
-      typescript:
-        specifier: ^5.9.3
-        version: 5.9.3
-
-  packages/termii:
-    dependencies:
-      '@townkrier/core':
-        specifier: workspace:*
-        version: link:../core
-      axios:
-        specifier: ^1.12.2
-        version: 1.12.2
     devDependencies:
       '@types/jest':
         specifier: ^30.0.0

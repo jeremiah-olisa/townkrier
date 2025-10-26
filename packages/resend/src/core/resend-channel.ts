@@ -5,7 +5,6 @@ import {
   SendEmailResponse,
   NotificationStatus,
   NotificationConfigurationException,
-  NotificationProviderException,
   NotificationInvalidResponseError,
   generateReference,
   isValidEmail,
