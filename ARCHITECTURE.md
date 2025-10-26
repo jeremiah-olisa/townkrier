@@ -51,35 +51,38 @@ BaseNotificationChannel (abstract)
 ```typescript
 class NotificationManager {
   // Registry of channels and factories
-  private readonly channels: Map<string, INotificationChannel>
-  private readonly factories: Map<string, ChannelFactory>
-  private readonly channelConfigs: Map<string, ChannelConfig>
+  private readonly channels: Map<string, INotificationChannel>;
+  private readonly factories: Map<string, ChannelFactory>;
+  private readonly channelConfigs: Map<string, ChannelConfig>;
 
   // Configuration
-  private defaultChannel?: string
-  private enableFallback: boolean
+  private defaultChannel?: string;
+  private enableFallback: boolean;
 
   // Event dispatcher (bonus feature)
-  private eventDispatcher?: NotificationEventDispatcher
+  private eventDispatcher?: NotificationEventDispatcher;
 
   // Core methods (matching payment gateway pattern)
-  registerFactory<T>(name: string, factory: ChannelFactory<T>): this
-  registerChannel(name: string, channel: INotificationChannel): this
-  getChannel(name: string): INotificationChannel
-  getDefaultChannel(): INotificationChannel
-  getChannelWithFallback(preferredChannel?: string): INotificationChannel | null
-  getAvailableChannels(): string[]
-  getReadyChannels(): string[]
-  hasChannel(name: string): boolean
-  isChannelReady(name: string): boolean
-  setDefaultChannel(name: string): this
-  setFallbackEnabled(enabled: boolean): this
-  removeChannel(name: string): this
-  clear(): this
+  registerFactory<T>(name: string, factory: ChannelFactory<T>): this;
+  registerChannel(name: string, channel: INotificationChannel): this;
+  getChannel(name: string): INotificationChannel;
+  getDefaultChannel(): INotificationChannel;
+  getChannelWithFallback(preferredChannel?: string): INotificationChannel | null;
+  getAvailableChannels(): string[];
+  getReadyChannels(): string[];
+  hasChannel(name: string): boolean;
+  isChannelReady(name: string): boolean;
+  setDefaultChannel(name: string): this;
+  setFallbackEnabled(enabled: boolean): this;
+  removeChannel(name: string): this;
+  clear(): this;
 
   // Additional notification-specific methods
-  send(notification: Notification, recipient: Record<...>): Promise<...>
-  setEventDispatcher(dispatcher: NotificationEventDispatcher): this
+  send(
+    notification: Notification,
+    recipient: Record<NotificationChannel, unknown>,
+  ): Promise<Map<NotificationChannel, unknown>>;
+  setEventDispatcher(dispatcher: NotificationEventDispatcher): this;
 }
 ```
 
@@ -281,7 +284,7 @@ packages/
 ## Configuration Example
 
 ```typescript
-// Environment-based configuration
+// Configuration with environment variables and defaults
 const config: NotificationManagerConfig = {
   defaultChannel: process.env.DEFAULT_NOTIFICATION_CHANNEL || 'email-resend',
   enableFallback: process.env.ENABLE_FALLBACK === 'true',
