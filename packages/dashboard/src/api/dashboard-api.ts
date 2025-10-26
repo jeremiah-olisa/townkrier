@@ -17,13 +17,10 @@ export interface DashboardApiConfig {
 export function createDashboardRouter(config: DashboardApiConfig): Router {
   const router = Router();
 
-  // Add a prefix to all routes in the router
-  // app.use('/townkrier', router);
-
   const { queueManager, storageManager } = config;
 
-  // Middleware for JSON responses
-  router.use((req, res, next) => {
+  // Middleware for JSON responses - only for API routes
+  router.use('/api', (req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
     next();
   });

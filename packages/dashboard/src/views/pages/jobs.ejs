@@ -1,134 +1,149 @@
-<div class="section">
-  <div class="section-header">
-    <h2>Jobs</h2>
-    <button class="btn btn-primary" onclick="location.reload()">Refresh</button>
-  </div>
-  
-  <div class="filters">
-    <div class="filter-group">
-      <label>Status:</label>
-      <select id="status-filter" onchange="filterJobs()">
-        <option value="">All</option>
-        <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pending</option>
-        <option value="processing" <%= status === 'processing' ? 'selected' : '' %>>Processing</option>
-        <option value="completed" <%= status === 'completed' ? 'selected' : '' %>>Completed</option>
-        <option value="failed" <%= status === 'failed' ? 'selected' : '' %>>Failed</option>
-        <option value="scheduled" <%= status === 'scheduled' ? 'selected' : '' %>>Scheduled</option>
-      </select>
-    </div>
-    
-    <div class="filter-group">
-      <label>Per Page:</label>
-      <select id="limit-filter" onchange="filterJobs()">
-        <option value="10" <%= limit === 10 ? 'selected' : '' %>>10</option>
-        <option value="25" <%= limit === 25 ? 'selected' : '' %>>25</option>
-        <option value="50" <%= limit === 50 ? 'selected' : '' %>>50</option>
-        <option value="100" <%= limit === 100 ? 'selected' : '' %>>100</option>
-      </select>
-    </div>
-  </div>
-  
-  <% if (jobs.length === 0) { %>
-    <div class="empty-state">
-      <div class="empty-state-icon">📭</div>
-      <h3>No jobs found</h3>
-      <p>Try adjusting your filters or queue some notifications</p>
-    </div>
-  <% } else { %>
-    <table>
-      <thead>
-        <tr>
-          <th>Job ID</th>
-          <th>Status</th>
-          <th>Priority</th>
-          <th>Attempts</th>
-          <th>Created</th>
-          <th>Scheduled For</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% jobs.forEach(job => { %>
-          <tr>
-            <td>
-              <a href="<%= basePath %>/jobs/<%= job.id %>" style="color: #667eea; text-decoration: none; font-weight: 600;">
-                <%= job.id.substring(0, 8) %>...
-              </a>
-            </td>
-            <td>
-              <span class="status-badge status-<%= job.status %>"><%= job.status %></span>
-            </td>
-            <td><%= job.priority %></td>
-            <td><%= job.attempts %>/<%= job.maxRetries %></td>
-            <td class="timestamp"><%= new Date(job.createdAt).toLocaleString() %></td>
-            <td class="timestamp">
-              <%= job.scheduledFor ? new Date(job.scheduledFor).toLocaleString() : '-' %>
-            </td>
-            <td>
-              <div class="btn-group">
-                <% if (job.status === 'failed') { %>
-                  <button class="btn btn-sm btn-success" onclick="retryJob('<%= job.id %>')">Retry</button>
-                <% } %>
-                <button class="btn btn-sm btn-danger" onclick="deleteJob('<%= job.id %>')">Delete</button>
-              </div>
-            </td>
-          </tr>
-        <% }); %>
-      </tbody>
-    </table>
-    
-    <div class="pagination">
-      <% if (offset > 0) { %>
-        <a href="?status=<%= status || '' %>&limit=<%= limit %>&offset=<%= Math.max(0, offset - limit) %>">Previous</a>
-      <% } %>
-      <span class="active">Page <%= Math.floor(offset / limit) + 1 %></span>
-      <% if (jobs.length >= limit) { %>
-        <a href="?status=<%= status || '' %>&limit=<%= limit %>&offset=<%= offset + limit %>">Next</a>
-      <% } %>
-    </div>
-  <% } %>
-</div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - TownKrier Dashboard</title>
+  <%- include('../partials/styles') %>
+</head>
+<body>
+  <%- include('../partials/header', {page, basePath}) %>
 
-<script>
-  const basePath = '<%= basePath %>';
-  
-  function filterJobs() {
-    const status = document.getElementById('status-filter').value;
-    const limit = document.getElementById('limit-filter').value;
-    window.location.href = `${basePath}/jobs?status=${status}&limit=${limit}&offset=0`;
-  }
-  
-  async function retryJob(jobId) {
-    if (!confirm('Retry this job?')) return;
+  <div class="section">
+    <div class="section-header">
+      <h2>Jobs</h2>
+      <button class="btn btn-primary" onclick="location.reload()">Refresh</button>
+    </div>
     
-    try {
-      const response = await fetch(`${basePath}/api/jobs/${jobId}/retry`, { method: 'POST' });
-      if (response.ok) {
-        alert('Job queued for retry');
-        location.reload();
-      } else {
+    <div class="filters">
+      <div class="filter-group">
+        <label>Status:</label>
+        <select id="status-filter" onchange="filterJobs()">
+          <option value="">All</option>
+          <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pending</option>
+          <option value="processing" <%= status === 'processing' ? 'selected' : '' %>>Processing</option>
+          <option value="completed" <%= status === 'completed' ? 'selected' : '' %>>Completed</option>
+          <option value="failed" <%= status === 'failed' ? 'selected' : '' %>>Failed</option>
+          <option value="scheduled" <%= status === 'scheduled' ? 'selected' : '' %>>Scheduled</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label>Per Page:</label>
+        <select id="limit-filter" onchange="filterJobs()">
+          <option value="10" <%= limit === 10 ? 'selected' : '' %>>10</option>
+          <option value="25" <%= limit === 25 ? 'selected' : '' %>>25</option>
+          <option value="50" <%= limit === 50 ? 'selected' : '' %>>50</option>
+          <option value="100" <%= limit === 100 ? 'selected' : '' %>>100</option>
+        </select>
+      </div>
+    </div>
+    
+    <% if (jobs.length === 0) { %>
+      <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <h3>No jobs found</h3>
+        <p>Try adjusting your filters or queue some notifications</p>
+      </div>
+    <% } else { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Job ID</th>
+            <th>Status</th>
+            <th>Priority</th>
+            <th>Attempts</th>
+            <th>Created</th>
+            <th>Scheduled For</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% jobs.forEach(job => { %>
+            <tr>
+              <td>
+                <a href="<%= basePath %>/jobs/<%= job.id %>" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                  <%= job.id.substring(0, 8) %>...
+                </a>
+              </td>
+              <td>
+                <span class="status-badge status-<%= job.status %>"><%= job.status %></span>
+              </td>
+              <td><%= job.priority %></td>
+              <td><%= job.attempts %>/<%= job.maxRetries %></td>
+              <td class="timestamp"><%= new Date(job.createdAt).toLocaleString() %></td>
+              <td class="timestamp">
+                <%= job.scheduledFor ? new Date(job.scheduledFor).toLocaleString() : '-' %>
+              </td>
+              <td>
+                <div class="btn-group">
+                  <% if (job.status === 'failed') { %>
+                    <button class="btn btn-sm btn-success" onclick="retryJob('<%= job.id %>')">Retry</button>
+                  <% } %>
+                  <button class="btn btn-sm btn-danger" onclick="deleteJob('<%= job.id %>')">Delete</button>
+                </div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+      
+      <div class="pagination">
+        <% if (offset > 0) { %>
+          <a href="?status=<%= status || '' %>&limit=<%= limit %>&offset=<%= Math.max(0, offset - limit) %>">Previous</a>
+        <% } %>
+        <span class="active">Page <%= Math.floor(offset / limit) + 1 %></span>
+        <% if (jobs.length >= limit) { %>
+          <a href="?status=<%= status || '' %>&limit=<%= limit %>&offset=<%= offset + limit %>">Next</a>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <script>
+    const basePath = '<%= basePath %>';
+    
+    function filterJobs() {
+      const status = document.getElementById('status-filter').value;
+      const limit = document.getElementById('limit-filter').value;
+      window.location.href = `${basePath}/jobs?status=${status}&limit=${limit}&offset=0`;
+    }
+    
+    async function retryJob(jobId) {
+      if (!confirm('Retry this job?')) return;
+      
+      try {
+        const response = await fetch(`${basePath}/api/jobs/${jobId}/retry`, { method: 'POST' });
+        if (response.ok) {
+          alert('Job queued for retry');
+          location.reload();
+        } else {
+          alert('Failed to retry job');
+        }
+      } catch (error) {
+        console.error('Failed to retry job:', error);
         alert('Failed to retry job');
       }
-    } catch (error) {
-      console.error('Failed to retry job:', error);
-      alert('Failed to retry job');
     }
-  }
 
-  async function deleteJob(jobId) {
-    if (!confirm('Are you sure you want to delete this job?')) return;
-    
-    try {
-      const response = await fetch(`${basePath}/api/jobs/${jobId}`, { method: 'DELETE' });
-      if (response.ok) {
-        alert('Job deleted');
-        location.reload();
-      } else {
+    async function deleteJob(jobId) {
+      if (!confirm('Are you sure you want to delete this job?')) return;
+      
+      try {
+        const response = await fetch(`${basePath}/api/jobs/${jobId}`, { method: 'DELETE' });
+        if (response.ok) {
+          alert('Job deleted');
+          location.reload();
+        } else {
+          alert('Failed to delete job');
+        }
+      } catch (error) {
+        console.error('Failed to delete job:', error);
         alert('Failed to delete job');
       }
-    } catch (error) {
-      console.error('Failed to delete job:', error);
-      alert('Failed to delete job');
     }
-  }
-</script>
+  </script>
+  
+  <%- include('../partials/footer') %>
+</body>
+</html>

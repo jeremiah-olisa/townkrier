@@ -15,6 +15,11 @@ export interface DashboardConfig extends DashboardApiConfig {
     username: string;
     password: string;
   };
+  logger?: {
+    log: (message: string, ...args: unknown[]) => void;
+    error: (message: string, ...args: unknown[]) => void;
+    warn: (message: string, ...args: unknown[]) => void;
+  };
 }
 
 /**
@@ -43,7 +48,16 @@ export interface DashboardServerConfig extends DashboardConfig {
  */
 export function setupDashboard(app: Express, config: DashboardConfig): void {
   const basePath = config.path || '/townkrier/dashboard';
-  console.log(`Setting up dashboard at path: ${basePath}`);
+
+  // Use provided logger or fallback to console
+  const logger = config.logger || {
+    log: console.log.bind(console),
+    error: console.error.bind(console),
+    warn: console.warn.bind(console),
+  };
+
+  logger.log(`Setting up dashboard at path: ${basePath}`);
+
   // Setup view engine if not already configured
   if (!app.get('view engine')) {
     app.set('view engine', 'ejs');
@@ -115,7 +129,7 @@ export function setupDashboard(app: Express, config: DashboardConfig): void {
         logs: logsResult.logs,
       });
     } catch (error) {
-      console.error('Error loading dashboard:', error);
+      logger.error('Error loading dashboard home page:', error);
       res.status(500).send('Error loading dashboard');
     }
   });
@@ -143,6 +157,7 @@ export function setupDashboard(app: Express, config: DashboardConfig): void {
         offset,
       });
     } catch (error) {
+      logger.error('Error loading jobs list:', error);
       res.status(500).send('Error loading jobs');
     }
   });
@@ -153,6 +168,7 @@ export function setupDashboard(app: Express, config: DashboardConfig): void {
       const job = await config.queueManager.getJob(req.params.id);
 
       if (!job) {
+        logger.warn(`Job not found: ${req.params.id}`);
         return res.status(404).send('Job not found');
       }
 
@@ -163,6 +179,7 @@ export function setupDashboard(app: Express, config: DashboardConfig): void {
         job,
       });
     } catch (error) {
+      logger.error(`Error loading job ${req.params.id}:`, error);
       res.status(500).send('Error loading job');
     }
   });
@@ -193,6 +210,7 @@ export function setupDashboard(app: Express, config: DashboardConfig): void {
         offset,
       });
     } catch (error) {
+      logger.error('Error loading logs list:', error);
       res.status(500).send('Error loading logs');
     }
   });
@@ -203,6 +221,7 @@ export function setupDashboard(app: Express, config: DashboardConfig): void {
       const log = await config.storageManager.getLog(req.params.id);
 
       if (!log) {
+        logger.warn(`Log not found: ${req.params.id}`);
         return res.status(404).send('Log not found');
       }
 
@@ -213,6 +232,7 @@ export function setupDashboard(app: Express, config: DashboardConfig): void {
         log,
       });
     } catch (error) {
+      logger.error(`Error loading log ${req.params.id}:`, error);
       res.status(500).send('Error loading log');
     }
   });
@@ -229,9 +249,12 @@ export function setupDashboard(app: Express, config: DashboardConfig): void {
         stats,
       });
     } catch (error) {
+      logger.error('Error loading analysis page:', error);
       res.status(500).send('Error loading analysis');
     }
   });
+
+  logger.log(`✅ Dashboard successfully mounted at ${basePath}`);
 }
 
 /**

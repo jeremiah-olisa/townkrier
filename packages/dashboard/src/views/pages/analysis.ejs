@@ -1,3 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - TownKrier Dashboard</title>
+  <%- include('../partials/styles') %>
+</head>
+<body>
+  <%- include('../partials/header', {page, basePath}) %>
+  
 <div class="section">
   <div class="section-header">
     <h2>Delivery Analysis</h2>
@@ -128,10 +139,12 @@
     </div>
   </div>
 </div>
-
+  <%- include('../partials/footer') %>
 <script>
   // Auto-refresh every 10 seconds
   setTimeout(() => {
     location.reload();
   }, 10000);
 </script>
+</body>
+</html>

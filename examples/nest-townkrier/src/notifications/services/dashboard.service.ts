@@ -37,6 +37,15 @@ export class DashboardService implements OnModuleInit {
           storageManager: this.notificationService.getStorageManager(),
           port,
           path,
+          // Pass NestJS logger to dashboard
+          logger: {
+            log: (message: string, ...args: unknown[]) =>
+              this.logger.log(message, ...args),
+            error: (message: string, ...args: unknown[]) =>
+              this.logger.error(message, ...args),
+            warn: (message: string, ...args: unknown[]) =>
+              this.logger.warn(message, ...args),
+          },
           // Optional: Add authentication
           // auth: {
           //   enabled: true,
@@ -64,6 +73,15 @@ export class DashboardService implements OnModuleInit {
           queueManager: this.notificationService.getQueueManager(),
           storageManager: this.notificationService.getStorageManager(),
           path,
+          // Pass NestJS logger to dashboard
+          logger: {
+            log: (message: string, ...args: unknown[]) =>
+              this.logger.log(message, ...args),
+            error: (message: string, ...args: unknown[]) =>
+              this.logger.error(message, ...args),
+            warn: (message: string, ...args: unknown[]) =>
+              this.logger.warn(message, ...args),
+          },
           // Optional: Add authentication
           // auth: {
           //   enabled: true,
