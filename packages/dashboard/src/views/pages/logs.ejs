@@ -1,0 +1,109 @@
+<div class="section">
+  <div class="section-header">
+    <h2>Notification Logs</h2>
+    <button class="btn btn-primary" onclick="location.reload()">Refresh</button>
+  </div>
+  
+  <div class="filters">
+    <div class="filter-group">
+      <label>Channel:</label>
+      <select id="channel-filter" onchange="filterLogs()">
+        <option value="">All</option>
+        <option value="email" <%= channel === 'email' ? 'selected' : '' %>>Email</option>
+        <option value="sms" <%= channel === 'sms' ? 'selected' : '' %>>SMS</option>
+        <option value="push" <%= channel === 'push' ? 'selected' : '' %>>Push</option>
+        <option value="in-app" <%= channel === 'in-app' ? 'selected' : '' %>>In-App</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label>Status:</label>
+      <select id="status-filter" onchange="filterLogs()">
+        <option value="">All</option>
+        <option value="sent" <%= status === 'sent' ? 'selected' : '' %>>Sent</option>
+        <option value="delivered" <%= status === 'delivered' ? 'selected' : '' %>>Delivered</option>
+        <option value="failed" <%= status === 'failed' ? 'selected' : '' %>>Failed</option>
+        <option value="pending" <%= status === 'pending' ? 'selected' : '' %>>Pending</option>
+        <option value="scheduled" <%= status === 'scheduled' ? 'selected' : '' %>>Scheduled</option>
+      </select>
+    </div>
+    
+    <div class="filter-group">
+      <label>Per Page:</label>
+      <select id="limit-filter" onchange="filterLogs()">
+        <option value="10" <%= limit === 10 ? 'selected' : '' %>>10</option>
+        <option value="25" <%= limit === 25 ? 'selected' : '' %>>25</option>
+        <option value="50" <%= limit === 50 ? 'selected' : '' %>>50</option>
+        <option value="100" <%= limit === 100 ? 'selected' : '' %>>100</option>
+      </select>
+    </div>
+  </div>
+  
+  <% if (logs.length === 0) { %>
+    <div class="empty-state">
+      <div class="empty-state-icon">📝</div>
+      <h3>No logs found</h3>
+      <p>Try adjusting your filters or send some notifications</p>
+    </div>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Log ID</th>
+          <th>Channel</th>
+          <th>Recipient</th>
+          <th>Subject/Title</th>
+          <th>Status</th>
+          <th>Attempts</th>
+          <th>Sent At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% logs.forEach(log => { %>
+          <tr>
+            <td>
+              <a href="<%= basePath %>/logs/<%= log.id %>" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                <%= log.id.substring(0, 8) %>...
+              </a>
+            </td>
+            <td><strong><%= log.channel %></strong></td>
+            <td class="truncate"><%= log.recipient %></td>
+            <td class="truncate"><%= log.subject || '-' %></td>
+            <td>
+              <span class="status-badge status-<%= log.status %>"><%= log.status %></span>
+            </td>
+            <td><%= log.attempts || 1 %></td>
+            <td class="timestamp">
+              <%= log.sentAt ? new Date(log.sentAt).toLocaleString() : 'N/A' %>
+            </td>
+            <td>
+              <a href="<%= basePath %>/logs/<%= log.id %>" class="btn btn-sm btn-primary">View</a>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+    
+    <div class="pagination">
+      <% if (offset > 0) { %>
+        <a href="?channel=<%= channel || '' %>&status=<%= status || '' %>&limit=<%= limit %>&offset=<%= Math.max(0, offset - limit) %>">Previous</a>
+      <% } %>
+      <span class="active">Page <%= Math.floor(offset / limit) + 1 %></span>
+      <% if (logs.length >= limit) { %>
+        <a href="?channel=<%= channel || '' %>&status=<%= status || '' %>&limit=<%= limit %>&offset=<%= offset + limit %>">Next</a>
+      <% } %>
+    </div>
+  <% } %>
+</div>
+
+<script>
+  const basePath = '<%= basePath %>';
+  
+  function filterLogs() {
+    const channel = document.getElementById('channel-filter').value;
+    const status = document.getElementById('status-filter').value;
+    const limit = document.getElementById('limit-filter').value;
+    window.location.href = `${basePath}/logs?channel=${channel}&status=${status}&limit=${limit}&offset=0`;
+  }
+</script>
