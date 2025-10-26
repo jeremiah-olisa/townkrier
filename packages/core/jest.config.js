@@ -16,4 +16,5 @@ module.exports = {
     '^.+\\.tsx?$': 'ts-jest',
   },
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  passWithNoTests: true, // Allow passing when no tests exist
 };
