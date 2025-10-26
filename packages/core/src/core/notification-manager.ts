@@ -49,6 +49,13 @@ export class NotificationManager {
   }
 
   /**
+   * Generate a consistent adapter key from channel and adapter names
+   */
+  private getAdapterKey(channelName: string, adapterName: string): string {
+    return `${channelName}-${adapterName}`.toLowerCase();
+  }
+
+  /**
    * Register a channel factory
    * @param name - Name of the channel/adapter (e.g., 'email-resend', 'sms-termii')
    * @param factory - Factory function to create the channel instance
@@ -81,7 +88,7 @@ export class NotificationManager {
 
         for (const adapterConfig of sortedAdapters) {
           // Check if this factory matches this adapter
-          const adapterKey = `${channelName}-${adapterConfig.name}`.toLowerCase();
+          const adapterKey = this.getAdapterKey(channelName, adapterConfig.name);
 
           if (
             name.toLowerCase() === adapterKey ||
@@ -246,10 +253,16 @@ export class NotificationManager {
     }
 
     // Try each adapter in priority order
-    const errors: Array<{ adapter: string; error: Error }> = [];
+    const errors: Array<{ adapter: string; error: Error; skipped?: boolean }> = [];
 
     for (const adapter of adapters) {
       if (!adapter.isReady()) {
+        const notReadyError = new Error('Adapter not ready');
+        errors.push({
+          adapter: adapter.getChannelName(),
+          error: notReadyError,
+          skipped: true,
+        });
         console.warn(`Adapter '${adapter.getChannelName()}' is not ready, trying next...`);
         continue;
       }
@@ -467,11 +480,13 @@ export class NotificationManager {
   /**
    * Get a channel by its type, with adapter fallback support
    * This will return the first available adapter for channels with multiple adapters
+   * Note: Adapters are already sorted by priority during registration
    */
   private getChannelByType(channelType: NotificationChannel): INotificationChannel {
     // First, check if there are multiple adapters for this channel type
     for (const [, adapters] of this.channelAdapters.entries()) {
       if (adapters.length > 0 && adapters[0].getChannelType() === channelType) {
+        // Adapters are pre-sorted by priority during registerFactory
         // Return the first (highest priority) ready adapter
         for (const adapter of adapters) {
           if (adapter.isReady()) {
