@@ -212,7 +212,12 @@ export class BullMQQueueAdapter implements IQueueAdapter {
 
       const bullStatuses = statusMap[filters.status] || [];
       for (const status of bullStatuses) {
-        const jobs = await this.queue.getJobs(status as any, offset, offset + limit - 1);
+        // BullMQ uses specific status strings that differ from our enum
+        const jobs = await this.queue.getJobs(
+          status as 'waiting' | 'active' | 'completed' | 'failed' | 'delayed',
+          offset,
+          offset + limit - 1,
+        );
         bullJobs.push(...jobs);
       }
     } else {

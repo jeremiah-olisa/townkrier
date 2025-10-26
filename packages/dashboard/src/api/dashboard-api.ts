@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import { QueueManager } from '@townkrier/queue';
-import { StorageManager } from '@townkrier/storage';
+import { QueueManager, JobStatus } from '@townkrier/queue';
+import { StorageManager, NotificationLogStatus } from '@townkrier/storage';
 import { NotificationChannel } from '@townkrier/core';
 
 /**
@@ -53,7 +53,7 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
       const { status, limit = '50', offset = '0' } = req.query;
 
       const jobs = await queueManager.getJobs({
-        status: status as any,
+        status: status as JobStatus | undefined,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
       });
@@ -157,14 +157,14 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
       const result = await storageManager.queryLogs({
         notificationId: notificationId as string,
         channel: channel as NotificationChannel,
-        status: status as any,
+        status: status as NotificationLogStatus | undefined,
         recipient: recipient as string,
         startDate: startDate ? new Date(startDate as string) : undefined,
         endDate: endDate ? new Date(endDate as string) : undefined,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
-        sortBy: sortBy as any,
-        sortOrder: sortOrder as any,
+        sortBy: sortBy as 'createdAt' | 'sentAt' | 'deliveredAt' | undefined,
+        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
       });
 
       res.json({

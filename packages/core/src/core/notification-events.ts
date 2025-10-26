@@ -64,8 +64,9 @@ export class NotificationEventDispatcher {
   /**
    * Register an event listener
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   on<T extends NotificationEvent>(
+    // Constructor type needs to accept any arguments for flexibility
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     eventType: new (...args: any[]) => T,
     listener: NotificationEventListener<T>,
   ): void {
