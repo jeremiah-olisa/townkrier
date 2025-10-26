@@ -330,10 +330,10 @@ class OrderConfirmationNotification extends Notification {
 
 ## Resources
 
-- [Complete Documentation](../README.md)
-- [API Reference](../packages/core/README.md)
-- [More Examples](../examples/)
-- [Troubleshooting Guide](../TROUBLESHOOTING.md)
+- [Complete Documentation](./README.md)
+- [API Reference](./packages/core/README.md)
+- [More Examples](./examples/)
+- [Troubleshooting Guide](./TROUBLESHOOTING.md)
 
 ## Need Help?
 
