@@ -125,20 +125,44 @@ export class QueueManager {
 
     console.log(`Starting queue processing with ${pollInterval}ms poll interval`);
 
-    this.processingInterval = setInterval(async () => {
-      await this.processNextJob();
-    }, pollInterval);
+    // Check if adapter has a startWorker method (BullMQ adapter)
+    if ('startWorker' in this.adapter && typeof this.adapter.startWorker === 'function') {
+      // Set processing callback for BullMQ adapter
+      if (
+        'setProcessingCallback' in this.adapter &&
+        typeof this.adapter.setProcessingCallback === 'function'
+      ) {
+        this.adapter.setProcessingCallback(async (job: QueueJob) => {
+          try {
+            const result = await this.notificationManager!.send(job.notification, job.recipient);
+            await this.adapter.markCompleted(job.id, result);
+          } catch (error) {
+            await this.adapter.markFailed(
+              job.id,
+              error instanceof Error ? error : new Error(String(error)),
+            );
+          }
+        });
+      }
+      // Start BullMQ worker
+      this.adapter.startWorker();
+    } else {
+      // Use polling for in-memory adapter
+      this.processingInterval = setInterval(async () => {
+        await this.processNextJob();
+      }, pollInterval);
 
-    // Process first job immediately
-    this.processNextJob().catch((error) => {
-      console.error('Error processing first job:', error);
-    });
+      // Process first job immediately
+      this.processNextJob().catch((error) => {
+        console.error('Error processing first job:', error);
+      });
+    }
   }
 
   /**
    * Stop processing jobs from the queue
    */
-  stopProcessing(): void {
+  async stopProcessing(): Promise<void> {
     if (!this.isProcessing) {
       console.warn('Queue processing is not running');
       return;
@@ -147,6 +171,11 @@ export class QueueManager {
     if (this.processingInterval) {
       clearInterval(this.processingInterval);
       this.processingInterval = undefined;
+    }
+
+    // Check if adapter has a stopWorker method (BullMQ adapter)
+    if ('stopWorker' in this.adapter && typeof this.adapter.stopWorker === 'function') {
+      await this.adapter.stopWorker();
     }
 
     this.isProcessing = false;
