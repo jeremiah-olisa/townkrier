@@ -253,7 +253,7 @@ describe('NotificationManager', () => {
       const notification = new TestNotification();
       const recipient = {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
-      };
+      } as Partial<Record<NotificationChannel, unknown>> as Record<NotificationChannel, unknown>;
 
       const results = await manager.send(notification, recipient);
       expect(results.size).toBe(1);
@@ -265,7 +265,7 @@ describe('NotificationManager', () => {
       const notification = new TestNotification();
       const recipient = {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
-      };
+      } as Partial<Record<NotificationChannel, unknown>> as Record<NotificationChannel, unknown>;
 
       await expect(manager.send(notification, recipient)).rejects.toThrow(
         NotificationConfigurationException,
