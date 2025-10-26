@@ -13,6 +13,11 @@ TownKrier is a flexible, provider-agnostic notification system inspired by Larav
 - 🎯 **Type-Safe**: Full TypeScript support with strong typing
 - 🏗️ **Extensible**: Easy to add custom channels and providers
 - ⚙️ **Flexible Configuration**: Priority-based channel selection
+- 📋 **Queue System**: Background job processing with Hangfire-like retry logic
+- 🔁 **Retry Logic**: Automatic retries with exponential backoff
+- 📊 **Dashboard**: Hangfire-style monitoring UI for jobs and logs
+- 💾 **Notification Logs**: Complete history with privacy-aware content masking
+- ⏰ **Scheduled Notifications**: Queue notifications for future delivery
 
 ## 📦 Packages
 
@@ -23,6 +28,9 @@ This monorepo contains the following packages:
 - **[@townkrier/resend](./packages/resend)** - Resend email adapter
 - **[@townkrier/fcm](./packages/channels/push/fcm)** - Firebase Cloud Messaging adapter for push notifications
 - **[@townkrier/termii](./packages/channels/sms/termii)** - Termii SMS adapter
+- **[@townkrier/queue](./packages/queue)** - Queue system with retry logic (Hangfire-like)
+- **[@townkrier/storage](./packages/storage)** - Notification logs storage and history
+- **[@townkrier/dashboard](./packages/dashboard)** - Monitoring dashboard UI (Hangfire-style)
 
 ## 🚀 Quick Start
 
@@ -85,6 +93,48 @@ const recipient = {
 };
 
 await manager.send(notification, recipient);
+```
+
+### Queue and Background Processing
+
+```typescript
+import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
+import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+import { DashboardServer } from '@townkrier/dashboard';
+
+// Setup queue with retry logic (Hangfire-like)
+const queueAdapter = new InMemoryQueueAdapter({
+  maxRetries: 3,
+  retryDelay: 1000, // ms, with exponential backoff
+});
+
+const queueManager = new QueueManager(queueAdapter, manager);
+
+// Setup storage for notification logs
+const storageManager = new StorageManager(new InMemoryStorageAdapter());
+
+// Start dashboard (similar to Hangfire)
+const dashboard = new DashboardServer({
+  queueManager,
+  storageManager,
+  port: 3000,
+  path: '/dashboard',
+});
+dashboard.start();
+
+// Send immediately (like Laravel's sendNow)
+await queueManager.sendNow(notification, recipient);
+
+// Queue for background processing (like Laravel's send)
+await queueManager.enqueue(notification, recipient);
+
+// Schedule for future delivery
+await queueManager.enqueue(notification, recipient, {
+  scheduledFor: new Date(Date.now() + 60000), // 1 minute from now
+});
+
+// Start background processing
+queueManager.startProcessing();
 ```
 
 📖 **For complete usage examples, see [USAGE.md](./USAGE.md) and [examples/](./examples/)**
@@ -221,6 +271,11 @@ pnpm release:alpha   # Build, version, and publish alpha
 - [x] Notification events
 - [x] Fallback support
 - [x] Type-safe API
+- [x] Queue system with retry logic
+- [x] Background job processing
+- [x] Notification logs and storage
+- [x] Monitoring dashboard (Hangfire-style)
+- [x] Scheduled notifications
 
 ### Future Plans
 
@@ -231,9 +286,10 @@ pnpm release:alpha   # Build, version, and publish alpha
 - [ ] More push providers (APNs, OneSignal, etc.)
 - [ ] Webhook notifications
 - [ ] Batch notifications
-- [ ] Scheduled notifications
 - [ ] Rate limiting
-- [ ] Queue integration
+- [ ] Redis queue adapter
+- [ ] Database storage adapter (Prisma)
+- [ ] Advanced dashboard analytics
 
 ## 🛠️ Technology Stack
 

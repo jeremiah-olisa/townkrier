@@ -4,16 +4,23 @@
     - Postmark
 
 ## Database Notifications
+
 > ### Prerequisites
+>
 > ### Formatting Database Notifications
+>
 > ### Accessing the Notifications
+>
 > ### Marking Notifications as Read
+
     - prisma
 
 ## Push / Webpush
+
     - Firebase Cloud Messaging (FCM)
 
 ### Push Future Considerations
+
     - Apple Push (APN)
     - OneSignal
     - Pushover
@@ -24,6 +31,7 @@
     - VWO Engage
 
 ## Messenger / Chat / Social (NOT IN MVP)
+
     - Discord
     - Facebook Workplace
     - Microsoft Teams
@@ -38,13 +46,16 @@
     - Webex
 
 ## Support (NOT IN MVP)
+
     - Pagerduty
     - Intercom
 
 ## SMS / Voip
+
     - Termii
 
 ### SMS Future Considerations
+
     - Twilio
     - TouchSMS
     - Clickatell
@@ -86,4 +97,4 @@ Channels for mVp
 - Email: Resend
 - SMS: Termii
 - Database/In App: prisma or any saas in app messaging
-- Push: FCM 
+- Push: FCM
