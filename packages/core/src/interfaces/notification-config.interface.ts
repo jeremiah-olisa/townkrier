@@ -44,6 +44,31 @@ export interface ChannelEnvConfig extends NotificationChannelConfig {
 }
 
 /**
+ * Configuration for a single adapter within a channel
+ */
+export interface AdapterConfig {
+  /**
+   * Name of the adapter (e.g., 'resend', 'smtp', 'postmark')
+   */
+  name: string;
+
+  /**
+   * Whether this adapter is enabled
+   */
+  enabled?: boolean;
+
+  /**
+   * Priority for fallback within the channel (higher = preferred)
+   */
+  priority?: number;
+
+  /**
+   * Adapter-specific configuration
+   */
+  config: ChannelEnvConfig;
+}
+
+/**
  * Configuration for a single notification channel in the manager
  */
 export interface ChannelConfig {
@@ -63,9 +88,16 @@ export interface ChannelConfig {
   priority?: number;
 
   /**
-   * Channel-specific configuration
+   * Channel-specific configuration (legacy support - single adapter)
+   * @deprecated Use 'adapters' array for multiple adapter support
    */
-  config: ChannelEnvConfig;
+  config?: ChannelEnvConfig;
+
+  /**
+   * List of adapters for this channel (new multi-adapter support)
+   * When multiple adapters are configured, they will be tried in priority order
+   */
+  adapters?: AdapterConfig[];
 }
 
 /**
