@@ -24,6 +24,7 @@ TownKrier is a flexible, provider-agnostic notification system inspired by Larav
 This monorepo contains the following packages:
 
 - **[@townkrier/core](./packages/core)** - Core notification system and interfaces
+- **[@townkrier/cli](./packages/cli)** - CLI tooling for generating notification classes (Laravel-style)
 - **[@townkrier/resend](./packages/resend)** - Resend email adapter
 - **[@townkrier/fcm](./packages/channels/push/fcm)** - Firebase Cloud Messaging adapter for push notifications
 - **[@townkrier/termii](./packages/channels/sms/termii)** - Termii SMS adapter
@@ -138,6 +139,33 @@ queueManager.startProcessing();
 
 📖 **For complete usage examples, see [USAGE.md](./USAGE.md) and [examples/](./examples/)**
 
+## 🛠️ CLI Tooling
+
+TownKrier includes a powerful CLI for generating notification classes, similar to Laravel's Artisan commands:
+
+```bash
+# Generate a notification with interactive prompts
+pnpm make:notification WelcomeUser
+
+# Generate with specific channels
+pnpm make:notification OrderConfirmation -- --channels email,sms
+
+# Generate with all channels
+pnpm make:notification ImportantAlert -- --channels email,sms,push,in-app
+
+# Generate in a custom path
+pnpm make:notification UserInvite -- --path ./src/notifications
+```
+
+The CLI automatically generates properly structured notification classes with:
+
+- TypeScript type safety
+- Pre-configured channel methods (toEmail, toSms, toPush, toInApp)
+- Helpful comments and examples
+- Consistent naming conventions
+
+**For more CLI usage details, see [@townkrier/cli documentation](./packages/cli/README.md)**
+
 ## 📖 Development
 
 ### Available Scripts
@@ -151,12 +179,16 @@ pnpm build
 
 # Build a specific package
 pnpm build:core
+pnpm build:cli
 pnpm build:resend
 pnpm build:fcm
 pnpm build:termii
 
 # Watch mode for development
 pnpm dev
+
+# Generate a notification (CLI tool)
+pnpm make:notification <name> -- [options]
 
 # Run tests
 pnpm test
