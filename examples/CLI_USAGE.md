@@ -18,7 +18,11 @@ pnpm build:cli
 node packages/cli/bin/townkrier.js make:notification WelcomeEmail --channels email --path examples/notifications
 ```
 
-This creates `WelcomeEmail.notification.ts` with just the email channel method.
+This creates `WelcomeEmail.notification.ts` with the class name `WelcomeEmailNotification`.
+The CLI automatically:
+
+- Creates file: `<Name>.notification.ts`
+- Creates class: `<Name>Notification` (adds "Notification" suffix to class name)
 
 ### 2. Generate a Multi-Channel Notification
 
@@ -128,7 +132,10 @@ Options:
 
 ## Tips
 
-1. **Naming Convention**: Use descriptive names like `OrderConfirmed`, `PaymentReceived`, `PasswordReset`
+1. **Naming Convention**:
+   - Use descriptive names like `OrderConfirmed`, `PaymentReceived`, `PasswordReset`
+   - The CLI automatically adds "Notification" suffix to the class name
+   - Example: `OrderConfirmed` → file: `OrderConfirmed.notification.ts`, class: `OrderConfirmedNotification`
 2. **Channel Selection**: Only include channels you actually plan to use
 3. **Custom Paths**: Organize notifications by feature: `--path ./src/features/orders/notifications`
 4. **Version Control**: Commit generated notifications as-is first, then customize in separate commits

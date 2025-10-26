@@ -59,7 +59,15 @@ Options:
 
 ## Generated Notification Structure
 
-The CLI generates a TypeScript notification class that extends the `Notification` base class from `@townkrier/core`:
+The CLI generates a TypeScript notification class that extends the `Notification` base class from `@townkrier/core`.
+
+### Naming Convention
+
+- **Input**: `WelcomeUser`
+- **Generated File**: `WelcomeUser.notification.ts`
+- **Generated Class**: `WelcomeUserNotification` (automatically adds "Notification" suffix)
+
+### Example Structure
 
 ```typescript
 import { Notification, NotificationChannel, NotificationPriority } from '@townkrier/core';
