@@ -1,4 +1,5 @@
-import { NotificationChannelConfig } from '@townkrier/core';
+import type { NotificationChannelConfig } from '@townkrier/core';
+import type { ServiceAccount } from 'firebase-admin';
 
 /**
  * FCM-specific configuration
@@ -7,7 +8,7 @@ export interface FcmConfig extends NotificationChannelConfig {
   /**
    * Firebase service account credentials (JSON)
    */
-  serviceAccount?: Record<string, unknown>;
+  serviceAccount?: ServiceAccount;
 
   /**
    * Path to service account JSON file

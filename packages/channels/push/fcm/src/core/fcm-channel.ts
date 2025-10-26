@@ -35,7 +35,7 @@ export class FcmChannel extends PushChannel {
     // Initialize Firebase Admin
     try {
       const credential = config.serviceAccount
-        ? admin.credential.cert(config.serviceAccount as admin.ServiceAccount)
+        ? admin.credential.cert(config.serviceAccount)
         : config.serviceAccountPath
           ? admin.credential.cert(config.serviceAccountPath)
           : admin.credential.applicationDefault();
