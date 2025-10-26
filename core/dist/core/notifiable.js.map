@@ -1,1 +1,0 @@
-{"version":3,"file":"notifiable.js","sourceRoot":"","sources":["../../src/core/notifiable.ts"],"names":[],"mappings":";;AAyBA,wBASC;AATM,KAAK,UAAU,MAAM,CAC1B,UAAsB,EACtB,YAA0B,EAC1B,OAAgB;IAIhB,OAAO,CAAC,GAAG,CAAC,YAAY,EAAE,UAAU,EAAE,YAAY,EAAE,OAAO,CAAC,CAAC;IAC7D,MAAM,IAAI,KAAK,CAAC,0EAA0E,CAAC,CAAC;AAC9F,CAAC"}
