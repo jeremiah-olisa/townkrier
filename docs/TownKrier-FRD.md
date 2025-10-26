@@ -22,6 +22,7 @@ TownKrier (pronounced "town crier") is an open-source, framework-agnostic notifi
 ## 2. Project Goals
 
 ### 2.1 Primary Goals
+
 - Provide a Laravel Notifications-inspired API for Node.js applications
 - Support multiple notification channels with pluggable provider architecture
 - Ensure framework-agnostic core with enhanced support for NestJS
@@ -30,6 +31,7 @@ TownKrier (pronounced "town crier") is an open-source, framework-agnostic notifi
 - Offer comprehensive CLI tooling for scaffolding and management
 
 ### 2.2 Success Criteria
+
 - Seamless integration with Express, NestJS, and other Node.js frameworks
 - Support for at least 3 channels (Email, SMS, Push) at v1.0 launch
 - Documentation quality matching or exceeding Laravel's standard
@@ -41,11 +43,13 @@ TownKrier (pronounced "town crier") is an open-source, framework-agnostic notifi
 ## 3. Core Concepts
 
 ### 3.1 Notification Architecture
+
 ```
 Notification Class → Notifiable Entity → Channel(s) → Provider(s) → Delivery
 ```
 
 ### 3.2 Key Components
+
 1. **Notification Classes** - Define what to send and via which channels
 2. **Notifiable Interface** - Entities that can receive notifications (Users, etc.)
 3. **Channels** - Delivery mechanisms (Email, SMS, Push, In-App, etc.)
@@ -60,6 +64,7 @@ Notification Class → Notifiable Entity → Channel(s) → Provider(s) → Deli
 ### 4.1 Notification Classes
 
 #### FR-4.1.1 Notification Definition
+
 - **Description:** Developers can create notification classes that define content and routing
 - **Requirements:**
   - Base `Notification` class for extension
@@ -69,6 +74,7 @@ Notification Class → Notifiable Entity → Channel(s) → Provider(s) → Deli
   - TypeScript support with full type inference
 
 #### FR-4.1.2 Notification Content
+
 - **Description:** Flexible content definition for different channels
 - **Requirements:**
   - Plain object or class-based content definition
@@ -78,6 +84,7 @@ Notification Class → Notifiable Entity → Channel(s) → Provider(s) → Deli
   - Markdown support for email content
 
 **Example:**
+
 ```typescript
 class OrderShipped extends Notification {
   constructor(private order: Order) {
@@ -85,9 +92,7 @@ class OrderShipped extends Notification {
   }
 
   via(notifiable: Notifiable): string[] {
-    return notifiable.prefers === 'sms' 
-      ? ['sms', 'database'] 
-      : ['mail', 'database'];
+    return notifiable.prefers === 'sms' ? ['sms', 'database'] : ['mail', 'database'];
   }
 
   toMail(notifiable: Notifiable): MailMessage {
@@ -99,8 +104,9 @@ class OrderShipped extends Notification {
   }
 
   toSms(notifiable: Notifiable): SmsMessage {
-    return new SmsMessage()
-      .content(`Order #${this.order.id} shipped! Track: ${this.order.trackingUrl}`);
+    return new SmsMessage().content(
+      `Order #${this.order.id} shipped! Track: ${this.order.trackingUrl}`,
+    );
   }
 }
 ```
@@ -110,6 +116,7 @@ class OrderShipped extends Notification {
 ### 4.2 Notifiable Interface
 
 #### FR-4.2.1 Notifiable Contract
+
 - **Description:** Interface that entities must implement to receive notifications
 - **Requirements:**
   - `routeNotificationFor(channel: string)` method to return channel addresses
@@ -117,6 +124,7 @@ class OrderShipped extends Notification {
   - Support for multiple addresses per channel (e.g., multiple emails)
 
 **Example:**
+
 ```typescript
 interface Notifiable {
   routeNotificationFor(channel: string): string | string[] | null;
@@ -130,10 +138,14 @@ class User implements Notifiable {
 
   routeNotificationFor(channel: string): string | null {
     switch (channel) {
-      case 'mail': return this.email;
-      case 'sms': return this.phone;
-      case 'fcm': return this.fcmToken;
-      default: return null;
+      case 'mail':
+        return this.email;
+      case 'sms':
+        return this.phone;
+      case 'fcm':
+        return this.fcmToken;
+      default:
+        return null;
     }
   }
 }
@@ -144,6 +156,7 @@ class User implements Notifiable {
 ### 4.3 Channel System
 
 #### FR-4.3.1 Built-in Channels
+
 - **Mail Channel** - Email notifications
 - **SMS Channel** - Text message notifications
 - **Push Channel** - Mobile/web push notifications
@@ -151,6 +164,7 @@ class User implements Notifiable {
 - **Slack Channel** - Slack message notifications
 
 #### FR-4.3.2 Channel Interface
+
 - **Description:** Standardized interface for all channels
 - **Requirements:**
   - `send(notifiable: Notifiable, notification: Notification)` method
@@ -160,6 +174,7 @@ class User implements Notifiable {
   - Channel-specific configuration
 
 #### FR-4.3.3 Custom Channels
+
 - **Description:** Developers can create custom channels
 - **Requirements:**
   - Extend base `Channel` class or implement `ChannelInterface`
@@ -168,12 +183,13 @@ class User implements Notifiable {
   - Full TypeScript support
 
 **Example:**
+
 ```typescript
 class WhatsAppChannel implements ChannelInterface {
   async send(notifiable: Notifiable, notification: Notification): Promise<void> {
     const message = notification.toWhatsApp(notifiable);
     const recipient = notifiable.routeNotificationFor('whatsapp');
-    
+
     await this.provider.send(recipient, message);
   }
 }
@@ -184,6 +200,7 @@ class WhatsAppChannel implements ChannelInterface {
 ### 4.4 Provider/Adapter System
 
 #### FR-4.4.1 Provider Architecture
+
 - **Description:** Pluggable adapter pattern for service providers
 - **Requirements:**
   - Abstract provider interfaces per channel type
@@ -193,6 +210,7 @@ class WhatsAppChannel implements ChannelInterface {
   - Failover support (try provider A, fallback to provider B)
 
 #### FR-4.4.2 Email Providers
+
 - **Supported (via adapters):**
   - Resend
   - Postmark
@@ -203,6 +221,7 @@ class WhatsAppChannel implements ChannelInterface {
   - Custom adapters
 
 #### FR-4.4.3 SMS Providers
+
 - **Supported (via adapters):**
   - Twilio
   - Termii
@@ -211,6 +230,7 @@ class WhatsAppChannel implements ChannelInterface {
   - Custom adapters
 
 #### FR-4.4.4 Push Providers
+
 - **Supported (via adapters):**
   - Firebase Cloud Messaging (FCM)
   - Apple Push Notification Service (APNS)
@@ -218,6 +238,7 @@ class WhatsAppChannel implements ChannelInterface {
   - Custom adapters
 
 #### FR-4.4.5 Database Provider
+
 - **Description:** Storage adapter for in-app notifications
 - **Requirements:**
   - Interface-based adapter system
@@ -232,6 +253,7 @@ class WhatsAppChannel implements ChannelInterface {
   - Notification expiration/cleanup
 
 **Example Configuration:**
+
 ```typescript
 TownKrier.configure({
   channels: {
@@ -242,22 +264,24 @@ TownKrier.configure({
       },
       fallback: {
         provider: 'smtp',
-        config: { /* smtp config */ }
-      }
+        config: {
+          /* smtp config */
+        },
+      },
     },
     sms: {
       provider: 'twilio',
       config: {
         accountSid: process.env.TWILIO_SID,
         authToken: process.env.TWILIO_TOKEN,
-        from: process.env.TWILIO_FROM
-      }
+        from: process.env.TWILIO_FROM,
+      },
     },
     database: {
       provider: 'postgresql',
-      adapter: new PostgresAdapter(dataSource)
-    }
-  }
+      adapter: new PostgresAdapter(dataSource),
+    },
+  },
 });
 ```
 
@@ -266,6 +290,7 @@ TownKrier.configure({
 ### 4.5 Sending Notifications
 
 #### FR-4.5.1 Immediate Sending
+
 - **Description:** Send notifications synchronously
 - **Requirements:**
   - Simple API: `user.notify(new OrderShipped(order))`
@@ -274,6 +299,7 @@ TownKrier.configure({
   - Error handling without throwing (optional)
 
 **Example:**
+
 ```typescript
 // Single recipient
 await user.notify(new WelcomeNotification());
@@ -289,6 +315,7 @@ if (result.failed.length > 0) {
 ```
 
 #### FR-4.5.2 Queued/Background Sending
+
 - **Description:** Queue notifications for background processing
 - **Requirements:**
   - Queue adapter interface (BullMQ, Redis Queue, AWS SQS, etc.)
@@ -299,18 +326,16 @@ if (result.failed.length > 0) {
   - Queue monitoring and statistics
 
 **Example:**
+
 ```typescript
 // Queue notification
 await user.notify(new ReminderNotification()).queue();
 
 // Delayed notification
-await user.notify(new TrialEnding())
-  .delay(60 * 60 * 24 * 7); // 7 days
+await user.notify(new TrialEnding()).delay(60 * 60 * 24 * 7); // 7 days
 
 // With specific queue
-await user.notify(new LowPriority())
-  .onQueue('notifications-low')
-  .queue();
+await user.notify(new LowPriority()).onQueue('notifications-low').queue();
 ```
 
 ---
@@ -318,6 +343,7 @@ await user.notify(new LowPriority())
 ### 4.6 CLI Tools
 
 #### FR-4.6.1 Notification Generation
+
 - **Description:** Scaffold new notification classes
 - **Requirements:**
   - Command: `townkrier make:notification <name>`
@@ -326,11 +352,13 @@ await user.notify(new LowPriority())
   - Customizable templates
 
 **Example:**
+
 ```bash
 townkrier make:notification OrderShipped --channels=mail,sms,database
 ```
 
 #### FR-4.6.2 Channel Generation
+
 - **Description:** Create custom channel implementations
 - **Requirements:**
   - Command: `townkrier make:channel <name>`
@@ -338,11 +366,13 @@ townkrier make:notification OrderShipped --channels=mail,sms,database
   - Provider registration template
 
 **Example:**
+
 ```bash
 townkrier make:channel WhatsApp
 ```
 
 #### FR-4.6.3 Provider Adapter Generation
+
 - **Description:** Scaffold provider adapters
 - **Requirements:**
   - Command: `townkrier make:provider <channel> <name>`
@@ -350,11 +380,13 @@ townkrier make:channel WhatsApp
   - Configuration scaffolding
 
 **Example:**
+
 ```bash
 townkrier make:provider mail Brevo
 ```
 
 #### FR-4.6.4 Database Setup
+
 - **Description:** Generate migrations and models for database channel
 - **Requirements:**
   - Command: `townkrier install:database`
@@ -363,11 +395,13 @@ townkrier make:provider mail Brevo
   - Generate model/entity classes
 
 **Example:**
+
 ```bash
 townkrier install:database --orm=prisma
 ```
 
 #### FR-4.6.5 Testing Tools
+
 - **Description:** Notification testing utilities
 - **Requirements:**
   - Command: `townkrier test:notification <name>`
@@ -380,6 +414,7 @@ townkrier install:database --orm=prisma
 ### 4.7 Framework Integration
 
 #### FR-4.7.1 Framework-Agnostic Core
+
 - **Requirements:**
   - Core package has zero framework dependencies
   - Standalone usage without any framework
@@ -387,6 +422,7 @@ townkrier install:database --orm=prisma
   - No reliance on decorators or framework-specific features in core
 
 #### FR-4.7.2 NestJS Integration
+
 - **Package:** `@townkrier/nestjs`
 - **Requirements:**
   - Injectable services with DI support
@@ -397,14 +433,17 @@ townkrier install:database --orm=prisma
   - Health check indicators
 
 **Example:**
+
 ```typescript
 // app.module.ts
 @Module({
   imports: [
     TownKrierModule.forRoot({
-      channels: { /* config */ }
-    })
-  ]
+      channels: {
+        /* config */
+      },
+    }),
+  ],
 })
 export class AppModule {}
 
@@ -414,15 +453,13 @@ export class OrderService {
   constructor(private townkrier: TownKrierService) {}
 
   async shipOrder(order: Order) {
-    await this.townkrier.send(
-      order.user,
-      new OrderShipped(order)
-    );
+    await this.townkrier.send(order.user, new OrderShipped(order));
   }
 }
 ```
 
 #### FR-4.7.3 Express Integration
+
 - **Package:** `@townkrier/express`
 - **Requirements:**
   - Middleware for adding TownKrier to request object
@@ -430,22 +467,23 @@ export class OrderService {
   - Route helpers for webhook handling
 
 **Example:**
+
 ```typescript
 import { setupTownKrier } from '@townkrier/express';
 
 const app = express();
-setupTownKrier(app, { /* config */ });
+setupTownKrier(app, {
+  /* config */
+});
 
 app.post('/orders/:id/ship', async (req, res) => {
-  await req.townkrier.send(
-    user,
-    new OrderShipped(order)
-  );
+  await req.townkrier.send(user, new OrderShipped(order));
   res.json({ success: true });
 });
 ```
 
 #### FR-4.7.4 Other Framework Support
+
 - **Future packages:**
   - `@townkrier/fastify`
   - `@townkrier/hono`
@@ -456,6 +494,7 @@ app.post('/orders/:id/ship', async (req, res) => {
 ### 4.8 Configuration Management
 
 #### FR-4.8.1 Configuration Options
+
 - **Description:** Flexible configuration system
 - **Requirements:**
   - Environment variable support
@@ -465,25 +504,37 @@ app.post('/orders/:id/ship', async (req, res) => {
   - Validation of required fields
 
 #### FR-4.8.2 Configuration File
+
 - **Location:** `townkrier.config.ts` or `townkrier.config.js`
 - **Structure:**
+
 ```typescript
 export default {
   channels: {
-    mail: { /* ... */ },
-    sms: { /* ... */ },
-    push: { /* ... */ },
-    database: { /* ... */ }
+    mail: {
+      /* ... */
+    },
+    sms: {
+      /* ... */
+    },
+    push: {
+      /* ... */
+    },
+    database: {
+      /* ... */
+    },
   },
   queue: {
     driver: 'bullmq',
-    connection: { /* redis config */ },
+    connection: {
+      /* redis config */
+    },
     retries: 3,
-    backoff: 'exponential'
+    backoff: 'exponential',
   },
   defaults: {
-    channels: ['mail', 'database']
-  }
+    channels: ['mail', 'database'],
+  },
 };
 ```
 
@@ -492,6 +543,7 @@ export default {
 ### 4.9 Event System
 
 #### FR-4.9.1 Notification Events
+
 - **Description:** Lifecycle hooks for notifications
 - **Requirements:**
   - Events: `sending`, `sent`, `failed`
@@ -501,6 +553,7 @@ export default {
   - Event payload includes notification, notifiable, channel, result
 
 **Example:**
+
 ```typescript
 TownKrier.on('notification.sent', (event) => {
   console.log(`Sent ${event.notification.constructor.name} via ${event.channel}`);
@@ -518,6 +571,7 @@ TownKrier.on('notification.failed', (event) => {
 ### 4.10 Testing Support
 
 #### FR-4.10.1 Fake Mode
+
 - **Description:** Testing utilities without sending real notifications
 - **Requirements:**
   - `TownKrier.fake()` method to enable fake mode
@@ -530,6 +584,7 @@ TownKrier.on('notification.failed', (event) => {
   - Per-channel faking
 
 **Example:**
+
 ```typescript
 // test file
 import { TownKrier } from 'townkrier';
@@ -556,6 +611,7 @@ describe('Order Service', () => {
 ### 4.11 Localization
 
 #### FR-4.11.1 Multi-language Support
+
 - **Description:** Send notifications in user's preferred language
 - **Requirements:**
   - Integration with i18n libraries (i18next, etc.)
@@ -564,6 +620,7 @@ describe('Order Service', () => {
   - Per-notifiable locale detection
 
 **Example:**
+
 ```typescript
 class WelcomeNotification extends Notification {
   toMail(notifiable: Notifiable): MailMessage {
@@ -580,6 +637,7 @@ class WelcomeNotification extends Notification {
 ### 4.12 Rate Limiting
 
 #### FR-4.12.1 Notification Throttling
+
 - **Description:** Prevent notification spam
 - **Requirements:**
   - Per-notifiable rate limiting
@@ -589,12 +647,13 @@ class WelcomeNotification extends Notification {
   - Rate limit storage (memory, Redis, database)
 
 **Example:**
+
 ```typescript
 class ReminderNotification extends Notification {
   rateLimit(): RateLimitConfig {
     return {
       maxAttempts: 3,
-      decayMinutes: 60
+      decayMinutes: 60,
     };
   }
 }
@@ -605,30 +664,35 @@ class ReminderNotification extends Notification {
 ## 5. Non-Functional Requirements
 
 ### 5.1 Performance
+
 - Queue processing: 1000+ notifications per second
 - Synchronous sends: <100ms overhead
 - Database queries: Indexed and optimized
 - Memory usage: <50MB for base package
 
 ### 5.2 Reliability
+
 - 99.9% successful delivery for valid configurations
 - Automatic retry with exponential backoff
 - Circuit breaker for failing providers
 - Comprehensive error logging
 
 ### 5.3 Security
+
 - No credential logging
 - Support for credential encryption
 - Webhook signature verification
 - Input sanitization for all content
 
 ### 5.4 Scalability
+
 - Horizontal scaling support via queue system
 - No shared state between processes
 - Distributed queue support (Redis, SQS)
 - Stateless channel implementations
 
 ### 5.5 Maintainability
+
 - 90%+ test coverage
 - Comprehensive documentation
 - Clear contribution guidelines
@@ -640,16 +704,19 @@ class ReminderNotification extends Notification {
 ## 6. Technical Stack
 
 ### 6.1 Core Dependencies
+
 - TypeScript 5+
 - Node.js 18+ (LTS)
 - Minimal runtime dependencies
 
 ### 6.2 Optional Dependencies
+
 - Queue: BullMQ, Redis, AWS SQS adapters
 - Database: TypeORM, Prisma, Drizzle, MongoDB drivers
 - Testing: Jest, Vitest support
 
 ### 6.3 Development Dependencies
+
 - ESLint + Prettier
 - Conventional commits
 - Changesets for versioning
@@ -660,6 +727,7 @@ class ReminderNotification extends Notification {
 ## 7. Package Structure
 
 ### 7.1 Monorepo Layout
+
 ```
 packages/
 ├── core/                    # @townkrier/core
@@ -684,6 +752,7 @@ packages/
 ```
 
 ### 7.2 Installation Examples
+
 ```bash
 # Core package
 npm install @townkrier/core
@@ -706,6 +775,7 @@ npm install @townkrier/core @townkrier/cli \
 ## 8. Documentation Requirements
 
 ### 8.1 Documentation Structure
+
 - Getting Started Guide
 - Installation per framework
 - Configuration Guide
@@ -718,6 +788,7 @@ npm install @townkrier/core @townkrier/cli \
 - Recipes/Cookbook
 
 ### 8.2 Documentation Standards
+
 - Code examples for every feature
 - Video tutorials for complex workflows
 - Interactive playground (CodeSandbox)
@@ -729,6 +800,7 @@ npm install @townkrier/core @townkrier/cli \
 ## 9. Release Plan
 
 ### 9.1 v0.1.0 - Alpha (Week 1-4)
+
 - Core notification system
 - Basic mail channel
 - Simple SMTP provider
@@ -736,6 +808,7 @@ npm install @townkrier/core @townkrier/cli \
 - Basic documentation
 
 ### 9.2 v0.5.0 - Beta (Week 5-8)
+
 - All core channels (Mail, SMS, Push, Database)
 - 2+ providers per channel
 - Queue support
@@ -743,6 +816,7 @@ npm install @townkrier/core @townkrier/cli \
 - Comprehensive tests
 
 ### 9.3 v1.0.0 - Stable (Week 9-12)
+
 - Production-ready
 - Full documentation
 - Express integration
@@ -751,6 +825,7 @@ npm install @townkrier/core @townkrier/cli \
 - Performance benchmarks
 
 ### 9.4 Post v1.0
+
 - Additional framework integrations
 - More provider adapters
 - Advanced features (A/B testing, analytics)
@@ -762,6 +837,7 @@ npm install @townkrier/core @townkrier/cli \
 ## 10. Success Metrics
 
 ### 10.1 Technical Metrics
+
 - Test coverage > 90%
 - Build time < 30s
 - Package size < 100KB (core)
@@ -769,15 +845,17 @@ npm install @townkrier/core @townkrier/cli \
 - TypeScript strict mode compliant
 
 ### 10.2 Adoption Metrics
+
 - 1000+ npm downloads/month (6 months)
 - 500+ GitHub stars (1 year)
 - 10+ community providers (1 year)
 - 5+ production case studies (1 year)
 
 ### 10.3 Quality Metrics
+
 - <10 open bugs at any time
 - <48h average issue response time
-- >4.5 stars on npm
+- > 4.5 stars on npm
 - Active community contributions
 
 ---
@@ -796,6 +874,7 @@ npm install @townkrier/core @townkrier/cli \
 ## 12. Appendices
 
 ### 12.1 Glossary
+
 - **Notifiable:** An entity that can receive notifications
 - **Channel:** A delivery mechanism (email, SMS, etc.)
 - **Provider:** A service implementation (Resend, Twilio, etc.)
@@ -803,6 +882,7 @@ npm install @townkrier/core @townkrier/cli \
 - **Queue:** Background job system for async processing
 
 ### 12.2 References
+
 - Laravel Notifications: https://laravel.com/docs/notifications
 - BullMQ: https://docs.bullmq.io/
 - NestJS: https://nestjs.com/

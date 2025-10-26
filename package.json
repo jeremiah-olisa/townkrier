@@ -1,0 +1,82 @@
+{
+  "name": "townkrier-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Laravel-style notification system for Node.js with multiple channels and providers",
+  "author": "Jeremiah Olisa",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jeremiah-olisa/townkrier.git"
+  },
+  "keywords": [
+    "notifications",
+    "laravel-notifications",
+    "email",
+    "sms",
+    "push-notifications",
+    "in-app-notifications",
+    "townkrier",
+    "multi-channel",
+    "monorepo",
+    "lerna"
+  ],
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "build": "lerna run build --stream",
+    "build:core": "lerna run build --scope=@townkrier/core --stream",
+    "build:resend": "lerna run build --scope=@townkrier/resend --stream",
+    "build:fcm": "lerna run build --scope=@townkrier/fcm --stream",
+    "build:termii": "lerna run build --scope=@townkrier/termii --stream",
+    "build:in-app": "lerna run build --scope=@townkrier/in-app --stream",
+    "dev": "lerna run watch --parallel",
+    "test": "lerna run test --stream",
+    "test:cov": "lerna run test:cov --stream",
+    "test:watch": "lerna run test:watch --parallel",
+    "lint": "lerna run lint --stream",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "lerna clean -y && rm -rf node_modules",
+    "clean:build": "lerna run clean --stream",
+    "version": "lerna version --conventional-commits",
+    "version:patch": "lerna version patch --yes",
+    "version:minor": "lerna version minor --yes",
+    "version:major": "lerna version major --yes",
+    "version:prerelease": "lerna version prerelease --preid=alpha --yes",
+    "publish": "lerna publish from-package",
+    "publish:ci": "lerna publish from-package --yes",
+    "publish:canary": "lerna publish --canary",
+    "publish:now": "pnpm run build && lerna publish from-package --yes",
+    "release:patch": "pnpm run build && lerna version patch --yes && lerna publish from-package --yes",
+    "release:minor": "pnpm run build && lerna version minor --yes && lerna publish from-package --yes",
+    "release:major": "pnpm run build && lerna version major --yes && lerna publish from-package --yes",
+    "release:alpha": "pnpm run build && lerna version prerelease --preid=alpha --yes && lerna publish from-package --yes",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.1.3",
+    "husky": "^8.0.3",
+    "lerna": "^8.0.0",
+    "lint-staged": "^15.2.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@8.15.4",
+  "lint-staged": {
+    "*.{ts,tsx,js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  }
+}
