@@ -19,6 +19,7 @@ import {
   NotificationSending,
   NotificationSent,
   NotificationFailed,
+  NotificationRecipient,
 } from '@townkrier/core';
 
 import { createResendChannel } from '@townkrier/resend';
@@ -358,8 +359,8 @@ async function sendPasswordReset(user: User, token: string) {
 function buildRecipientFromUser(
   user: User,
   channels: NotificationChannel[],
-): Record<NotificationChannel, unknown> {
-  const recipient: Partial<Record<NotificationChannel, unknown>> = {};
+): NotificationRecipient {
+  const recipient: Partial<NotificationRecipient> = {};
 
   for (const channel of channels) {
     const route = user.routeNotificationFor(channel);
@@ -368,7 +369,7 @@ function buildRecipientFromUser(
     }
   }
 
-  return recipient as Record<NotificationChannel, unknown>;
+  return recipient as NotificationRecipient;
 }
 
 // ============================================================================

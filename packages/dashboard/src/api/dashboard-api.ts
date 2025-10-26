@@ -29,9 +29,9 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
   });
 
   /**
-   * GET /townkrier/api/stats - Get overall statistics
+   * GET /api/stats - Get overall statistics
    */
-  router.get('/townkrier/api/stats', async (req: Request, res: Response) => {
+  router.get('/api/stats', async (req: Request, res: Response) => {
     try {
       const queueStats = await queueManager.getStats();
       const storageStats = await storageManager.getStats();
@@ -50,9 +50,9 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
   });
 
   /**
-   * GET /townkrier/api/jobs - List jobs with filters
+   * GET /api/jobs - List jobs with filters
    */
-  router.get('/townkrier/api/jobs', async (req: Request, res: Response) => {
+  router.get('/api/jobs', async (req: Request, res: Response) => {
     try {
       const { status, limit = '50', offset = '0' } = req.query;
 
@@ -75,9 +75,9 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
   });
 
   /**
-   * GET /townkrier/api/jobs/:id - Get job details
+   * GET /api/jobs/:id - Get job details
    */
-  router.get('/townkrier/api/jobs/:id', async (req: Request, res: Response) => {
+  router.get('/api/jobs/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const job = await queueManager.getJob(id);
@@ -99,9 +99,9 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
   });
 
   /**
-   * POST /townkrier/api/jobs/:id/retry - Retry a failed job
+   * POST /api/jobs/:id/retry - Retry a failed job
    */
-  router.post('/townkrier/api/jobs/:id/retry', async (req: Request, res: Response) => {
+  router.post('/api/jobs/:id/retry', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       await queueManager.retryJob(id);
@@ -120,9 +120,9 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
   });
 
   /**
-   * DELETE /townkrier/api/jobs/:id - Delete a job
+   * DELETE /api/jobs/:id - Delete a job
    */
-  router.delete('/townkrier/api/jobs/:id', async (req: Request, res: Response) => {
+  router.delete('/api/jobs/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       await queueManager.deleteJob(id);
@@ -141,9 +141,9 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
   });
 
   /**
-   * GET /townkrier/api/logs - Query notification logs
+   * GET /api/logs - Query notification logs
    */
-  router.get('/townkrier/api/logs', async (req: Request, res: Response) => {
+  router.get('/api/logs', async (req: Request, res: Response) => {
     try {
       const {
         notificationId,
@@ -188,9 +188,9 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
   });
 
   /**
-   * GET /townkrier/api/logs/:id - Get log details
+   * GET /api/logs/:id - Get log details
    */
-  router.get('/townkrier/api/logs/:id', async (req: Request, res: Response) => {
+  router.get('/api/logs/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const log = await storageManager.getLog(id);
@@ -212,9 +212,9 @@ export function createDashboardRouter(config: DashboardApiConfig): Router {
   });
 
   /**
-   * GET /townkrier/api/health - Health check
+   * GET /api/health - Health check
    */
-  router.get('/townkrier/api/health', (req: Request, res: Response) => {
+  router.get('/api/health', (req: Request, res: Response) => {
     res.json({
       status: 'ok',
       timestamp: new Date(),

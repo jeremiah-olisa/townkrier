@@ -25,7 +25,35 @@ npm install bullmq ioredis
 
 ## Usage
 
-### Basic Setup with BullMQ
+### Integrated Mode (Recommended)
+
+Integrate the dashboard into your existing Express/NestJS application on the same port:
+
+```typescript
+import express from 'express';
+import { setupDashboard } from '@townkrier/dashboard';
+import { QueueManager, BullMQQueueAdapter } from '@townkrier/queue';
+import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+
+const app = express();
+
+// Your app routes
+app.get('/', (req, res) => res.send('Hello World'));
+
+// Setup TownKrier Dashboard (integrated)
+setupDashboard(app, {
+  queueManager,
+  storageManager,
+  path: '/dashboard', // Dashboard will be at http://localhost:3000/dashboard
+});
+
+app.listen(3000);
+// Dashboard available at: http://localhost:3000/dashboard
+```
+
+### Standalone Mode (Backward Compatible)
+
+Run the dashboard on a separate port:
 
 ```typescript
 import { DashboardServer } from '@townkrier/dashboard';
@@ -47,25 +75,38 @@ const queueAdapter = new BullMQQueueAdapter({
 const queueManager = new QueueManager(queueAdapter, notificationManager);
 const storageManager = new StorageManager(new InMemoryStorageAdapter());
 
-// Create and start dashboard
+// Create and start dashboard on separate port
 const dashboard = new DashboardServer({
   queueManager,
   storageManager,
-  port: 3000,
+  port: 4000, // Dashboard runs on port 4000
   path: '/dashboard',
 });
 
 dashboard.start();
-// Dashboard available at: http://localhost:3000/dashboard
+// Dashboard available at: http://localhost:4000/dashboard
 ```
 
 ### With Authentication
 
 ```typescript
+// Integrated mode with auth
+setupDashboard(app, {
+  queueManager,
+  storageManager,
+  path: '/dashboard',
+  auth: {
+    enabled: true,
+    username: 'admin',
+    password: 'your-secure-password',
+  },
+});
+
+// Standalone mode with auth
 const dashboard = new DashboardServer({
   queueManager,
   storageManager,
-  port: 3000,
+  port: 4000,
   path: '/dashboard',
   auth: {
     enabled: true,
@@ -75,28 +116,38 @@ const dashboard = new DashboardServer({
 });
 ```
 
-### With Express App
+### NestJS Integration
 
 ```typescript
-import express from 'express';
-import { createDashboardRouter } from '@townkrier/dashboard';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { HttpAdapterHost } from '@nestjs/core';
+import { setupDashboard } from '@townkrier/dashboard';
 
-const app = express();
+@Injectable()
+export class DashboardService implements OnModuleInit {
+  constructor(
+    private readonly httpAdapterHost: HttpAdapterHost,
+    private readonly queueManager: QueueManager,
+    private readonly storageManager: StorageManager,
+  ) {}
 
-app.use(
-  '/dashboard',
-  createDashboardRouter({
-    queueManager,
-    storageManager,
-  }),
-);
+  async onModuleInit() {
+    const app = this.httpAdapterHost.httpAdapter.getInstance();
 
-app.listen(3000);
+    // Integrated mode (same port as NestJS app)
+    setupDashboard(app, {
+      queueManager: this.queueManager,
+      storageManager: this.storageManager,
+      path: '/dashboard',
+    });
+  }
+}
 ```
 
 ## Dashboard Pages
 
 ### 1. Overview (Home)
+
 - **URL**: `/dashboard`
 - **Features**:
   - Real-time queue statistics (auto-refresh every 5 seconds)
@@ -105,6 +156,7 @@ app.listen(3000);
   - Quick actions (retry, delete)
 
 ### 2. Jobs List
+
 - **URL**: `/dashboard/jobs`
 - **Features**:
   - Filter by status (pending, processing, completed, failed, scheduled)
@@ -114,6 +166,7 @@ app.listen(3000);
   - View job details
 
 ### 3. Job Details
+
 - **URL**: `/dashboard/jobs/:id`
 - **Features**:
   - Complete job information
@@ -124,6 +177,7 @@ app.listen(3000);
   - Metadata display
 
 ### 4. Notification Logs
+
 - **URL**: `/dashboard/logs`
 - **Features**:
   - Filter by channel (email, sms, push, in-app)
@@ -133,6 +187,7 @@ app.listen(3000);
   - View log details
 
 ### 5. Log Details
+
 - **URL**: `/dashboard/logs/:id`
 - **Features**:
   - **Preview Tab**: Formatted content view
@@ -143,6 +198,7 @@ app.listen(3000);
   - Channel information
 
 ### 6. Delivery Analysis
+
 - **URL**: `/dashboard/analysis`
 - **Features**:
   - Total notifications sent
@@ -155,6 +211,7 @@ app.listen(3000);
 ## API Endpoints
 
 ### Statistics
+
 ```
 GET /api/stats
 Response: {
@@ -165,6 +222,7 @@ Response: {
 ```
 
 ### Jobs
+
 ```
 GET /api/jobs?status=failed&limit=50&offset=0
 GET /api/jobs/:id
@@ -173,12 +231,14 @@ DELETE /api/jobs/:id
 ```
 
 ### Logs
+
 ```
 GET /api/logs?channel=email&status=sent&limit=50&offset=0
 GET /api/logs/:id
 ```
 
 ### Health Check
+
 ```
 GET /api/health
 ```
@@ -189,12 +249,12 @@ GET /api/health
 interface DashboardServerConfig {
   queueManager: QueueManager;
   storageManager: StorageManager;
-  port?: number;           // Default: 3000
-  path?: string;           // Default: '/dashboard'
+  port?: number; // Default: 3000
+  path?: string; // Default: '/dashboard'
   auth?: {
     enabled: boolean;
     username: string;
-    password: string;      // Use strong passwords in production
+    password: string; // Use strong passwords in production
   };
 }
 ```
@@ -221,6 +281,7 @@ const adapter = new BullMQQueueAdapter({
 ```
 
 ### Redis Setup with Docker
+
 ```bash
 # Run Redis container
 docker run -d -p 6379:6379 --name redis redis:alpine
@@ -234,6 +295,7 @@ docker run -d -p 6379:6379 --name redis \
 ## Security
 
 ### Authentication
+
 Basic authentication is supported for production use:
 
 ```typescript
@@ -245,12 +307,15 @@ auth: {
 ```
 
 ### Content Privacy
+
 The dashboard respects content privacy settings:
+
 - `FULL`: All content visible
 - `MASKED`: Sensitive data masked
 - `HIDDEN`: No content displayed
 
 ### Recommendations
+
 - Always enable authentication in production
 - Use HTTPS in production
 - Configure firewall rules to restrict dashboard access
@@ -261,6 +326,7 @@ The dashboard respects content privacy settings:
 ## Styling
 
 The dashboard features a modern, responsive design with:
+
 - Gradient header (purple/blue)
 - Status badges with color coding
 - Hover effects and transitions
@@ -271,6 +337,7 @@ The dashboard features a modern, responsive design with:
 ## Complete Example
 
 See [examples/bullmq-dashboard-example.ts](../../examples/bullmq-dashboard-example.ts) for a complete working example with:
+
 - BullMQ setup with Redis
 - Notification creation
 - Queue management
@@ -280,21 +347,25 @@ See [examples/bullmq-dashboard-example.ts](../../examples/bullmq-dashboard-examp
 ## Troubleshooting
 
 ### Dashboard not loading
+
 - Check that the server is running
 - Verify the port is not in use
 - Check console for errors
 
 ### Jobs not processing
+
 - Ensure queue processing is started: `queueManager.startProcessing()`
 - For BullMQ: Verify Redis connection
 - Check worker is running
 
 ### Stats not updating
+
 - Auto-refresh is enabled by default (5s interval)
 - Check browser console for fetch errors
 - Verify API endpoints are accessible
 
 ### Redis connection errors (BullMQ)
+
 ```bash
 # Check Redis is running
 redis-cli ping
@@ -308,4 +379,3 @@ redis-cli
 ## License
 
 MIT
-

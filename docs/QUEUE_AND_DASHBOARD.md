@@ -459,13 +459,13 @@ class QueueManager {
   // Send immediately
   sendNow(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
   ): Promise<Map<NotificationChannel, unknown>>;
 
   // Queue for background
   enqueue(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
     config?: QueueJobConfig,
   ): Promise<QueueJob>;
 

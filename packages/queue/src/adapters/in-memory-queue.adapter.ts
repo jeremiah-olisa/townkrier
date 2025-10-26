@@ -1,4 +1,4 @@
-import { Notification, NotificationChannel } from '@townkrier/core';
+import { Notification, NotificationRecipient } from '@townkrier/core';
 import { IQueueAdapter, QueueAdapterConfig, QueueJob, QueueJobConfig } from '../interfaces';
 import { JobStatus, JobPriority } from '../types';
 import { JobNotFoundException } from '../exceptions';
@@ -27,7 +27,7 @@ export class InMemoryQueueAdapter implements IQueueAdapter {
    */
   async enqueue(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
     config?: QueueJobConfig,
   ): Promise<QueueJob> {
     const jobId = randomUUID();

@@ -1,4 +1,4 @@
-import { Notification, NotificationChannel } from '@townkrier/core';
+import { Notification, NotificationRecipient } from '@townkrier/core';
 import { JobStatus, JobPriority } from '../types';
 
 /**
@@ -19,7 +19,7 @@ export interface QueueJobConfig {
 export interface QueueJob<T = unknown> {
   id: string;
   notification: Notification;
-  recipient: Record<NotificationChannel, unknown>;
+  recipient: NotificationRecipient;
   status: JobStatus;
   priority: JobPriority;
   attempts: number;
@@ -57,7 +57,7 @@ export interface IQueueAdapter {
    */
   enqueue(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
     config?: QueueJobConfig,
   ): Promise<QueueJob>;
 

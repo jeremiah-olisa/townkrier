@@ -1,4 +1,9 @@
-import { Notification, NotificationChannel, NotificationManager } from '@townkrier/core';
+import {
+  Notification,
+  NotificationChannel,
+  NotificationManager,
+  NotificationRecipient,
+} from '@townkrier/core';
 import { IQueueAdapter, QueueJobConfig, QueueJob } from '../interfaces';
 import { JobStatus } from '../types';
 import { JobExecutionException } from '../exceptions';
@@ -32,7 +37,7 @@ export class QueueManager {
    */
   async enqueue(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
     config?: QueueJobConfig,
   ): Promise<QueueJob> {
     return this.adapter.enqueue(notification, recipient, config);
@@ -44,7 +49,7 @@ export class QueueManager {
    */
   async sendNow(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
   ): Promise<Map<NotificationChannel, unknown>> {
     if (!this.notificationManager) {
       throw new JobExecutionException(

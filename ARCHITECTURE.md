@@ -80,7 +80,7 @@ class NotificationManager {
   // Additional notification-specific methods
   send(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
   ): Promise<Map<NotificationChannel, unknown>>;
   setEventDispatcher(dispatcher: NotificationEventDispatcher): this;
 }

@@ -4,6 +4,7 @@ import { Notification } from '../core/notification';
 import { NotificationChannel } from '../types';
 import { INotificationChannel } from '../interfaces/notification-channel.interface';
 import { NotificationConfigurationException } from '../exceptions';
+import { NotificationRecipient } from '../interfaces';
 
 // Mock channel for testing
 class MockEmailChannel implements INotificationChannel {
@@ -253,7 +254,7 @@ describe('NotificationManager', () => {
       const notification = new TestNotification();
       const recipient = {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
-      } as Partial<Record<NotificationChannel, unknown>> as Record<NotificationChannel, unknown>;
+      } as Partial<NotificationRecipient> as NotificationRecipient;
 
       const results = await manager.send(notification, recipient);
       expect(results.size).toBe(1);
@@ -265,7 +266,7 @@ describe('NotificationManager', () => {
       const notification = new TestNotification();
       const recipient = {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
-      } as Partial<Record<NotificationChannel, unknown>> as Record<NotificationChannel, unknown>;
+      } as Partial<NotificationRecipient> as NotificationRecipient;
 
       await expect(manager.send(notification, recipient)).rejects.toThrow(
         NotificationConfigurationException,

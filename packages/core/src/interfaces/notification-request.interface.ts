@@ -6,6 +6,7 @@ import {
   NotificationMetadata,
   Attachment,
   NotificationPriority,
+  NotificationChannel,
 } from '../types';
 
 /**
@@ -192,3 +193,24 @@ export interface SendInAppRequest extends BaseNotificationRequest {
    */
   data?: NotificationMetadata;
 }
+
+/**
+ * Recipient details for database-only delivery.
+ * Stores and associates the notification with a specific record or user.
+ */
+export type DatabaseRecipient = {
+  id: string;
+};
+
+/**
+ * Defines a flexible recipient structure keyed by notification channel.
+ * Each channel is optional, allowing a notification to target one or more delivery paths.
+ */
+export type NotificationRecipient = {
+  [NotificationChannel.EMAIL]?: EmailRecipient | unknown;
+  [NotificationChannel.SMS]?: SmsRecipient | unknown;
+  [NotificationChannel.PUSH]?: PushRecipient | unknown;
+  [NotificationChannel.IN_APP]?: InAppRecipient | unknown;
+  [NotificationChannel.SLACK]?: unknown;
+  [NotificationChannel.DATABASE]?: DatabaseRecipient | unknown;
+};

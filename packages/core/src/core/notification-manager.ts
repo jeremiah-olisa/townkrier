@@ -13,6 +13,7 @@ import {
   SendSmsResponse,
   SendPushResponse,
   SendInAppResponse,
+  NotificationRecipient,
 } from '../interfaces';
 import {
   NotificationEventDispatcher,
@@ -403,7 +404,7 @@ export class NotificationManager {
    */
   async send(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
   ): Promise<Map<NotificationChannel, unknown>> {
     const channels = notification.via();
     const responses = new Map<NotificationChannel, unknown>();
@@ -528,7 +529,7 @@ export class NotificationManager {
   private buildRequest(
     notification: Notification,
     channelType: NotificationChannel,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
   ): SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest | null {
     const routingInfo = recipient[channelType];
 

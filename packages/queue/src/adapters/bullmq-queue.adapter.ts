@@ -1,4 +1,4 @@
-import { Notification, NotificationChannel } from '@townkrier/core';
+import { Notification, NotificationRecipient } from '@townkrier/core';
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import Redis from 'ioredis';
 import { IQueueAdapter, QueueAdapterConfig, QueueJob, QueueJobConfig, JobLog } from '../interfaces';
@@ -35,7 +35,7 @@ export class BullMQQueueAdapter implements IQueueAdapter {
   private connection: Redis;
   private jobMetadata: Map<
     string,
-    { notification: Notification; recipient: Record<NotificationChannel, unknown> }
+    { notification: Notification; recipient: NotificationRecipient }
   > = new Map();
   private processingCallback?: (job: QueueJob) => Promise<void>;
 
@@ -111,7 +111,7 @@ export class BullMQQueueAdapter implements IQueueAdapter {
    */
   async enqueue(
     notification: Notification,
-    recipient: Record<NotificationChannel, unknown>,
+    recipient: NotificationRecipient,
     config?: QueueJobConfig,
   ): Promise<QueueJob> {
     const jobId = randomUUID();

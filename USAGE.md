@@ -290,14 +290,11 @@ const user = new User('123', 'John Doe', 'john@example.com', '+1234567890');
 const notification = new WelcomeNotification(user.name);
 
 // Build recipient routing info from user
-const recipient = notification.via().reduce(
-  (acc, channel) => {
-    const route = user.routeNotificationFor(channel);
-    if (route) acc[channel] = route;
-    return acc;
-  },
-  {} as Record<NotificationChannel, unknown>,
-);
+const recipient = notification.via().reduce((acc, channel) => {
+  const route = user.routeNotificationFor(channel);
+  if (route) acc[channel] = route;
+  return acc;
+}, {} as NotificationRecipient);
 
 await manager.send(notification, recipient);
 ```
