@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> - TownKrier Dashboard</title>
+  <%- include('../partials/styles') %>
+</head>
+<body>
+  <%- include('../partials/header', {page, basePath}) %>
+  
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card pending">
+        <h3>Pending Jobs</h3>
+        <div class="value" id="stat-pending"><%= stats.queue.pending %></div>
+      </div>
+      <div class="stat-card processing">
+        <h3>Processing</h3>
+        <div class="value" id="stat-processing"><%= stats.queue.processing %></div>
+      </div>
+      <div class="stat-card completed">
+        <h3>Completed</h3>
+        <div class="value" id="stat-completed"><%= stats.queue.completed %></div>
+      </div>
+      <div class="stat-card failed">
+        <h3>Failed</h3>
+        <div class="value" id="stat-failed"><%= stats.queue.failed %></div>
+      </div>
+      <div class="stat-card scheduled">
+        <h3>Scheduled</h3>
+        <div class="value" id="stat-scheduled"><%= stats.queue.scheduled %></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Recent Jobs</h2>
+        <a href="<%= basePath %>/jobs" class="btn btn-primary">View All Jobs</a>
+      </div>
+      
+      <% if (jobs.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-state-icon">📭</div>
+          <h3>No jobs found</h3>
+          <p>Queue notifications to see them here</p>
+        </div>
+      <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Job ID</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>Attempts</th>
+              <th>Created</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% jobs.forEach(job => { %>
+              <tr>
+                <td>
+                  <a href="<%= basePath %>/jobs/<%= job.id %>" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                    <%= job.id.substring(0, 8) %>...
+                  </a>
+                </td>
+                <td>
+                  <span class="status-badge status-<%= job.status %>"><%= job.status %></span>
+                </td>
+                <td><%= job.priority %></td>
+                <td><%= job.attempts %>/<%= job.maxRetries %></td>
+                <td class="timestamp"><%= new Date(job.createdAt).toLocaleString() %></td>
+                <td>
+                  <div class="btn-group">
+                    <% if (job.status === 'failed') { %>
+                      <button class="btn btn-sm btn-success" onclick="retryJob('<%= job.id %>')">Retry</button>
+                    <% } %>
+                    <button class="btn btn-sm btn-danger" onclick="deleteJob('<%= job.id %>')">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>Recent Notification Logs</h2>
+        <a href="<%= basePath %>/logs" class="btn btn-primary">View All Logs</a>
+      </div>
+      
+      <% if (logs.length === 0) { %>
+        <div class="empty-state">
+          <div class="empty-state-icon">📝</div>
+          <h3>No logs found</h3>
+          <p>Notification logs will appear here</p>
+        </div>
+      <% } else { %>
+        <table>
+          <thead>
+            <tr>
+              <th>Log ID</th>
+              <th>Channel</th>
+              <th>Recipient</th>
+              <th>Status</th>
+              <th>Sent At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% logs.forEach(log => { %>
+              <tr>
+                <td>
+                  <a href="<%= basePath %>/logs/<%= log.id %>" style="color: #667eea; text-decoration: none; font-weight: 600;">
+                    <%= log.id.substring(0, 8) %>...
+                  </a>
+                </td>
+                <td><strong><%= log.channel %></strong></td>
+                <td class="truncate"><%= log.recipient %></td>
+                <td>
+                  <span class="status-badge status-<%= log.status %>"><%= log.status %></span>
+                </td>
+                <td class="timestamp">
+                  <%= log.sentAt ? new Date(log.sentAt).toLocaleString() : 'N/A' %>
+                </td>
+                <td>
+                  <a href="<%= basePath %>/logs/<%= log.id %>" class="btn btn-sm btn-primary">View</a>
+                </td>
+              </tr>
+            <% }); %>
+          </tbody>
+        </table>
+      <% } %>
+    </div>
+  </div>
+
+  <%- include('../partials/footer') %>
+
+  <script>
+    const basePath = '<%= basePath %>';
+    
+    async function retryJob(jobId) {
+      if (!confirm('Retry this job?')) return;
+      
+      try {
+        const response = await fetch(`${basePath}/api/jobs/${jobId}/retry`, { method: 'POST' });
+        if (response.ok) {
+          alert('Job queued for retry');
+          location.reload();
+        } else {
+          alert('Failed to retry job');
+        }
+      } catch (error) {
+        console.error('Failed to retry job:', error);
+        alert('Failed to retry job');
+      }
+    }
+
+    async function deleteJob(jobId) {
+      if (!confirm('Are you sure you want to delete this job?')) return;
+      
+      try {
+        const response = await fetch(`${basePath}/api/jobs/${jobId}`, { method: 'DELETE' });
+        if (response.ok) {
+          alert('Job deleted');
+          location.reload();
+        } else {
+          alert('Failed to delete job');
+        }
+      } catch (error) {
+        console.error('Failed to delete job:', error);
+        alert('Failed to delete job');
+      }
+    }
+
+    // Auto-refresh stats every 5 seconds
+    setInterval(async () => {
+      try {
+        const response = await fetch(`${basePath}/api/stats`);
+        const data = await response.json();
+        
+        document.getElementById('stat-pending').textContent = data.queue.pending;
+        document.getElementById('stat-processing').textContent = data.queue.processing;
+        document.getElementById('stat-completed').textContent = data.queue.completed;
+        document.getElementById('stat-failed').textContent = data.queue.failed;
+        document.getElementById('stat-scheduled').textContent = data.queue.scheduled;
+      } catch (error) {
+        console.error('Failed to refresh stats:', error);
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<div class="section">
+  <div class="section-header">
+    <h2>Notification Log Details</h2>
+    <a href="<%= basePath %>/logs" class="btn btn-primary">Back to Logs</a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px; margin-bottom: 24px;">
+    <div>
+      <strong style="color: #7f8c8d; font-size: 13px;">Log ID</strong>
+      <p style="margin-top: 4px; font-family: monospace;"><%= log.id %></p>
+    </div>
+    <div>
+      <strong style="color: #7f8c8d; font-size: 13px;">Channel</strong>
+      <p style="margin-top: 4px;"><strong><%= log.channel %></strong></p>
+    </div>
+    <div>
+      <strong style="color: #7f8c8d; font-size: 13px;">Status</strong>
+      <p style="margin-top: 4px;">
+        <span class="status-badge status-<%= log.status %>"><%= log.status %></span>
+      </p>
+    </div>
+    <div>
+      <strong style="color: #7f8c8d; font-size: 13px;">Recipient</strong>
+      <p style="margin-top: 4px;"><%= log.recipient %></p>
+    </div>
+    <div>
+      <strong style="color: #7f8c8d; font-size: 13px;">Attempts</strong>
+      <p style="margin-top: 4px;"><%= log.attempts || 1 %></p>
+    </div>
+    <div>
+      <strong style="color: #7f8c8d; font-size: 13px;">Created At</strong>
+      <p style="margin-top: 4px;" class="timestamp"><%= new Date(log.createdAt).toLocaleString() %></p>
+    </div>
+    <% if (log.sentAt) { %>
+      <div>
+        <strong style="color: #7f8c8d; font-size: 13px;">Sent At</strong>
+        <p style="margin-top: 4px;" class="timestamp"><%= new Date(log.sentAt).toLocaleString() %></p>
+      </div>
+    <% } %>
+    <% if (log.deliveredAt) { %>
+      <div>
+        <strong style="color: #7f8c8d; font-size: 13px;">Delivered At</strong>
+        <p style="margin-top: 4px;" class="timestamp"><%= new Date(log.deliveredAt).toLocaleString() %></p>
+      </div>
+    <% } %>
+  </div>
+
+  <% if (log.subject) { %>
+    <div style="margin-bottom: 16px;">
+      <strong style="color: #7f8c8d; font-size: 13px;">Subject</strong>
+      <p style="margin-top: 4px;"><%= log.subject %></p>
+    </div>
+  <% } %>
+</div>
+
+<div class="section">
+  <h2 style="margin-bottom: 16px;">Content</h2>
+  
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('preview')">Preview</button>
+    <button class="tab" onclick="switchTab('raw')">Raw</button>
+  </div>
+
+  <div id="preview-tab" class="tab-content active">
+    <% if (log.contentPrivacy === 'MASKED' || log.contentPrivacy === 'masked') { %>
+      <div class="alert alert-info">
+        <strong>🔒 Privacy Protected</strong><br>
+        This content is masked for privacy reasons. Some details may not be visible.
+      </div>
+    <% } %>
+    
+    <% if (log.content) { %>
+      <% if (log.channel === 'email') { %>
+        <div style="border: 1px solid #dfe4ea; border-radius: 8px; padding: 20px; background: white;">
+          <%- log.content.replace(/\n/g, '<br>') %>
+        </div>
+      <% } else { %>
+        <div style="background: white; border: 1px solid #dfe4ea; border-radius: 8px; padding: 20px;">
+          <%= log.content %>
+        </div>
+      <% } %>
+    <% } else { %>
+      <div class="privacy-masked">
+        Content not available (privacy protected)
+      </div>
+    <% } %>
+  </div>
+
+  <div id="raw-tab" class="tab-content">
+    <% if (log.content) { %>
+      <pre><%= log.content %></pre>
+    <% } else { %>
+      <div class="privacy-masked">
+        Content not available (privacy protected)
+      </div>
+    <% } %>
+  </div>
+</div>
+
+<% if (log.retryLogs && log.retryLogs.length > 0) { %>
+  <div class="section">
+    <h2 style="margin-bottom: 16px;">Retry Logs</h2>
+    
+    <table>
+      <thead>
+        <tr>
+          <th>Attempt</th>
+          <th>Timestamp</th>
+          <th>Status</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% log.retryLogs.forEach((retry, index) => { %>
+          <tr>
+            <td><%= index + 1 %></td>
+            <td class="timestamp"><%= new Date(retry.timestamp).toLocaleString() %></td>
+            <td>
+              <span class="status-badge status-<%= retry.status %>"><%= retry.status %></span>
+            </td>
+            <td>
+              <%= retry.message %>
+              <% if (retry.error) { %>
+                <br><span style="color: #e74c3c; font-size: 12px;"><%= retry.error %></span>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+<% } %>
+
+<% if (log.metadata) { %>
+  <div class="section">
+    <h2 style="margin-bottom: 16px;">Metadata</h2>
+    <div class="code-block">
+      <%= JSON.stringify(log.metadata, null, 2) %>
+    </div>
+  </div>
+<% } %>
+
+<script>
+  function switchTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.tab-content').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(`${tabName}-tab`).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
