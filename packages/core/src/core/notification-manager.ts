@@ -9,6 +9,10 @@ import {
   SendSmsRequest,
   SendPushRequest,
   SendInAppRequest,
+  SendEmailResponse,
+  SendSmsResponse,
+  SendPushResponse,
+  SendInAppResponse,
 } from '../interfaces';
 import {
   NotificationEventDispatcher,
@@ -24,6 +28,7 @@ import { NotificationChannel } from '../types';
  */
 export class NotificationManager {
   private readonly channels: Map<string, INotificationChannel> = new Map();
+  private readonly channelAdapters: Map<string, INotificationChannel[]> = new Map();
   private readonly factories: Map<string, ChannelFactory> = new Map();
   private readonly channelConfigs: Map<string, ChannelConfig> = new Map();
   private defaultChannel?: string;
@@ -44,21 +49,70 @@ export class NotificationManager {
   }
 
   /**
+   * Generate a consistent adapter key from channel and adapter names
+   */
+  private getAdapterKey(channelName: string, adapterName: string): string {
+    return `${channelName}-${adapterName}`.toLowerCase();
+  }
+
+  /**
    * Register a channel factory
-   * @param name - Name of the channel (e.g., 'email-resend', 'sms-termii')
+   * @param name - Name of the channel/adapter (e.g., 'email-resend', 'sms-termii')
    * @param factory - Factory function to create the channel instance
    */
   registerFactory<T = ChannelEnvConfig>(name: string, factory: ChannelFactory<T>): this {
     this.factories.set(name.toLowerCase(), factory as ChannelFactory<ChannelEnvConfig>);
 
-    // If we have a config for this channel, initialize it
-    const config = this.channelConfigs.get(name.toLowerCase());
-    if (config && config.enabled !== false) {
-      try {
-        const channel = factory(config.config as T) as INotificationChannel;
-        this.channels.set(name.toLowerCase(), channel);
-      } catch (error) {
-        console.error(`Failed to initialize channel '${name}':`, error);
+    // Try to initialize all matching channel configurations
+    for (const [channelName, config] of this.channelConfigs.entries()) {
+      if (config.enabled === false) continue;
+
+      // Check if this factory matches a legacy config (backwards compatibility)
+      if (channelName === name.toLowerCase() && config.config) {
+        try {
+          const channel = factory(config.config as T) as INotificationChannel;
+          this.channels.set(name.toLowerCase(), channel);
+        } catch (error) {
+          console.error(`Failed to initialize channel '${name}':`, error);
+        }
+      }
+
+      // Check if this factory matches any adapter in the new adapters array
+      if (config.adapters && Array.isArray(config.adapters)) {
+        const adaptersForChannel: INotificationChannel[] = [];
+
+        // Sort adapters by priority (higher first)
+        const sortedAdapters = [...config.adapters].sort(
+          (a, b) => (b.priority ?? 0) - (a.priority ?? 0),
+        );
+
+        for (const adapterConfig of sortedAdapters) {
+          // Check if this factory matches this adapter
+          const adapterKey = this.getAdapterKey(channelName, adapterConfig.name);
+
+          if (
+            name.toLowerCase() === adapterKey ||
+            name.toLowerCase() === adapterConfig.name.toLowerCase()
+          ) {
+            if (adapterConfig.enabled !== false) {
+              try {
+                const adapter = factory(adapterConfig.config as T) as INotificationChannel;
+                adaptersForChannel.push(adapter);
+
+                // Also register the adapter with its full key for direct access
+                this.channels.set(adapterKey, adapter);
+              } catch (error) {
+                console.error(`Failed to initialize adapter '${adapterKey}':`, error);
+              }
+            }
+          }
+        }
+
+        // Store all adapters for this channel
+        if (adaptersForChannel.length > 0) {
+          const existing = this.channelAdapters.get(channelName) || [];
+          this.channelAdapters.set(channelName, [...existing, ...adaptersForChannel]);
+        }
       }
     }
 
@@ -176,6 +230,66 @@ export class NotificationManager {
     }
 
     return null;
+  }
+
+  /**
+   * Send notification through a channel with adapter fallback support
+   * If the channel has multiple adapters configured, they will be tried in priority order
+   * @param channelName - Name of the channel
+   * @param request - Notification request
+   * @returns Response from the successful adapter
+   * @throws Error if all adapters fail
+   */
+  async sendWithAdapterFallback(
+    channelName: string,
+    request: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
+  ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse> {
+    const adapters = this.channelAdapters.get(channelName.toLowerCase());
+
+    // If no adapters configured for this channel, try legacy single channel approach
+    if (!adapters || adapters.length === 0) {
+      const channel = this.getChannel(channelName);
+      return await channel.send(request);
+    }
+
+    // Try each adapter in priority order
+    const errors: Array<{ adapter: string; error: Error; skipped?: boolean }> = [];
+
+    for (const adapter of adapters) {
+      if (!adapter.isReady()) {
+        const notReadyError = new Error('Adapter not ready');
+        errors.push({
+          adapter: adapter.getChannelName(),
+          error: notReadyError,
+          skipped: true,
+        });
+        console.warn(`Adapter '${adapter.getChannelName()}' is not ready, trying next...`);
+        continue;
+      }
+
+      try {
+        const response = await adapter.send(request);
+        // If we get here, the send was successful
+        return response;
+      } catch (error) {
+        const err = error instanceof Error ? error : new Error(String(error));
+        errors.push({ adapter: adapter.getChannelName(), error: err });
+        console.warn(
+          `Adapter '${adapter.getChannelName()}' failed: ${err.message}, trying next adapter...`,
+        );
+      }
+    }
+
+    // All adapters failed, throw comprehensive error
+    const errorMessages = errors.map((e) => `${e.adapter}: ${e.error.message}`).join('; ');
+    throw new NotificationConfigurationException(
+      `All adapters failed for channel '${channelName}': ${errorMessages}`,
+      {
+        channelName,
+        attemptedAdapters: errors.map((e) => e.adapter),
+        errors: errors.map((e) => e.error.message),
+      },
+    );
   }
 
   /**
@@ -302,11 +416,22 @@ export class NotificationManager {
     try {
       for (const channelType of channels) {
         try {
-          const channel = this.getChannelByType(channelType);
           const request = this.buildRequest(notification, channelType, recipient);
 
           if (request) {
-            const response = await channel.send(request);
+            // Check if this channel has multiple adapters configured
+            const channelName = this.getChannelNameByType(channelType);
+
+            let response;
+            if (channelName && this.channelAdapters.has(channelName)) {
+              // Use adapter fallback for channels with multiple adapters
+              response = await this.sendWithAdapterFallback(channelName, request);
+            } else {
+              // Use legacy single channel approach
+              const channel = this.getChannelByType(channelType);
+              response = await channel.send(request);
+            }
+
             responses.set(channelType, response);
           }
         } catch (error) {
@@ -353,10 +478,25 @@ export class NotificationManager {
   }
 
   /**
-   * Get a channel by its type
+   * Get a channel by its type, with adapter fallback support
+   * This will return the first available adapter for channels with multiple adapters
+   * Note: Adapters are already sorted by priority during registration
    */
   private getChannelByType(channelType: NotificationChannel): INotificationChannel {
-    // Try to find a channel that matches the type
+    // First, check if there are multiple adapters for this channel type
+    for (const [, adapters] of this.channelAdapters.entries()) {
+      if (adapters.length > 0 && adapters[0].getChannelType() === channelType) {
+        // Adapters are pre-sorted by priority during registerFactory
+        // Return the first (highest priority) ready adapter
+        for (const adapter of adapters) {
+          if (adapter.isReady()) {
+            return adapter;
+          }
+        }
+      }
+    }
+
+    // Fallback to legacy single channel approach
     for (const [, channel] of this.channels) {
       if (channel.getChannelType() === channelType) {
         return channel;
@@ -367,6 +507,19 @@ export class NotificationManager {
       channelType,
       availableChannels: this.getAvailableChannels(),
     });
+  }
+
+  /**
+   * Get the channel name for a given channel type
+   * Used internally for adapter fallback routing
+   */
+  private getChannelNameByType(channelType: NotificationChannel): string | null {
+    for (const [channelName, adapters] of this.channelAdapters.entries()) {
+      if (adapters.length > 0 && adapters[0].getChannelType() === channelType) {
+        return channelName;
+      }
+    }
+    return null;
   }
 
   /**

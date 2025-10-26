@@ -36,7 +36,10 @@ export function sanitizeMetadata(
  * @returns True if valid
  */
 export function isValidEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  // More specific regex to prevent ReDoS vulnerability
+  // Limits the length of local and domain parts to prevent catastrophic backtracking
+  const emailRegex =
+    /^[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]{1,64}(?:\.[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]{1,64})*@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
   return emailRegex.test(email);
 }
 
