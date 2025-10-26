@@ -34,7 +34,8 @@ This monorepo contains the following packages:
 
 ## 🚀 Quick Start
 
-> **New to TownKrier?** Start with the [Quick Start Guide](./QUICKSTART.md) for a 5-minute setup! 🎯
+> **New to TownKrier?** Start with the [Getting Started Guide](./GETTING_STARTED.md) for a simple example! 🎯  
+> Or see the [Quick Start Guide](./QUICKSTART.md) for a 5-minute setup.
 
 ### For Package Users
 
@@ -315,9 +316,11 @@ pnpm release:alpha   # Build, version, and publish alpha
 
 ## 📚 Documentation
 
+- **[Getting Started Guide](./GETTING_STARTED.md)** - Simple example to get started quickly
 - **[Quick Start Guide](./QUICKSTART.md)** - Get started in 5 minutes
 - **[Complete Usage Guide](./USAGE.md)** - Comprehensive usage examples and API documentation
 - **[Troubleshooting Guide](./TROUBLESHOOTING.md)** - Common issues and solutions
+- **[Installation Guide](./INSTALLATION.md)** - Detailed installation instructions
 - [Complete Example](./examples/complete-example.ts) - Full working example with all features
 - [Functional Requirements Document](./docs/TownKrier-FRD.md)
 - [Technical Requirements Document](./docs/TownKrier-TRD.md)
