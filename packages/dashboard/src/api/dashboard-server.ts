@@ -30,7 +30,7 @@ export class DashboardServer {
   constructor(config: DashboardServerConfig) {
     this.config = {
       port: 3000,
-      path: '/dashboard',
+      path: '/townkrier/dashboard',
       ...config,
     };
     this.app = express();

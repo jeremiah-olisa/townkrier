@@ -2,3 +2,4 @@ packages:
   - 'packages/*'
   - 'packages/channels/*'
   - 'packages/channels/*/*'
+  - 'examples/**'
