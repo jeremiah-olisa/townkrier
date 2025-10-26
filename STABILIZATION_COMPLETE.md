@@ -112,11 +112,12 @@ All packages are now production-ready:
 
 ### New Files Created
 
-1. **GETTING_STARTED.md** (7KB) - Simple getting started guide with working example
-2. **packages/resend/README.md** (14KB) - Complete email adapter documentation
-3. **packages/channels/sms/termii/README.md** (7KB) - Complete SMS adapter documentation
-4. **packages/channels/push/fcm/README.md** (13KB) - Complete push adapter documentation
-5. **packages/\*/jest.config.js** (8 files) - Jest configuration for all packages
+1. **GETTING_STARTED.md** - Simple getting started guide with working example
+2. **STABILIZATION_COMPLETE.md** - Complete summary of all stabilization work
+3. **packages/resend/README.md** (14KB) - Complete email adapter documentation
+4. **packages/channels/sms/termii/README.md** (7KB) - Complete SMS adapter documentation
+5. **packages/channels/push/fcm/README.md** (13KB) - Complete push adapter documentation
+6. **packages/\*/jest.config.js** (8 files) - Jest configuration for all packages
 
 ### Documentation Features
 
@@ -134,13 +135,15 @@ Each adapter documentation includes:
 - Related packages links
 - Common use cases
 
-### Files Modified
+### Files Modified (in previous commits)
 
 1. **README.md** - Updated with GETTING_STARTED link
 2. **packages/core/jest.config.js** - Added passWithNoTests
 3. **packages/core/src/core/notification-events.ts** - Fixed any type warning
 4. **packages/dashboard/src/api/dashboard-api.ts** - Fixed 4 any type warnings
 5. **packages/queue/src/adapters/bullmq-queue.adapter.ts** - Fixed any type warning
+
+These changes were made in earlier commits of this PR (commit 31797e6 and aed5324).
 
 ---
 

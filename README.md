@@ -35,7 +35,7 @@ This monorepo contains the following packages:
 ## 🚀 Quick Start
 
 > **New to TownKrier?** Start with the [Getting Started Guide](./GETTING_STARTED.md) for a simple example! 🎯  
-> Or see the [Quick Start Guide](./QUICKSTART.md) for a comprehensive 5-minute setup.
+> Or see the [Quick Start Guide](./QUICKSTART.md) for a 5-minute setup.
 
 ### For Package Users
 
