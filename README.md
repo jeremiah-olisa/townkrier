@@ -24,8 +24,11 @@ This monorepo contains the following packages:
 ### Installation
 
 ```bash
-# Install pnpm if you haven't already
-npm install -g pnpm@8.15.4
+# Install pnpm if you haven't already (the exact version is managed by packageManager field)
+npm install -g pnpm
+
+# Or use corepack (recommended for Node.js >= 16.13)
+corepack enable
 
 # Install dependencies
 pnpm install
@@ -85,6 +88,8 @@ townkrier-monorepo/
 │   ├── termii/           # Termii SMS adapter
 │   └── in-app/           # In-app notification adapter
 ├── docs/                 # Documentation
+├── .husky/              # Git hooks configuration
+├── .gitignore           # Git ignore patterns
 ├── .eslintrc.js         # ESLint configuration
 ├── .prettierrc          # Prettier configuration
 ├── tsconfig.base.json   # Base TypeScript configuration
