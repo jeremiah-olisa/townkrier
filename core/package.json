@@ -1,0 +1,40 @@
+{
+  "name": "@townkrier/core",
+  "version": "1.0.0-alpha.1",
+  "description": "Laravel-style notification system for Node.js with multiple channels and providers",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "lint": "eslint \"src/**/*.ts\" --fix",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "notifications",
+    "laravel-notifications",
+    "email",
+    "sms",
+    "push-notifications",
+    "in-app-notifications",
+    "townkrier",
+    "multi-channel"
+  ],
+  "author": "Jeremiah Olisa",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.9.1",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.9.3"
+  }
+}
