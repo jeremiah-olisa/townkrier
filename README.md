@@ -34,12 +34,22 @@ This monorepo contains the following packages:
 
 ## 🚀 Quick Start
 
-### Prerequisites
+> **New to TownKrier?** Start with the [Quick Start Guide](./QUICKSTART.md) for a 5-minute setup! 🎯
+
+### For Package Users
+
+```bash
+# Install core and channels you need
+npm install @townkrier/core @townkrier/resend @townkrier/termii @townkrier/fcm
+
+# Optional: Queue and monitoring
+npm install @townkrier/queue @townkrier/storage @townkrier/dashboard
+```
+
+### For Contributors/Development
 
 - Node.js >= 18.0.0
 - pnpm >= 8.0.0
-
-### Installation
 
 ```bash
 # Install dependencies
@@ -47,6 +57,9 @@ pnpm install
 
 # Build all packages
 pnpm build
+
+# Verify your setup
+pnpm verify
 ```
 
 ### Basic Usage
@@ -302,10 +315,13 @@ pnpm release:alpha   # Build, version, and publish alpha
 
 ## 📚 Documentation
 
-- [Complete Usage Guide](./USAGE.md) - Comprehensive usage examples and API documentation
+- **[Quick Start Guide](./QUICKSTART.md)** - Get started in 5 minutes
+- **[Complete Usage Guide](./USAGE.md)** - Comprehensive usage examples and API documentation
+- **[Troubleshooting Guide](./TROUBLESHOOTING.md)** - Common issues and solutions
 - [Complete Example](./examples/complete-example.ts) - Full working example with all features
 - [Functional Requirements Document](./docs/TownKrier-FRD.md)
 - [Technical Requirements Document](./docs/TownKrier-TRD.md)
+- [Architecture Guide](./ARCHITECTURE.md) - System design and patterns
 
 ## 📝 License
 

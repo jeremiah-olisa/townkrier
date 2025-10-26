@@ -43,6 +43,8 @@
     "clean": "lerna clean -y && rm -rf node_modules",
     "clean:build": "lerna run clean --stream",
     "make:notification": "node packages/cli/bin/townkrier.js make:notification",
+    "verify": "node scripts/verify-setup.js",
+    "postinstall": "pnpm build",
     "version": "lerna version --conventional-commits",
     "version:patch": "lerna version patch --yes",
     "version:minor": "lerna version minor --yes",
