@@ -67,8 +67,8 @@ This Technical Requirements Document (TRD) defines the technical architecture, i
 ### 2.2 Component Interaction Flow
 
 ```
-User Request → Notification Creation → Interceptor Chain (Before) 
-  → Channel Selection → Provider Execution → Interceptor Chain (After) 
+User Request → Notification Creation → Interceptor Chain (Before)
+  → Channel Selection → Provider Execution → Interceptor Chain (After)
   → Result/Error Handling → Response
 ```
 
@@ -79,6 +79,7 @@ User Request → Notification Creation → Interceptor Chain (Before)
 ### 3.1 Package: `@townkrier/core`
 
 #### 3.1.1 Directory Structure
+
 ```
 packages/core/
 ├── src/
@@ -191,18 +192,12 @@ export interface NotificationInterceptor {
   /**
    * Called after the notification is sent (success or failure)
    */
-  after?(
-    context: InterceptorContext,
-    result: NotificationResult
-  ): Promise<void> | void;
+  after?(context: InterceptorContext, result: NotificationResult): Promise<void> | void;
 
   /**
    * Called when an error occurs
    */
-  onError?(
-    context: InterceptorContext,
-    error: Error
-  ): Promise<void> | void;
+  onError?(context: InterceptorContext, error: Error): Promise<void> | void;
 
   /**
    * Priority (higher numbers execute first)
@@ -236,10 +231,7 @@ export class InterceptorChain {
     return true;
   }
 
-  async executeAfter(
-    context: InterceptorContext,
-    result: NotificationResult
-  ): Promise<void> {
+  async executeAfter(context: InterceptorContext, result: NotificationResult): Promise<void> {
     for (const interceptor of this.getApplicableInterceptors(context.channel)) {
       if (interceptor.after) {
         await interceptor.after(context, result);
@@ -247,10 +239,7 @@ export class InterceptorChain {
     }
   }
 
-  async executeError(
-    context: InterceptorContext,
-    error: Error
-  ): Promise<void> {
+  async executeError(context: InterceptorContext, error: Error): Promise<void> {
     for (const interceptor of this.getApplicableInterceptors(context.channel)) {
       if (interceptor.onError) {
         await interceptor.onError(context, error);
@@ -260,7 +249,7 @@ export class InterceptorChain {
 
   private getApplicableInterceptors(channel: string): NotificationInterceptor[] {
     return this.interceptors.filter(
-      (i) => !i.channels || i.channels.length === 0 || i.channels.includes(channel)
+      (i) => !i.channels || i.channels.length === 0 || i.channels.includes(channel),
     );
   }
 }
@@ -413,7 +402,7 @@ export class NotificationManager {
    */
   async send(
     notifiable: Notifiable | Notifiable[],
-    notification: Notification
+    notification: Notification,
   ): Promise<NotificationResult[]> {
     const notifiables = Array.isArray(notifiable) ? notifiable : [notifiable];
     const allResults: NotificationResult[] = [];
@@ -430,10 +419,7 @@ export class NotificationManager {
   /**
    * Queue notification(s) for background processing
    */
-  async queue(
-    notifiable: Notifiable | Notifiable[],
-    notification: Notification
-  ): Promise<void> {
+  async queue(notifiable: Notifiable | Notifiable[], notification: Notification): Promise<void> {
     if (!this.queueManager) {
       throw new Error('Queue manager not configured');
     }
@@ -456,16 +442,12 @@ export class NotificationManager {
   private async sendToChannels(
     notifiable: Notifiable,
     notification: Notification,
-    channelNames: string[]
+    channelNames: string[],
   ): Promise<NotificationResult[]> {
     const results: NotificationResult[] = [];
 
     for (const channelName of channelNames) {
-      const result = await this.sendToChannel(
-        notifiable,
-        notification,
-        channelName
-      );
+      const result = await this.sendToChannel(notifiable, notification, channelName);
       results.push(result);
     }
 
@@ -478,7 +460,7 @@ export class NotificationManager {
   private async sendToChannel(
     notifiable: Notifiable,
     notification: Notification,
-    channelName: string
+    channelName: string,
   ): Promise<NotificationResult> {
     const startTime = Date.now();
     const context: InterceptorContext = {
@@ -498,7 +480,7 @@ export class NotificationManager {
     try {
       // Execute before interceptors
       const shouldContinue = await this.interceptors.executeBefore(context);
-      
+
       if (!shouldContinue) {
         const result: NotificationResult = {
           channel: channelName,
@@ -542,7 +524,6 @@ export class NotificationManager {
       });
 
       return result;
-
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
 
@@ -650,14 +631,14 @@ export class FakeNotificationManager {
 
   async send(
     notifiable: Notifiable | Notifiable[],
-    notification: Notification
+    notification: Notification,
   ): Promise<NotificationResult[]> {
     const notifiables = Array.isArray(notifiable) ? notifiable : [notifiable];
     const results: NotificationResult[] = [];
 
     for (const entity of notifiables) {
       const channels = await notification.via(entity);
-      
+
       this.sentNotifications.push({
         notifiable: entity,
         notification,
@@ -693,7 +674,7 @@ export class NotificationAssertions {
 
   assertSent(
     notificationClass: new (...args: any[]) => Notification,
-    callback?: (notification: Notification) => boolean
+    callback?: (notification: Notification) => boolean,
   ): void {
     const sent = this.fake.getSent();
     const matches = sent.filter((item) => {
@@ -704,41 +685,33 @@ export class NotificationAssertions {
     });
 
     if (matches.length === 0) {
-      throw new Error(
-        `Expected ${notificationClass.name} to be sent but it was not.`
-      );
+      throw new Error(`Expected ${notificationClass.name} to be sent but it was not.`);
     }
   }
 
-  assertNotSent(
-    notificationClass: new (...args: any[]) => Notification
-  ): void {
+  assertNotSent(notificationClass: new (...args: any[]) => Notification): void {
     const sent = this.fake.getSent();
-    const matches = sent.filter(
-      (item) => item.notification instanceof notificationClass
-    );
+    const matches = sent.filter((item) => item.notification instanceof notificationClass);
 
     if (matches.length > 0) {
       throw new Error(
-        `Expected ${notificationClass.name} not to be sent but it was sent ${matches.length} time(s).`
+        `Expected ${notificationClass.name} not to be sent but it was sent ${matches.length} time(s).`,
       );
     }
   }
 
   assertSentTo(
     notifiable: Notifiable,
-    notificationClass: new (...args: any[]) => Notification
+    notificationClass: new (...args: any[]) => Notification,
   ): void {
     const sent = this.fake.getSent();
     const matches = sent.filter(
-      (item) =>
-        item.notifiable === notifiable &&
-        item.notification instanceof notificationClass
+      (item) => item.notifiable === notifiable && item.notification instanceof notificationClass,
     );
 
     if (matches.length === 0) {
       throw new Error(
-        `Expected ${notificationClass.name} to be sent to the given notifiable but it was not.`
+        `Expected ${notificationClass.name} to be sent to the given notifiable but it was not.`,
       );
     }
   }
@@ -746,26 +719,19 @@ export class NotificationAssertions {
   assertCount(count: number): void {
     const sent = this.fake.getSent();
     if (sent.length !== count) {
-      throw new Error(
-        `Expected ${count} notification(s) to be sent but ${sent.length} were sent.`
-      );
+      throw new Error(`Expected ${count} notification(s) to be sent but ${sent.length} were sent.`);
     }
   }
 
-  assertSentVia(
-    notificationClass: new (...args: any[]) => Notification,
-    channel: string
-  ): void {
+  assertSentVia(notificationClass: new (...args: any[]) => Notification, channel: string): void {
     const sent = this.fake.getSent();
     const matches = sent.filter(
-      (item) =>
-        item.notification instanceof notificationClass &&
-        item.channels.includes(channel)
+      (item) => item.notification instanceof notificationClass && item.channels.includes(channel),
     );
 
     if (matches.length === 0) {
       throw new Error(
-        `Expected ${notificationClass.name} to be sent via ${channel} but it was not.`
+        `Expected ${notificationClass.name} to be sent via ${channel} but it was not.`,
       );
     }
   }
@@ -802,30 +768,27 @@ export abstract class BaseChannel implements Channel {
   constructor(protected config: ChannelConfig) {}
 
   abstract send(notifiable: Notifiable, notification: Notification): Promise<void>;
-  
+
   abstract name(): string;
 
   protected getRecipient(notifiable: Notifiable): string | string[] | null {
     return notifiable.routeNotificationFor(this.name());
   }
 
-  protected async withRetry<T>(
-    fn: () => Promise<T>,
-    retryConfig: RetryConfig
-  ): Promise<T> {
+  protected async withRetry<T>(fn: () => Promise<T>, retryConfig: RetryConfig): Promise<T> {
     let lastError: Error;
-    
+
     for (let attempt = 0; attempt < retryConfig.maxAttempts; attempt++) {
       try {
         return await fn();
       } catch (error) {
         lastError = error instanceof Error ? error : new Error(String(error));
-        
+
         if (attempt < retryConfig.maxAttempts - 1) {
           const delay = this.calculateBackoff(
             attempt,
             retryConfig.initialDelay,
-            retryConfig.backoff
+            retryConfig.backoff,
           );
           await this.sleep(delay);
         }
@@ -838,7 +801,7 @@ export abstract class BaseChannel implements Channel {
   private calculateBackoff(
     attempt: number,
     initialDelay: number,
-    strategy: 'linear' | 'exponential'
+    strategy: 'linear' | 'exponential',
   ): number {
     if (strategy === 'exponential') {
       return initialDelay * Math.pow(2, attempt);
@@ -952,28 +915,23 @@ export class MailChannel extends BaseChannel {
   async send(notifiable: Notifiable, notification: Notification): Promise<void> {
     // Check if notification has toMail method
     if (!('toMail' in notification)) {
-      throw new Error(
-        `Notification ${notification.constructor.name} is missing toMail() method`
-      );
+      throw new Error(`Notification ${notification.constructor.name} is missing toMail() method`);
     }
 
     const message = (notification as any).toMail(notifiable) as MailMessage;
-    
+
     // Set recipient
     const recipient = this.getRecipient(notifiable);
     if (!recipient) {
       throw new Error('No email address found for notifiable');
     }
-    
+
     if (!message.toJSON().to) {
       message.to(recipient);
     }
 
     // Send with retry
-    await this.withRetry(
-      () => this.provider.send(message),
-      notification.retryConfig()
-    );
+    await this.withRetry(() => this.provider.send(message), notification.retryConfig());
   }
 }
 ```
@@ -1067,3 +1025,4 @@ import type { NotificationInterceptor, InterceptorContext, NotificationResult } 
 
 export interface LoggingInterceptorOptions {
   logger?: Logger;
+```
