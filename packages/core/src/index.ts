@@ -1,6 +1,8 @@
 // Core exports
 export * from './core';
 export * from './interfaces';
+export * from './logger';
+
 export * from './types';
 export * from './utils';
 export * from './exceptions';

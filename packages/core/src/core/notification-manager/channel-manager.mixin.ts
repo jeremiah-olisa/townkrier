@@ -1,5 +1,6 @@
 import { INotificationChannel, ChannelEnvConfig, ChannelFactory } from '../../interfaces';
 import { NotificationConfigurationException } from '../../exceptions';
+import { Logger } from '../../logger';
 import { Constructor, INotificationManagerBase } from './types';
 
 /**
@@ -37,7 +38,7 @@ export function ChannelManagerMixin<
             const channel = factory(config.config as T) as INotificationChannel;
             this.channels.set(name.toLowerCase() as TChannel, channel);
           } catch (error) {
-            console.error(`Failed to initialize channel '${name}':`, error);
+            Logger.error(`Failed to initialize channel '${name}':`, error);
           }
         }
 
@@ -66,7 +67,7 @@ export function ChannelManagerMixin<
                   // Also register the adapter with its full key for direct access
                   this.channels.set(adapterKey as TChannel, adapter);
                 } catch (error) {
-                  console.error(`Failed to initialize adapter '${adapterKey}':`, error);
+                  Logger.error(`Failed to initialize adapter '${adapterKey}':`, error);
                 }
               }
             }
@@ -156,7 +157,7 @@ export function ChannelManagerMixin<
           if (!this.enableFallback) {
             throw error;
           }
-          console.warn(`Preferred channel '${preferredChannel}' not available, trying fallback`);
+          Logger.warn(`Preferred channel '${preferredChannel}' not available, trying fallback`);
         }
       }
 
@@ -171,7 +172,7 @@ export function ChannelManagerMixin<
           if (!this.enableFallback) {
             throw error;
           }
-          console.warn(`Default channel '${this.defaultChannel}' not available, trying fallback`);
+          Logger.warn(`Default channel '${this.defaultChannel}' not available, trying fallback`);
         }
       }
 
@@ -180,7 +181,7 @@ export function ChannelManagerMixin<
         const sortedChannels = this.getSortedChannels();
         for (const [name, channel] of sortedChannels) {
           if (channel.isReady() && name !== preferredChannel && name !== this.defaultChannel) {
-            console.warn(`Using fallback channel: ${name}`);
+            Logger.warn(`Using fallback channel: ${name}`);
             return channel;
           }
         }

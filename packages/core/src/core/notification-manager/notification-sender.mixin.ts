@@ -14,6 +14,7 @@ import { Notification } from '../notification';
 import { NotificationChannel } from '../../types';
 import { NotificationConfigurationException } from '../../exceptions';
 import { Constructor, INotificationManagerBase } from './types';
+import { Logger } from '../../logger';
 
 // We need to define interfaces for methods we expect to exist on the Base class
 // from other mixins (ChannelManager, RequestBuilder)
@@ -68,7 +69,7 @@ export function NotificationSenderMixin<
             error: notReadyError,
             skipped: true,
           });
-          console.warn(`Adapter '${adapter.getChannelName()}' is not ready, trying next...`);
+          Logger.warn(`Adapter '${adapter.getChannelName()}' is not ready, trying next...`);
           continue;
         }
 
@@ -79,7 +80,7 @@ export function NotificationSenderMixin<
         } catch (error) {
           const err = error instanceof Error ? error : new Error(String(error));
           errors.push({ adapter: adapter.getChannelName(), error: err });
-          console.warn(
+          Logger.warn(
             `Adapter '${adapter.getChannelName()}' failed: ${err.message}, trying next adapter...`,
           );
         }

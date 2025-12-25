@@ -40,11 +40,16 @@ This is the Townkrier project, a TypeScript monorepo for notification services. 
 
 === workflow rules ===
 
+## Package Management
+
+- **Manager**: Always use `pnpm` for package management. Never use `npm` or `yarn`.
+- **Commands**: All commands must be run with `pnpm` (e.g., `pnpm install`, `pnpm run test`, `pnpm exec`).
+
 ## Monorepo Navigation
 
 - **Filter Commands**: When searching for files or running commands, avoid navigating blindly. Use specific paths or filters to target the right package.
   - Example: Use `find_by_name` with `SearchDirectory` set to `packages/core` instead of the root if you know the file is in core.
-  - Do not `cd` unnecessarily. Run commands from the root or specific workspace using `npm run --workspace=@townkrier/core ...`.
+  - Do not `cd` unnecessarily. Run commands from the root or specific workspace using `pnpm run --filter @townkrier/core ...`.
 
 ## Testing
 
@@ -57,3 +62,4 @@ This is the Townkrier project, a TypeScript monorepo for notification services. 
 
 - **Factory Pattern**: Use the `TownkrierFactory` for simplified instantiation.
 - **Generics**: Use generics in `BaseNotificationChannel` and other core classes to ensure type safety without casting.
+- **Logging**: Always use the `Logger` module from `@townkrier/core` instead of `console.log`, `console.warn`, or `console.error`.

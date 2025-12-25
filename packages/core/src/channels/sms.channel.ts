@@ -33,7 +33,7 @@ export abstract class SmsChannel extends BaseNotificationChannel implements ISms
   async send(
     notification: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
   ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse> {
-    if (this.isSmsRequest(notification)) {
+    if (this.isValidNotificationRequest(notification)) {
       return this.sendSms(notification);
     }
 
@@ -47,9 +47,11 @@ export abstract class SmsChannel extends BaseNotificationChannel implements ISms
   /**
    * Type guard to check if notification is an SMS request
    */
-  private isSmsRequest(
-    notification: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
-  ): notification is SendSmsRequest {
+  /**
+   * Check if the notification request is valid for this channel
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected isValidNotificationRequest(notification: any): notification is SendSmsRequest {
     return 'text' in notification && 'to' in notification && !('subject' in notification);
   }
 }

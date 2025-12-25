@@ -10,6 +10,7 @@ import {
   isValidPhone,
   normalizePhone,
   sanitizeMetadata,
+  Logger,
 } from '@townkrier/core';
 
 import { TermiiConfig } from '../types';
@@ -45,7 +46,7 @@ export class TermiiChannel extends SmsChannel {
     // Add request/response interceptors for debugging
     if (config.debug) {
       this.client.interceptors.request.use((request) => {
-        console.log('[Termii Request]', {
+        Logger.debug('[Termii Request]', {
           url: request.url,
           method: request.method,
           data: request.data,
@@ -55,14 +56,14 @@ export class TermiiChannel extends SmsChannel {
 
       this.client.interceptors.response.use(
         (response) => {
-          console.log('[Termii Response]', {
+          Logger.debug('[Termii Response]', {
             status: response.status,
             data: response.data,
           });
           return response;
         },
         (error) => {
-          console.error('[Termii Error]', {
+          Logger.error('[Termii Error]', {
             message: error.message,
             response: error.response?.data,
           });
@@ -81,7 +82,7 @@ export class TermiiChannel extends SmsChannel {
       const recipients = Array.isArray(request.to) ? request.to : [request.to];
       const validRecipients = recipients.filter((r) => {
         if (!isValidPhone(r.phone)) {
-          console.warn(`Invalid phone number skipped: ${r.phone}`);
+          Logger.warn(`Invalid phone number skipped: ${r.phone}`);
           return false;
         }
         return true;
@@ -126,7 +127,6 @@ export class TermiiChannel extends SmsChannel {
       const reference = request.reference || generateReference('SMS');
 
       return {
-        success: true,
         messageId: data.message_id,
         reference,
         status: NotificationStatus.SENT,
@@ -152,7 +152,6 @@ export class TermiiChannel extends SmsChannel {
       // Check for timeout
       if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ETIMEDOUT') {
         return {
-          success: false,
           messageId: '',
           status: NotificationStatus.FAILED,
           error: {
@@ -167,7 +166,6 @@ export class TermiiChannel extends SmsChannel {
       }
 
       return {
-        success: false,
         messageId: '',
         status: NotificationStatus.FAILED,
         error: {
@@ -185,7 +183,6 @@ export class TermiiChannel extends SmsChannel {
     if (error instanceof Error && error.name && error.name.includes('Exception')) {
       const notificationError = error as Error & { code?: string; details?: unknown };
       return {
-        success: false,
         messageId: '',
         status: NotificationStatus.FAILED,
         error: {
@@ -197,7 +194,6 @@ export class TermiiChannel extends SmsChannel {
     }
 
     return {
-      success: false,
       messageId: '',
       status: NotificationStatus.FAILED,
       error: {

@@ -10,6 +10,7 @@ import {
   analysisRoute,
 } from '../routes';
 import type { DashboardServerConfig, DashboardConfig, DashboardStats } from '../types';
+import { Logger } from '@townkrier/core';
 
 /**
  * Setup dashboard routes and middleware on an existing Express app
@@ -31,11 +32,11 @@ import type { DashboardServerConfig, DashboardConfig, DashboardStats } from '../
 export function setupDashboard(app: Express, config: DashboardConfig): void {
   const basePath = config.path || '/townkrier/dashboard';
 
-  // Use provided logger or fallback to console
+  // Use provided logger or fallback to custom Logger
   const logger = config.logger || {
-    log: console.log.bind(console),
-    error: console.error.bind(console),
-    warn: console.warn.bind(console),
+    log: Logger.log.bind(Logger),
+    error: Logger.error.bind(Logger),
+    warn: Logger.warn.bind(Logger),
   };
 
   logger.log(`Setting up dashboard at path: ${basePath}`);
@@ -180,7 +181,7 @@ export class DashboardServer {
    */
   start(): void {
     this.server = this.app.listen(this.config.port, () => {
-      console.log(
+      Logger.log(
         `Dashboard server started on http://localhost:${this.config.port}${this.config.path}`,
       );
     });
@@ -192,7 +193,7 @@ export class DashboardServer {
   stop(): void {
     if (this.server) {
       this.server.close();
-      console.log('Dashboard server stopped');
+      Logger.log('Dashboard server stopped');
     }
   }
 

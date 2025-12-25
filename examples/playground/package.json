@@ -6,7 +6,8 @@
     "start": "ts-node src/index.ts"
   },
   "dependencies": {
-    "@townkrier/core": "workspace:*"
+    "@townkrier/core": "workspace:*",
+    "@townkrier/resend": "workspace:*"
   },
   "devDependencies": {
     "ts-node": "^10.9.2",

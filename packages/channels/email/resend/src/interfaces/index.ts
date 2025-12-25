@@ -29,6 +29,12 @@ export interface ResendApiResponse {
   from: string;
   to: string[];
   created_at: string;
+  subject?: string;
+  html?: string;
+  text?: string;
+  cc?: string[];
+  bcc?: string[];
+  reply_to?: string[];
 }
 
 /**

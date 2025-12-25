@@ -1,4 +1,5 @@
 import { NotificationEvent } from './notification-event';
+import { Logger } from '../logger';
 
 /**
  * Event listener type
@@ -41,7 +42,7 @@ export class NotificationEventDispatcher {
       try {
         await listener(event);
       } catch (error) {
-        console.error(`Error in event listener for ${eventName}:`, error);
+        Logger.error(`Error in event listener for ${eventName}:`, error);
       }
     }
   }

@@ -4,6 +4,7 @@ import { SendEmailRequest, SendEmailResponse } from '../interfaces';
 import { NotificationChannelConfig } from '../interfaces/notification-config.interface';
 import { NotificationChannel } from '../types';
 import { NotificationChannelException } from '../exceptions';
+import { Logger } from '../logger';
 
 /**
  * Base class for email channel implementations
@@ -52,7 +53,7 @@ export abstract class MailChannel
     if (this.options.failSilently) {
       // Log the error (would be better with a proper logger, but using console for now as per base)
       if (this.config.debug) {
-        console.error(error.message);
+        Logger.error(error.message);
       }
 
       return {

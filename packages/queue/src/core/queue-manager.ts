@@ -3,6 +3,7 @@ import {
   NotificationChannel,
   NotificationManager,
   NotificationRecipient,
+  Logger,
 } from '@townkrier/core';
 import { IQueueAdapter, QueueJobConfig, QueueJob } from '../interfaces';
 import { JobStatus } from '../types';
@@ -58,7 +59,9 @@ export class QueueManager {
       );
     }
 
-    return this.notificationManager.send(notification, recipient);
+    return this.notificationManager.send(notification, recipient) as Promise<
+      Map<NotificationChannel, unknown>
+    >;
   }
 
   /**
@@ -114,7 +117,7 @@ export class QueueManager {
    */
   startProcessing(options: { pollInterval?: number; concurrency?: number } = {}): void {
     if (this.isProcessing) {
-      console.warn('Queue processing is already running');
+      Logger.warn('Queue processing is already running');
       return;
     }
 
@@ -128,7 +131,7 @@ export class QueueManager {
     this.isProcessing = true;
     const pollInterval = options.pollInterval ?? 1000;
 
-    console.log(`Starting queue processing with ${pollInterval}ms poll interval`);
+    Logger.log(`Starting queue processing with ${pollInterval}ms poll interval`);
 
     // Check if adapter has a startWorker method (BullMQ adapter)
     if ('startWorker' in this.adapter && typeof this.adapter.startWorker === 'function') {
@@ -159,7 +162,7 @@ export class QueueManager {
 
       // Process first job immediately
       this.processNextJob().catch((error) => {
-        console.error('Error processing first job:', error);
+        Logger.error('Error processing first job:', error);
       });
     }
   }
@@ -169,7 +172,7 @@ export class QueueManager {
    */
   async stopProcessing(): Promise<void> {
     if (!this.isProcessing) {
-      console.warn('Queue processing is not running');
+      Logger.warn('Queue processing is not running');
       return;
     }
 
@@ -184,7 +187,7 @@ export class QueueManager {
     }
 
     this.isProcessing = false;
-    console.log('Queue processing stopped');
+    Logger.log('Queue processing stopped');
   }
 
   /**
@@ -215,7 +218,7 @@ export class QueueManager {
         );
       }
     } catch (error) {
-      console.error('Error processing job:', error);
+      Logger.error('Error processing job:', error);
     }
   }
 

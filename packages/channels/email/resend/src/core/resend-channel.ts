@@ -6,13 +6,12 @@ import {
   NotificationStatus,
   NotificationConfigurationException,
   NotificationInvalidResponseError,
-  generateReference,
   isValidEmail,
-  sanitizeMetadata,
+  Logger,
 } from '@townkrier/core';
 
 import { ResendConfig } from '../types';
-import { ResendEmailData, ResendApiResponse } from '../interfaces';
+import { ResendMapper } from './resend.mapper';
 
 /**
  * Resend email channel implementation
@@ -39,7 +38,7 @@ export class ResendChannel extends MailChannel {
   async sendEmail(request: SendEmailRequest): Promise<SendEmailResponse> {
     try {
       // Validate recipients
-      console.log('SENDING RESEND MAIL', request);
+      Logger.debug('SENDING RESEND MAIL', request);
       const recipients = Array.isArray(request.to) ? request.to : [request.to];
       for (const recipient of recipients) {
         if (!isValidEmail(recipient.email)) {
@@ -51,65 +50,14 @@ export class ResendChannel extends MailChannel {
       }
 
       // Prepare email data
-      console.log('PREPARING DATA');
-      const from = request.from
-        ? `${request.from.name ? `${request.from.name} <${request.from.email}>` : request.from.email}`
-        : this.resendConfig.from
-          ? `${this.resendConfig.fromName ? `${this.resendConfig.fromName} <${this.resendConfig.from}>` : this.resendConfig.from}`
-          : '';
-
-      console.log({ from });
-
-      if (!from) {
-        throw new NotificationConfigurationException('From email address is required', {
-          channel: 'Resend',
-        });
-      }
-
-      const emailData: ResendEmailData = {
-        from,
-        to: recipients.map((r) => (r.name ? `${r.name} <${r.email}>` : r.email)),
-        subject: request.subject,
-        html: request.html,
-        text: request.text || request.html || request.subject, // Ensure text is always defined
-      };
-
-      // Add optional fields
-      if (request.cc && request.cc.length > 0) {
-        emailData.cc = request.cc.map((r) => (r.name ? `${r.name} <${r.email}>` : r.email));
-      }
-
-      if (request.bcc && request.bcc.length > 0) {
-        emailData.bcc = request.bcc.map((r) => (r.name ? `${r.name} <${r.email}>` : r.email));
-      }
-
-      if (request.replyTo) {
-        emailData.reply_to = request.replyTo.name
-          ? `${request.replyTo.name} <${request.replyTo.email}>`
-          : request.replyTo.email;
-      }
-
-      if (request.attachments && request.attachments.length > 0) {
-        emailData.attachments = request.attachments.map((att) => ({
-          filename: att.filename,
-          content: att.content,
-          path: att.path,
-        }));
-      }
-
-      // Add tags from metadata if available
-      if (request.metadata) {
-        const sanitized = sanitizeMetadata(request.metadata);
-        if (sanitized) {
-          emailData.tags = Object.entries(sanitized).map(([name, value]) => ({
-            name,
-            value: String(value),
-          }));
-        }
-      }
+      const emailData = ResendMapper.toResendData(request, this.resendConfig);
 
       // Send email
       const response = await this.client.emails.send(emailData);
+
+      if (response.error) {
+        throw new NotificationInvalidResponseError(response.error.message, undefined, response);
+      }
 
       if (!response.data) {
         throw new NotificationInvalidResponseError(
@@ -119,19 +67,23 @@ export class ResendChannel extends MailChannel {
         );
       }
 
-      const data = response.data as ResendApiResponse;
-      const reference = request.reference || generateReference('EMAIL');
+      // Map raw response to typed response
+      const apiResponse = ResendMapper.toChannelResponse(response.data);
 
-      return {
-        success: true,
-        messageId: data.id,
-        reference,
-        status: NotificationStatus.SENT,
-        sentAt: new Date(data.created_at),
-        metadata: request.metadata,
-        raw: response,
-      };
+      // Return success response using mapper
+      return ResendMapper.toSuccessResponse(apiResponse, request);
     } catch (error) {
+      if (error instanceof Error && error.message === 'From email address is required') {
+        return {
+          success: false, // Legacy field check
+          status: NotificationStatus.FAILED,
+          messageId: '',
+          error: {
+            code: 'CONFIGURATION_ERROR',
+            message: 'From email address is required',
+          },
+        } as any; // Cast to satisfy mismatched return type if any
+      }
       return this.handleError(error, 'Failed to send email') as SendEmailResponse;
     }
   }
@@ -144,7 +96,6 @@ export class ResendChannel extends MailChannel {
       const resendError = error as Error & { statusCode?: number };
 
       return {
-        success: false,
         messageId: '',
         status: NotificationStatus.FAILED,
         error: {
@@ -159,7 +110,6 @@ export class ResendChannel extends MailChannel {
     }
 
     return {
-      success: false,
       messageId: '',
       status: NotificationStatus.FAILED,
       error: {

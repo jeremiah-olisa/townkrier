@@ -6,6 +6,7 @@ import {
   NotificationConfigurationException,
   generateReference,
   sanitizeMetadata,
+  Logger,
 } from '@townkrier/core';
 
 import { InAppConfig, InAppNotificationData } from '../types';
@@ -69,7 +70,6 @@ export class DatabaseInAppChannel extends InAppChannel {
       }
 
       return {
-        success: true,
         notificationId: results[0], // Return first notification ID
         reference,
         status: NotificationStatus.SENT,
@@ -110,7 +110,7 @@ export class DatabaseInAppChannel extends InAppChannel {
         metadata: notification.metadata,
       };
     } catch (error) {
-      console.error('Failed to get notification:', error);
+      Logger.error('Failed to get notification:', error);
       return null;
     }
   }
@@ -144,7 +144,7 @@ export class DatabaseInAppChannel extends InAppChannel {
         metadata: notification.metadata,
       }));
     } catch (error) {
-      console.error('Failed to get notifications for user:', error);
+      Logger.error('Failed to get notifications for user:', error);
       return [];
     }
   }
@@ -156,7 +156,7 @@ export class DatabaseInAppChannel extends InAppChannel {
     try {
       await this.inAppConfig.storageAdapter.markAsRead(id);
     } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+      Logger.error('Failed to mark notification as read:', error);
       throw error;
     }
   }
@@ -168,7 +168,7 @@ export class DatabaseInAppChannel extends InAppChannel {
     try {
       await this.inAppConfig.storageAdapter.markAllAsRead(userId);
     } catch (error) {
-      console.error('Failed to mark all notifications as read:', error);
+      Logger.error('Failed to mark all notifications as read:', error);
       throw error;
     }
   }
@@ -180,7 +180,7 @@ export class DatabaseInAppChannel extends InAppChannel {
     try {
       await this.inAppConfig.storageAdapter.delete(id);
     } catch (error) {
-      console.error('Failed to delete notification:', error);
+      Logger.error('Failed to delete notification:', error);
       throw error;
     }
   }
@@ -192,9 +192,23 @@ export class DatabaseInAppChannel extends InAppChannel {
     try {
       return await this.inAppConfig.storageAdapter.countUnread(userId);
     } catch (error) {
-      console.error('Failed to count unread notifications:', error);
+      Logger.error('Failed to count unread notifications:', error);
       return 0;
     }
+  }
+
+  /**
+   * Check if a notification request is valid for this channel
+   */
+  protected isValidNotificationRequest(notification: unknown): notification is SendInAppRequest {
+    const req = notification as SendInAppRequest;
+    return (
+      typeof req === 'object' &&
+      req !== null &&
+      'to' in req && // Check for recipients
+      typeof req.title === 'string' &&
+      typeof req.message === 'string'
+    );
   }
 
   /**
@@ -205,7 +219,6 @@ export class DatabaseInAppChannel extends InAppChannel {
       const inAppError = error as Error & { code?: string };
 
       return {
-        success: false,
         notificationId: '',
         status: NotificationStatus.FAILED,
         error: {
@@ -217,7 +230,6 @@ export class DatabaseInAppChannel extends InAppChannel {
     }
 
     return {
-      success: false,
       notificationId: '',
       status: NotificationStatus.FAILED,
       error: {
