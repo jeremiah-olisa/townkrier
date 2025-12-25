@@ -10,7 +10,6 @@ import {
   SendPushResponse,
   SendInAppResponse,
 } from './notification-response.interface';
-import { NotificationChannel } from '../types';
 
 /**
  * Base interface for notification channels
@@ -21,9 +20,8 @@ export interface INotificationChannel {
    * @param notification - Notification request
    * @returns Promise with notification response
    */
-  send(
-    notification: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
-  ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  send(notification: any): Promise<any>;
 
   /**
    * Get the channel name
@@ -33,7 +31,7 @@ export interface INotificationChannel {
   /**
    * Get the channel type
    */
-  getChannelType(): NotificationChannel;
+  getChannelType(): string;
 
   /**
    * Check if the channel is properly configured and ready

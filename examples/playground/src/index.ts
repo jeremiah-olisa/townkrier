@@ -1,81 +1,153 @@
 import {
-  NotificationManager,
-  IEmailChannel,
-  SendEmailRequest,
-  SendEmailResponse,
+  BaseNotificationChannel,
+  TownkrierFactory,
   Notification,
   NotificationChannel,
+  SendSmsRequest,
+  SendSmsResponse,
+  NotificationChannelConfig,
+  NotificationManager,
 } from '@townkrier/core';
 
-// 1. Define a Mock Channel
-class MockEmailChannel implements IEmailChannel {
-  async send(request: SendEmailRequest): Promise<SendEmailResponse> {
-    console.log('📧 [MockEmailChannel] Sending email:', request);
+// 1. Define Typed Configuration
+interface MySmsConfig extends NotificationChannelConfig {
+  apiKey: string;
+  senderId: string;
+}
+
+// 2. Create a Generic Channel (Type Safe!)
+class MySmsChannel extends BaseNotificationChannel<MySmsConfig, SendSmsRequest, SendSmsResponse> {
+  constructor(config: MySmsConfig) {
+    super(config, 'my-sms', NotificationChannel.SMS);
+  }
+
+  isReady(): boolean {
+    return !!this.config.apiKey;
+  }
+
+  async sendTyped(request: SendSmsRequest): Promise<SendSmsResponse> {
+    console.log(`📱 [SMS] Sending to ${request.to}: ${request.text}`);
     return {
       success: true,
-      messageId: 'mock-id-' + Date.now(),
+      messageId: 'sms-' + Date.now(),
       status: 'sent',
       sentAt: new Date(),
     } as any;
   }
+}
 
-  async sendEmail(request: SendEmailRequest): Promise<SendEmailResponse> {
-    return this.send(request);
+// 3. Create a CUSTOM Channel (Extensibility Proof!)
+// Note: 'slack' is NOT in the core NotificationChannel enum (unless added later, but treated as string here)
+interface SlackConfig extends NotificationChannelConfig {
+  webhookUrl: string;
+}
+interface SendSlackRequest {
+  channel: string;
+  text: string;
+}
+
+class SlackChannel extends BaseNotificationChannel<SlackConfig, SendSlackRequest, any> {
+  constructor(config: SlackConfig) {
+    // We pass a custom string 'slack' as channel type!
+    super(config, 'my-slack', 'slack');
   }
 
-  getChannelName(): string {
-    return 'email-mock';
-  }
-
-  getChannelType(): NotificationChannel {
-    return NotificationChannel.EMAIL;
+  protected validateConfig(): void {
+    // Custom validation for webhook
+    if (!this.config.webhookUrl) {
+      throw new Error('Webhook URL required');
+    }
   }
 
   isReady(): boolean {
-    return true;
+    return !!this.config.webhookUrl;
+  }
+
+  async sendTyped(request: SendSlackRequest): Promise<any> {
+    console.log(`💬 [Slack] Sending to #${request.channel}: ${request.text}`);
+    return { success: true };
   }
 }
 
-// 2. Define a Notification
-class WelcomeNotification extends Notification {
-  constructor(private userName: string) {
+// 4. Define Notification using both channels
+class OtpNotification extends Notification {
+  constructor(private code: string) {
     super();
   }
 
-  via(): NotificationChannel[] {
-    return [NotificationChannel.EMAIL];
+  // We return a mix of Enum and string!
+  via(): (NotificationChannel | string)[] {
+    return [NotificationChannel.SMS, 'slack'];
   }
 
-  toEmail() {
-    return {
-      subject: 'Welcome to Townkrier!',
-      text: `Hello ${this.userName}, welcome to our platform!`,
-      html: `<p>Hello <strong>${this.userName}</strong>, welcome to our platform!</p>`,
-    };
+  toSms() {
+    return { text: `Your OTP is: ${this.code}` };
+  }
+
+  // Magic method for custom channel 'slack' -> toSlack()
+  toSlack() {
+    return { channel: 'general', text: `New OTP generated: ${this.code}` };
   }
 }
 
-// 3. Execution
+import { NotifiableMixin } from '@townkrier/core';
+
+// 6. Test Mixin
+class BaseEntity {
+  constructor(public id: string) {}
+}
+
+class User extends NotifiableMixin(BaseEntity) {
+  constructor(
+    id: string,
+    public email: string,
+    public phone: string,
+  ) {
+    super(id);
+  }
+
+  routeNotificationFor(channel: string) {
+    if (channel === 'email') return this.email;
+    if (channel === 'sms') return this.phone;
+    if (channel === 'slack') return '#general';
+    return null;
+  }
+}
+
 async function main() {
-  console.log('🚀 Starting Townkrier Playground...');
+  console.log('🚀 Starting Townkrier Extensibility Playground...');
 
-  // Setup Manager
-  const manager = new NotificationManager();
+  const smsChannel = new MySmsChannel({ config: {}, apiKey: '123', senderId: 'TK' });
+  const slackChannel = new SlackChannel({ config: {}, webhookUrl: 'https://hooks.slack.com/...' });
 
-  // Register Channel
-  manager.registerChannel('email', new MockEmailChannel());
+  const townkrier = TownkrierFactory.create({
+    channels: [smsChannel, slackChannel],
+    defaultChannel: 'my-sms',
+    enableFallback: true,
+  });
 
-  // Create User/Recipient
-  const user = {
+  const recipient = {
     id: 'user-1',
-    [NotificationChannel.EMAIL]: 'test@example.com',
+    [NotificationChannel.SMS]: '+1234567890',
+    // Custom channel routing
+    slack: '#general',
   };
 
-  // Send Notification
-  console.log('📨 Sending notification...');
-  const response = await manager.send(new WelcomeNotification('Developer'), user);
+  console.log('📨 Sending OTP via SMS and Slack...');
+  await townkrier.send(new OtpNotification('998877'), recipient);
+  console.log('✅ Done!');
 
-  console.log('✅ Result:', response);
+  console.log('🧪 Testing Mixin...');
+  const user = new User('u1', 'test@example.com', '+1234567890');
+
+  // Inject manager
+  user.setNotificationManager(townkrier); // townkrier is the manager instance
+
+  console.log('📨 Sending via Mixin User...');
+  // Ensure townkrier is initialized before this
+  await user.notify(new OtpNotification('MIXIN-123'));
+
+  console.log('✅ Mixin Test Done!');
 }
 
 main().catch(console.error);

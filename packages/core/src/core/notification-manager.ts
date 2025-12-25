@@ -433,7 +433,7 @@ export class NotificationManager {
               response = await channel.send(request);
             }
 
-            responses.set(channelType, response);
+            responses.set(channelType as NotificationChannel, response);
           }
         } catch (error) {
           // Dispatch failed event for this channel
@@ -443,7 +443,7 @@ export class NotificationManager {
                 notification,
                 channels,
                 error instanceof Error ? error : new Error(String(error)),
-                channelType,
+                channelType as NotificationChannel,
               ),
             );
           }
@@ -483,7 +483,7 @@ export class NotificationManager {
    * This will return the first available adapter for channels with multiple adapters
    * Note: Adapters are already sorted by priority during registration
    */
-  private getChannelByType(channelType: NotificationChannel): INotificationChannel {
+  private getChannelByType(channelType: string): INotificationChannel {
     // First, check if there are multiple adapters for this channel type
     for (const [, adapters] of this.channelAdapters.entries()) {
       if (adapters.length > 0 && adapters[0].getChannelType() === channelType) {
@@ -514,7 +514,7 @@ export class NotificationManager {
    * Get the channel name for a given channel type
    * Used internally for adapter fallback routing
    */
-  private getChannelNameByType(channelType: NotificationChannel): string | null {
+  private getChannelNameByType(channelType: string): string | null {
     for (const [channelName, adapters] of this.channelAdapters.entries()) {
       if (adapters.length > 0 && adapters[0].getChannelType() === channelType) {
         return channelName;
@@ -525,12 +525,13 @@ export class NotificationManager {
 
   /**
    * Build a request object for a specific channel
+   * eslint-disable-next-line @typescript-eslint/no-explicit-any
    */
   private buildRequest(
     notification: Notification,
-    channelType: NotificationChannel,
+    channelType: string,
     recipient: NotificationRecipient,
-  ): SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest | null {
+  ): any | null {
     const routingInfo = recipient[channelType];
 
     switch (channelType) {
@@ -587,6 +588,22 @@ export class NotificationManager {
         break;
 
       default:
+        // Try to find a matching "toXxx" method for custom channels
+        // Capitalize first letter: 'slack' -> 'toSlack'
+        const methodName = `to${channelType.charAt(0).toUpperCase() + channelType.slice(1)}`;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (typeof (notification as any)[methodName] === 'function') {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const customData = (notification as any)[methodName]();
+          return {
+            ...customData,
+            to: routingInfo,
+            reference: notification.reference,
+            metadata: notification.metadata,
+            priority: notification.priority,
+          };
+        }
         return null;
     }
 

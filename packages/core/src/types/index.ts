@@ -11,6 +11,11 @@ export enum NotificationChannel {
 }
 
 /**
+ * Type alias for notification channel to support custom channels (string)
+ */
+export type NotificationChannelType = NotificationChannel | string;
+
+/**
  * Notification status
  */
 export enum NotificationStatus {

@@ -1,5 +1,5 @@
 import { Notification } from '../core/notification';
-import { NotificationChannel } from '../types';
+import { NotificationChannelType } from '../types';
 
 /**
  * Base notification event
@@ -7,7 +7,7 @@ import { NotificationChannel } from '../types';
 export abstract class NotificationEvent {
   constructor(
     public readonly notification: Notification,
-    public readonly channels: NotificationChannel[],
+    public readonly channels: NotificationChannelType[],
   ) {}
 }
 
@@ -15,7 +15,7 @@ export abstract class NotificationEvent {
  * Event fired when a notification is about to be sent
  */
 export class NotificationSending extends NotificationEvent {
-  constructor(notification: Notification, channels: NotificationChannel[]) {
+  constructor(notification: Notification, channels: NotificationChannelType[]) {
     super(notification, channels);
   }
 }
@@ -23,11 +23,14 @@ export class NotificationSending extends NotificationEvent {
 /**
  * Event fired after a notification has been sent successfully
  */
+/**
+ * Event fired after a notification has been sent successfully
+ */
 export class NotificationSent extends NotificationEvent {
   constructor(
     notification: Notification,
-    channels: NotificationChannel[],
-    public readonly responses: Map<NotificationChannel, unknown>,
+    channels: NotificationChannelType[],
+    public readonly responses: Map<NotificationChannelType, unknown>,
   ) {
     super(notification, channels);
   }
@@ -36,12 +39,15 @@ export class NotificationSent extends NotificationEvent {
 /**
  * Event fired when a notification fails to send
  */
+/**
+ * Event fired when a notification fails to send
+ */
 export class NotificationFailed extends NotificationEvent {
   constructor(
     notification: Notification,
-    channels: NotificationChannel[],
+    channels: NotificationChannelType[],
     public readonly error: Error,
-    public readonly failedChannel?: NotificationChannel,
+    public readonly failedChannel?: NotificationChannelType,
   ) {
     super(notification, channels);
   }

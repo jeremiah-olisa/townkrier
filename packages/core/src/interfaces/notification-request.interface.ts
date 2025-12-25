@@ -213,4 +213,5 @@ export type NotificationRecipient = {
   [NotificationChannel.IN_APP]?: InAppRecipient | unknown;
   [NotificationChannel.SLACK]?: unknown;
   [NotificationChannel.DATABASE]?: DatabaseRecipient | unknown;
+  [key: string]: unknown;
 };

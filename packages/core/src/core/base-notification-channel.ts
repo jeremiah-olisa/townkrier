@@ -1,31 +1,29 @@
 import { INotificationChannel } from '../interfaces/notification-channel.interface';
 import { NotificationChannelConfig } from '../interfaces/notification-config.interface';
 import { NotificationConfigurationException } from '../exceptions';
-import {
-  SendEmailRequest,
-  SendEmailResponse,
-  SendSmsRequest,
-  SendSmsResponse,
-  SendPushRequest,
-  SendPushResponse,
-  SendInAppRequest,
-  SendInAppResponse,
-} from '../interfaces';
-import { NotificationChannel } from '../types';
 
 /**
  * Abstract base class for notification channel implementations
  */
-export abstract class BaseNotificationChannel implements INotificationChannel {
-  protected config: NotificationChannelConfig;
+/**
+ * Abstract base class for notification channel implementations
+ * @template TConfig Configuration type for the channel
+ * @template TRequest Notification request type supporting this channel
+ * @template TResponse Response type from this channel
+ */
+export abstract class BaseNotificationChannel<
+  TConfig extends NotificationChannelConfig = NotificationChannelConfig,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TRequest = any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  TResponse = any,
+> implements INotificationChannel
+{
+  protected config: TConfig;
   protected channelName: string;
-  protected channelType: NotificationChannel;
+  protected channelType: string;
 
-  constructor(
-    config: NotificationChannelConfig,
-    channelName: string,
-    channelType: NotificationChannel,
-  ) {
+  constructor(config: TConfig, channelName: string, channelType: string) {
     this.config = config;
     this.channelName = channelName;
     this.channelType = channelType;
@@ -57,7 +55,7 @@ export abstract class BaseNotificationChannel implements INotificationChannel {
   /**
    * Get the channel type
    */
-  getChannelType(): NotificationChannel {
+  getChannelType(): string {
     return this.channelType;
   }
 
@@ -69,9 +67,12 @@ export abstract class BaseNotificationChannel implements INotificationChannel {
   }
 
   /**
-   * Send a notification through this channel
+   * Send a notification through this channel (Generic Interface implementation)
+   * Delegates to sendTyped after casting
    */
-  abstract send(
-    notification: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
-  ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  abstract send(notification: TRequest): Promise<TResponse>;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected abstract isValidNotificationRequest(notification: any): notification is TRequest;
 }

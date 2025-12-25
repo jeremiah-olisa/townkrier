@@ -1,5 +1,4 @@
 packages:
   - 'packages/*'
-  - 'packages/channels/*'
-  - 'packages/channels/*/*'
-  - 'examples/**'
+  - 'packages/channels/email/*'
+  - 'examples/playground'

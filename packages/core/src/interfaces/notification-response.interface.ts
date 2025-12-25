@@ -4,10 +4,10 @@ import { NotificationStatus, NotificationError, NotificationMetadata } from '../
  * Base response for notification operations
  */
 export interface NotificationResponse {
-  /**
-   * Whether the operation was successful
-   */
-  success: boolean;
+  // /**
+  //  * Whether the operation was successful
+  //  */
+  // success: boolean;
 
   /**
    * Error information if operation failed

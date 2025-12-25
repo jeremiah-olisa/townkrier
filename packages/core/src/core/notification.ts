@@ -24,7 +24,7 @@ export abstract class Notification {
    * Get the channels this notification should be sent through
    * Override this method to specify which channels to use
    */
-  abstract via(): NotificationChannel[];
+  abstract via(): (NotificationChannel | string)[];
 
   /**
    * Convert notification to email format
