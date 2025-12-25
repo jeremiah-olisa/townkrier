@@ -1,10 +1,8 @@
-import {
-  notify,
-  Notifiable,
-  Notification,
-  NotificationChannel,
-  NotificationManager,
-} from '../core';
+import { NotificationManager } from '../core/notification-manager';
+import { Notification } from '../core/notification';
+import { Notifiable } from '../core/notifiable';
+import { notify } from '../core/notifiable/utils';
+import { NotificationChannel } from '../types';
 import { NotificationRecipient } from '../interfaces';
 
 // Mock Notification class
@@ -23,17 +21,19 @@ class TestNotification extends Notification {
 
   toSms() {
     return {
-      message: 'Test SMS',
+      text: 'Test SMS',
     };
   }
 }
 
 // Mock Notifiable user
-class TestUser implements Notifiable {
+class TestUser extends Notifiable {
   constructor(
     public email: string,
     public phone?: string,
-  ) {}
+  ) {
+    super();
+  }
 
   routeNotificationFor(channel: NotificationChannel): string | undefined {
     switch (channel) {
@@ -120,7 +120,7 @@ describe('notify helper function', () => {
   });
 
   it('should handle null routing info gracefully', async () => {
-    class UserWithNullRouting implements Notifiable {
+    class UserWithNullRouting extends Notifiable {
       routeNotificationFor(): null {
         return null;
       }
@@ -138,7 +138,7 @@ describe('notify helper function', () => {
   });
 
   it('should handle undefined routing info gracefully', async () => {
-    class UserWithUndefinedRouting implements Notifiable {
+    class UserWithUndefinedRouting extends Notifiable {
       routeNotificationFor(): undefined {
         return undefined;
       }
@@ -166,7 +166,7 @@ describe('notify helper function', () => {
   });
 
   it('should work with complex routing info (arrays, objects)', async () => {
-    class UserWithComplexRouting implements Notifiable {
+    class UserWithComplexRouting extends Notifiable {
       routeNotificationFor(channel: NotificationChannel): string | string[] | object {
         if (channel === NotificationChannel.EMAIL) {
           return ['email1@example.com', 'email2@example.com'];

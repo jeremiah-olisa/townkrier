@@ -20,7 +20,7 @@ import {
   NotificationSending,
   NotificationSent,
   NotificationFailed,
-} from './notification-events';
+} from '../events';
 import { Notification } from './notification';
 import { NotificationChannel } from '../types';
 

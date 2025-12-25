@@ -1,6 +1,6 @@
 import { NotificationManager } from './notification-manager';
 import { INotificationChannel } from '../interfaces/notification-channel.interface';
-import { NotificationEventDispatcher } from './notification-events';
+import { NotificationEventDispatcher } from '../events';
 
 /**
  * Configuration for the Townkrier factory
