@@ -3,9 +3,7 @@ import { NotificationChannel, NotificationChannelType } from '../../types';
 import { NotificationManager } from '../notification-manager';
 import { NotificationRecipient } from '../../interfaces';
 import { notify } from './utils';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type Constructor<T = object> = new (...args: any[]) => T;
+import { Constructor } from '../../utils';
 
 /**
  * Interface definition for what the Mixin adds

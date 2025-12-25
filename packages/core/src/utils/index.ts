@@ -1,3 +1,5 @@
+export * from './types.util';
+
 /**
  * Generate a unique reference for notifications
  * @param prefix - Prefix for the reference (e.g., 'EMAIL', 'SMS')

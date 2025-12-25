@@ -1,5 +1,5 @@
 import type { Notification } from '../notification';
-import type { NotificationChannel } from '../../types';
+import type { NotificationChannelType } from '../../types';
 import type { NotificationManager } from '../notification-manager';
 import type { NotificationRecipient } from '../../interfaces';
 import type { Notifiable } from '.';
@@ -36,7 +36,7 @@ export async function notify(
   notifiable: Notifiable,
   notification: Notification,
   manager: NotificationManager,
-): Promise<Map<NotificationChannel, unknown>> {
+): Promise<Map<NotificationChannelType, unknown>> {
   // Build recipient object from notifiable entity
   // Get all channels this notification wants to use
   const channels = notification.via();
