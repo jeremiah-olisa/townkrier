@@ -39,6 +39,7 @@ export class ResendChannel extends MailChannel {
   async sendEmail(request: SendEmailRequest): Promise<SendEmailResponse> {
     try {
       // Validate recipients
+      console.log('SENDING RESEND MAIL', request);
       const recipients = Array.isArray(request.to) ? request.to : [request.to];
       for (const recipient of recipients) {
         if (!isValidEmail(recipient.email)) {
@@ -50,11 +51,14 @@ export class ResendChannel extends MailChannel {
       }
 
       // Prepare email data
+      console.log('PREPARING DATA');
       const from = request.from
         ? `${request.from.name ? `${request.from.name} <${request.from.email}>` : request.from.email}`
         : this.resendConfig.from
           ? `${this.resendConfig.fromName ? `${this.resendConfig.fromName} <${this.resendConfig.from}>` : this.resendConfig.from}`
           : '';
+
+      console.log({ from });
 
       if (!from) {
         throw new NotificationConfigurationException('From email address is required', {

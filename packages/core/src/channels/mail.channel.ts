@@ -46,10 +46,11 @@ export abstract class MailChannel extends BaseNotificationChannel implements IEm
 
   /**
    * Type guard to check if notification is an email request
+   * Only checks for 'subject' and 'to' (not 'from', which can be set in channel config)
    */
   private isEmailRequest(
     notification: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
   ): notification is SendEmailRequest {
-    return 'subject' in notification && 'from' in notification;
+    return 'subject' in notification && 'to' in notification;
   }
 }

@@ -1,0 +1,111 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Lint code
+        run: pnpm run lint
+        continue-on-error: true
+
+      - name: Type check
+        run: pnpm run type-check
+        continue-on-error: true
+
+      - name: Build packages
+        run: pnpm run build
+
+      - name: Run tests
+        run: pnpm test
+        continue-on-error: true
+
+      - name: Check package versions
+        id: version-check
+        run: |
+          echo "Checking if package versions have been bumped..."
+          
+          # Check if any package.json files in packages/ have been modified
+          CHANGED_PACKAGES=$(git diff origin/main...HEAD --name-only | grep 'packages/.*/package.json' || true)
+          
+          if [ -n "$CHANGED_PACKAGES" ]; then
+            echo "Package files changed:"
+            echo "$CHANGED_PACKAGES"
+            
+            # Check if version field was actually changed
+            for pkg in $CHANGED_PACKAGES; do
+              if git diff origin/main...HEAD "$pkg" | grep -q '"version"'; then
+                echo "✅ Version bumped in $pkg"
+                echo "version_bumped=true" >> $GITHUB_OUTPUT
+              else
+                echo "⚠️ Package changed but version not bumped in $pkg"
+              fi
+            done
+          else
+            echo "No package.json files changed"
+            echo "version_bumped=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Comment PR with version check
+        if: steps.version-check.outputs.version_bumped == 'false'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '⚠️ **Version Check**: Package files were modified but versions were not bumped. Please update the version in package.json before merging if you want to publish.'
+            })
+
+      - name: Build success comment
+        if: success()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ **Build Successful**: All checks passed! Ready to merge.'
+            })

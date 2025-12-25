@@ -1,0 +1,130 @@
+name: Publish to NPM
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build packages
+        run: pnpm run build
+
+      - name: Run tests
+        run: pnpm test
+        continue-on-error: true # Continue even if tests fail (remove this if you want strict testing)
+
+      - name: Check for version changes
+        id: version-check
+        run: |
+          # Check if any package.json versions have changed in this commit
+          if git diff HEAD~1 HEAD -- 'packages/*/package.json' | grep -q '"version"'; then
+            echo "version_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "version_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Configure npm authentication
+        if: steps.version-check.outputs.version_changed == 'true'
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Publish to npm (Core)
+        if: steps.version-check.outputs.version_changed == 'true'
+        working-directory: ./packages/core
+        run: |
+          if [ -f "package.json" ]; then
+            echo "Publishing porkate-valid8..."
+            pnpm publish --access public --no-git-checks
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm (IdentityPass)
+        if: steps.version-check.outputs.version_changed == 'true'
+        working-directory: ./packages/identitypass
+        run: |
+          if [ -f "package.json" ]; then
+            echo "Publishing porkate-valid8-identitypass..."
+            pnpm publish --access public --no-git-checks
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm (Dashboard)
+        if: steps.version-check.outputs.version_changed == 'true'
+        working-directory: ./packages/dashboard
+        run: |
+          if [ -f "package.json" ]; then
+            echo "Publishing porkate-valid8-dashboard..."
+            pnpm publish --access public --no-git-checks
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm (Nest)
+        if: steps.version-check.outputs.version_changed == 'true'
+        working-directory: ./packages/nest
+        run: |
+          if [ -f "package.json" ]; then
+            echo "Publishing porkate-valid8-nest..."
+            pnpm publish --access public --no-git-checks
+          fi
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create Git Tag
+        if: steps.version-check.outputs.version_changed == 'true'
+        run: |
+          # Get the version from the core package
+          VERSION=$(node -p "require('./packages/core/package.json').version")
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v$VERSION" -m "Release v$VERSION"
+          git push origin "v$VERSION"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

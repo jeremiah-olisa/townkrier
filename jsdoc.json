@@ -1,0 +1,56 @@
+{
+  "source": {
+    "include": ["packages/core", "packages/identitypass", "packages/nest", "packages/dashboard"],
+    "includePattern": ".+\\.ts(x)?$",
+    "excludePattern": "(node_modules|dist|__tests__|test)"
+  },
+  "sourceType": "module",
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc", "closure"]
+  },
+  "plugins": ["plugins/markdown", "node_modules/better-docs/typescript"],
+  "templates": {
+    "cleverLinks": true,
+    "monospaceLinks": true,
+    "default": {
+      "outputSourceFiles": true,
+      "includeDate": true,
+      "useLongnameInNav": false,
+      "staticFiles": {
+        "include": ["./docs/assets"]
+      }
+    },
+    "better-docs": {
+      "name": "Porkate-Valid8 API Documentation",
+      "title": "Porkate-Valid8 - KYC/KYB Verification Framework",
+      "css": "docs/assets/custom.css",
+      "trackingCode": "",
+      "hideGenerator": false,
+      "navLinks": [
+        {
+          "label": "GitHub",
+          "href": "https://github.com/jeremiah-olisa/PorkAte-Valid8"
+        },
+        {
+          "label": "npm",
+          "href": "https://www.npmjs.com/package/porkate-valid8"
+        }
+      ]
+    }
+  },
+  "opts": {
+    "template": "node_modules/better-docs",
+    "encoding": "utf8",
+    "destination": "./docs/html/",
+    "recurse": true,
+    "verbose": false,
+    "readme": "./README.md",
+    "package": "./package.json",
+    "tutorials": "./docs/tutorials"
+  },
+  "markdown": {
+    "hardwrap": false,
+    "idInHeadings": true
+  }
+}

@@ -6,7 +6,6 @@ import {
   NotificationSending,
   NotificationSent,
   NotificationFailed,
-  Notifiable,
   Notification,
   NotificationChannel,
   NotificationRecipient,
@@ -15,6 +14,7 @@ import {
   QueueManager,
   InMemoryQueueAdapter,
   JobPriority,
+  QueueJobConfig,
 } from '@townkrier/queue';
 import {
   StorageManager,
@@ -35,32 +35,32 @@ import { PaymentReceivedNotification } from '../classes/payment-received.notific
 /**
  * User class implementing Notifiable interface
  */
-class User implements Notifiable {
-  constructor(
-    public id: string,
-    public email: string,
-    public phone?: string,
-    public name?: string,
-  ) {}
+// class User implements Notifiable {
+//   constructor(
+//     public id: string,
+//     public email: string,
+//     public phone?: string,
+//     public name?: string,
+//   ) {}
 
-  routeNotificationFor(channel: string): string | undefined {
-    switch (channel) {
-      case 'email':
-        return this.email;
-      case 'sms':
-        return this.phone;
-      case 'push':
-        // Return device token if available
-        return undefined;
-      default:
-        return this.email;
-    }
-  }
+//   routeNotificationFor(channel: string): string | undefined {
+//     switch (channel) {
+//       case 'email':
+//         return this.email;
+//       case 'sms':
+//         return this.phone;
+//       case 'push':
+//         // Return device token if available
+//         return undefined;
+//       default:
+//         return this.email;
+//     }
+//   }
 
-  getNotificationName(): string {
-    return this.name || 'User';
-  }
-}
+//   getNotificationName(): string {
+//     return this.name || 'User';
+//   }
+// }
 
 @Injectable()
 export class NotificationService implements OnModuleInit {
@@ -71,25 +71,25 @@ export class NotificationService implements OnModuleInit {
 
   constructor(private readonly configService: ConfigService) {}
 
-  async onModuleInit() {
+  onModuleInit() {
     this.logger.log('Initializing TownKrier Notification Service...');
 
     // Setup event listeners
     const eventDispatcher = getEventDispatcher();
 
-    eventDispatcher.on(NotificationSending, async (event) => {
+    eventDispatcher.on(NotificationSending, (event) => {
       this.logger.log(
         `📤 Sending notification via channels: ${event.channels.join(', ')}`,
       );
     });
 
-    eventDispatcher.on(NotificationSent, async (event) => {
+    eventDispatcher.on(NotificationSent, (event) => {
       this.logger.log(
         `✅ Notification sent successfully via: ${event.channels.join(', ')}`,
       );
     });
 
-    eventDispatcher.on(NotificationFailed, async (event) => {
+    eventDispatcher.on(NotificationFailed, (event) => {
       this.logger.error(
         `❌ Notification failed on channel: ${event.failedChannel}`,
         event.error.message,
@@ -183,7 +183,7 @@ export class NotificationService implements OnModuleInit {
   /**
    * Send a notification immediately
    */
-  async sendNotification(dto: SendNotificationDto): Promise<any> {
+  async sendNotification(dto: SendNotificationDto) {
     const notification = this.createNotification(dto);
 
     // Create recipient object with all required channels
@@ -193,6 +193,7 @@ export class NotificationService implements OnModuleInit {
     };
 
     try {
+      console.log({ recipient, notification });
       const result = await this.notificationManager.send(
         notification,
         recipient,
@@ -212,7 +213,7 @@ export class NotificationService implements OnModuleInit {
   /**
    * Queue a notification for later sending
    */
-  async queueNotification(dto: QueueNotificationDto): Promise<any> {
+  async queueNotification(dto: QueueNotificationDto) {
     const notification = this.createNotification(dto);
 
     // Create recipient object with all required channels
@@ -222,7 +223,7 @@ export class NotificationService implements OnModuleInit {
     };
 
     try {
-      const config: any = {
+      const config: QueueJobConfig = {
         priority: this.mapPriority(dto.priority),
       };
 
@@ -251,7 +252,7 @@ export class NotificationService implements OnModuleInit {
   /**
    * Send bulk notifications
    */
-  async sendBulkNotifications(dtos: SendNotificationDto[]): Promise<any> {
+  async sendBulkNotifications(dtos: SendNotificationDto[]) {
     const results = await Promise.allSettled(
       dtos.map((dto) => this.sendNotification(dto)),
     );
@@ -267,9 +268,10 @@ export class NotificationService implements OnModuleInit {
         if (result.status === 'fulfilled') {
           return result.value;
         } else {
+          const reason = result.reason as unknown;
           return {
             success: false,
-            error: result.reason.message,
+            error: this.getErrorMessage(reason),
             email: dtos[index].email,
           };
         }
@@ -315,6 +317,28 @@ export class NotificationService implements OnModuleInit {
       default:
         throw new Error(`Unknown notification type: ${dto.type}`);
     }
+  }
+  private getErrorMessage(reason: unknown): string {
+    if (!reason) {
+      return 'Unknown error';
+    }
+    if (typeof reason === 'string') {
+      return reason;
+    }
+    if (reason instanceof Error) {
+      return reason.message;
+    }
+    if (
+      typeof reason === 'object' &&
+      reason !== null &&
+      'message' in reason &&
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      typeof (reason as any)?.message === 'string'
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access
+      return (reason as any)?.message;
+    }
+    return 'Unknown error';
   }
 
   /**

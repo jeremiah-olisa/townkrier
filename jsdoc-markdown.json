@@ -1,0 +1,25 @@
+{
+  "source": {
+    "include": ["packages/core", "packages/identitypass", "packages/nest", "packages/dashboard"],
+    "includePattern": ".+\\.ts(x)?$",
+    "excludePattern": "(node_modules|dist|__tests__|test)"
+  },
+  "sourceType": "module",
+  "tags": {
+    "allowUnknownTags": true,
+    "dictionaries": ["jsdoc", "closure"]
+  },
+  "plugins": ["plugins/markdown", "node_modules/jsdoc-plugin-typescript"],
+  "opts": {
+    "template": "node_modules/docdash",
+    "encoding": "utf8",
+    "destination": "./docs/markdown/",
+    "recurse": true,
+    "verbose": true,
+    "readme": "./README.md"
+  },
+  "markdown": {
+    "parser": "gfm",
+    "hardwrap": true
+  }
+}

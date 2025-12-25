@@ -1,0 +1,123 @@
+name: Deploy Documentation to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'docs/**'
+      - 'packages/*/README.md'
+      - '.github/workflows/deploy-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  actions: read
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build packages
+        run: pnpm run build
+        continue-on-error: true
+
+      - name: Generate JSDoc Documentation
+        run: |
+          # Generate API documentation using JSDoc
+          # Note: JSDoc may show parsing warnings for complex TypeScript types, but will still generate docs
+          npx jsdoc -c jsdoc.json || true
+          
+          # Verify docs were generated
+          if [ ! -d "docs/html/porkate-valid8-monorepo/1.0.0" ]; then
+            echo "Error: JSDoc did not generate documentation"
+            exit 1
+          fi
+          
+      - name: Create docs site structure
+        run: |
+          mkdir -p _site
+          # Copy the JSDoc generated HTML to the root
+          if [ -d "docs/html/porkate-valid8-monorepo/1.0.0" ]; then
+            cp -r docs/html/porkate-valid8-monorepo/1.0.0/* _site/
+          fi
+
+          # Copy package READMEs to docs/tutorials/*.md
+          mkdir -p docs/tutorials
+          for pkg in core identitypass nest dashboard; do
+            if [ -f "packages/$pkg/README.md" ]; then
+              cp packages/$pkg/README.md docs/tutorials/$pkg.md
+            fi
+          done
+
+          # Convert package READMEs to HTML for legacy links with custom template
+          npm install -g marked
+          for pkg in core identitypass nest dashboard; do
+            mkdir -p _site/packages/$pkg
+            marked docs/tutorials/$pkg.md > _site/packages/$pkg/README_CONTENT.html
+            printf '<!DOCTYPE html>\n<html lang="en">\n<head>\n  <meta charset="UTF-8">\n  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n  <title>Porkate-Valid8 - %s</title>\n  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.2.0/github-markdown.min.css">\n  <style>body{background:#f6f8fa;} .markdown-body{box-sizing:border-box;min-width:200px;max-width:900px;margin:40px auto;padding:40px;background:white;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.07);} .nav{margin-bottom:32px;} .nav a{color:#667eea;text-decoration:none;font-weight:600;margin-right:24px;} .nav a:hover{color:#764ba2;text-decoration:underline;} .nav{padding:24px 0 0 0;text-align:center;} </style>\n</head>\n<body>\n  <div class="nav">\n    <a href="/">Home</a>\n    <a href="/index.html">API Docs</a>\n    <a href="https://github.com/jeremiah-olisa/PorkAte-Valid8">GitHub</a>\n    <a href="https://www.npmjs.com/package/porkate-valid8">npm</a>\n  </div>\n  <article class="markdown-body">' "$pkg" > _site/packages/$pkg/index.html
+            cat _site/packages/$pkg/README_CONTENT.html >> _site/packages/$pkg/index.html
+            echo '</article></body></html>' >> _site/packages/$pkg/index.html
+            rm _site/packages/$pkg/README_CONTENT.html
+          done
+
+          # Copy markdown documentation as backup
+          mkdir -p _site/markdown
+          cp -r docs/*.md _site/markdown/ 2>/dev/null || true
+          cp -r docs/tutorials _site/markdown/ 2>/dev/null || true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+        with:
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './_site'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
