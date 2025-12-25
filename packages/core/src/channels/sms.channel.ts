@@ -1,15 +1,6 @@
 import { BaseNotificationChannel } from '../core/base-notification-channel';
 import { ISmsChannel } from '../interfaces/notification-channel.interface';
-import {
-  SendEmailRequest,
-  SendEmailResponse,
-  SendSmsRequest,
-  SendSmsResponse,
-  SendPushRequest,
-  SendPushResponse,
-  SendInAppRequest,
-  SendInAppResponse,
-} from '../interfaces';
+import { SendSmsRequest, SendSmsResponse } from '../interfaces';
 import { NotificationChannelConfig } from '../interfaces/notification-config.interface';
 import { NotificationChannel } from '../types';
 import { NotificationChannelException } from '../exceptions';
@@ -17,7 +8,10 @@ import { NotificationChannelException } from '../exceptions';
 /**
  * Base class for SMS channel implementations
  */
-export abstract class SmsChannel extends BaseNotificationChannel implements ISmsChannel {
+export abstract class SmsChannel
+  extends BaseNotificationChannel<NotificationChannelConfig, SendSmsRequest, SendSmsResponse>
+  implements ISmsChannel
+{
   constructor(config: NotificationChannelConfig, channelName: string) {
     super(config, channelName, NotificationChannel.SMS);
   }
@@ -30,9 +24,10 @@ export abstract class SmsChannel extends BaseNotificationChannel implements ISms
   /**
    * Send implementation that delegates to sendSms
    */
-  async send(
-    notification: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
-  ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse> {
+  /**
+   * Send implementation that delegates to sendSms
+   */
+  async send(notification: SendSmsRequest): Promise<SendSmsResponse> {
     if (this.isValidNotificationRequest(notification)) {
       return this.sendSms(notification);
     }

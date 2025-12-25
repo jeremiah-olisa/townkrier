@@ -14,14 +14,16 @@ import {
 /**
  * Base interface for notification channels
  */
-export interface INotificationChannel {
+/**
+ * Base interface for notification channels
+ */
+export interface INotificationChannel<TRequest = any, TResponse = any> {
   /**
    * Send a notification through this channel
    * @param notification - Notification request
    * @returns Promise with notification response
    */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  send(notification: any): Promise<any>;
+  send(notification: TRequest): Promise<TResponse>;
 
   /**
    * Get the channel name
@@ -42,27 +44,27 @@ export interface INotificationChannel {
 /**
  * Email channel interface
  */
-export interface IEmailChannel extends INotificationChannel {
+export interface IEmailChannel extends INotificationChannel<SendEmailRequest, SendEmailResponse> {
   sendEmail(request: SendEmailRequest): Promise<SendEmailResponse>;
 }
 
 /**
  * SMS channel interface
  */
-export interface ISmsChannel extends INotificationChannel {
+export interface ISmsChannel extends INotificationChannel<SendSmsRequest, SendSmsResponse> {
   sendSms(request: SendSmsRequest): Promise<SendSmsResponse>;
 }
 
 /**
  * Push notification channel interface
  */
-export interface IPushChannel extends INotificationChannel {
+export interface IPushChannel extends INotificationChannel<SendPushRequest, SendPushResponse> {
   sendPush(request: SendPushRequest): Promise<SendPushResponse>;
 }
 
 /**
  * In-app notification channel interface
  */
-export interface IInAppChannel extends INotificationChannel {
+export interface IInAppChannel extends INotificationChannel<SendInAppRequest, SendInAppResponse> {
   sendInApp(request: SendInAppRequest): Promise<SendInAppResponse>;
 }

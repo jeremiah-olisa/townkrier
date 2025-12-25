@@ -17,7 +17,7 @@ import { ResendMapper } from './resend.mapper';
  * Resend email channel implementation
  */
 export class ResendChannel extends MailChannel {
-  private readonly client: ResendClient;
+  private readonly resend: ResendClient;
   private readonly resendConfig: ResendConfig;
 
   constructor(config: ResendConfig) {
@@ -29,7 +29,7 @@ export class ResendChannel extends MailChannel {
 
     super(config, 'Resend');
     this.resendConfig = config;
-    this.client = new ResendClient(config.apiKey);
+    this.resend = new ResendClient(config.apiKey);
   }
 
   /**
@@ -53,7 +53,14 @@ export class ResendChannel extends MailChannel {
       const emailData = ResendMapper.toResendData(request, this.resendConfig);
 
       // Send email
-      const response = await this.client.emails.send(emailData);
+      const response = await this.resend.emails.send(emailData);
+
+      Logger.debug('Resend Raw Response', {
+        hasData: !!response.data,
+        hasError: !!response.error,
+        keys: Object.keys(response),
+        error: response.error,
+      });
 
       if (response.error) {
         throw new NotificationInvalidResponseError(response.error.message, undefined, response);

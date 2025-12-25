@@ -2,13 +2,10 @@ import { BaseNotificationChannel } from '../core/base-notification-channel';
 import { IPushChannel } from '../interfaces/notification-channel.interface';
 import {
   SendEmailRequest,
-  SendEmailResponse,
   SendSmsRequest,
-  SendSmsResponse,
   SendPushRequest,
   SendPushResponse,
   SendInAppRequest,
-  SendInAppResponse,
 } from '../interfaces';
 import { NotificationChannelConfig } from '../interfaces/notification-config.interface';
 import { NotificationChannel } from '../types';
@@ -17,7 +14,10 @@ import { NotificationChannelException } from '../exceptions';
 /**
  * Base class for push notification channel implementations
  */
-export abstract class PushChannel extends BaseNotificationChannel implements IPushChannel {
+export abstract class PushChannel
+  extends BaseNotificationChannel<NotificationChannelConfig, SendPushRequest, SendPushResponse>
+  implements IPushChannel
+{
   constructor(config: NotificationChannelConfig, channelName: string) {
     super(config, channelName, NotificationChannel.PUSH);
   }
@@ -30,9 +30,10 @@ export abstract class PushChannel extends BaseNotificationChannel implements IPu
   /**
    * Send implementation that delegates to sendPush
    */
-  async send(
-    notification: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
-  ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse> {
+  /**
+   * Send implementation that delegates to sendPush
+   */
+  async send(notification: SendPushRequest): Promise<SendPushResponse> {
     if (this.isPushRequest(notification)) {
       return this.sendPush(notification);
     }

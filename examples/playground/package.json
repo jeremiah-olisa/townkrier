@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "resend": "ts-node src/resend.playground.ts"
   },
   "dependencies": {
     "@townkrier/core": "workspace:*",

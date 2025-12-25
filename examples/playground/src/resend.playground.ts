@@ -5,6 +5,7 @@ import {
   NotificationChannel,
   NotificationChannelType,
   NotificationRecipient,
+  Logger,
 } from '@townkrier/core';
 import { createResendChannel } from '@townkrier/resend';
 
@@ -32,7 +33,7 @@ class WelcomeNotification extends Notification {
 }
 
 async function run() {
-  console.log('--- Resend Playground ---');
+  Logger.log('--- Resend Playground ---');
 
   // 1. Setup Manager
   const manager = new NotificationManager({
@@ -50,13 +51,15 @@ async function run() {
   manager.registerChannel(NotificationChannel.EMAIL, resendChannel);
 
   // 3. Send Notification
-  const recipient = { email: 'delivered@resend.dev', name: 'Test User' };
+  // The Resend error indicates you can only send to 'jeremiaholisa453@gmail.com' when using the test domain.
+  // Simplifying to just email to avoid potential formatting issues with test domain strictness.
+  const recipient = { email: 'jeremiaholisa453@gmail.com', name: `Jeremiah Olisa` };
 
   // Create a Notifiable-like object or use manual sending
   // Since we don't have a full User entity here, we'll manually construct the notification
   // OR we can pretend we have a user.
 
-  console.log(`Sending notification to ${recipient.email}...`);
+  Logger.log(`Sending notification to ${recipient.email}...`);
 
   const notification = new WelcomeNotification(recipient.name);
 
@@ -75,13 +78,13 @@ async function run() {
 
     const results = await manager.send(notification, routing);
 
-    console.log('Results:', results);
+    Logger.log('Results:', results);
 
     const emailResult = results.get(NotificationChannel.EMAIL);
-    console.log('Email Result:', JSON.stringify(emailResult, null, 2));
+    Logger.log('Email Result:', JSON.stringify(emailResult, null, 2));
   } catch (error) {
-    console.error('Error sending notification:', error);
+    Logger.error('Error sending notification:', error);
   }
 }
 
-run().catch(console.error);
+run().catch((error) => Logger.error('Unhandled error:', error));

@@ -2,11 +2,8 @@ import { BaseNotificationChannel } from '../core/base-notification-channel';
 import { IInAppChannel } from '../interfaces/notification-channel.interface';
 import {
   SendEmailRequest,
-  SendEmailResponse,
   SendSmsRequest,
-  SendSmsResponse,
   SendPushRequest,
-  SendPushResponse,
   SendInAppRequest,
   SendInAppResponse,
 } from '../interfaces';
@@ -17,7 +14,10 @@ import { NotificationChannelException } from '../exceptions';
 /**
  * Base class for in-app/database notification channel implementations
  */
-export abstract class InAppChannel extends BaseNotificationChannel implements IInAppChannel {
+export abstract class InAppChannel
+  extends BaseNotificationChannel<NotificationChannelConfig, SendInAppRequest, SendInAppResponse>
+  implements IInAppChannel
+{
   constructor(config: NotificationChannelConfig, channelName: string) {
     super(config, channelName, NotificationChannel.IN_APP);
   }
@@ -30,9 +30,10 @@ export abstract class InAppChannel extends BaseNotificationChannel implements II
   /**
    * Send implementation that delegates to sendInApp
    */
-  async send(
-    notification: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
-  ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse> {
+  /**
+   * Send implementation that delegates to sendInApp
+   */
+  async send(notification: SendInAppRequest): Promise<SendInAppResponse> {
     if (this.isInAppRequest(notification)) {
       return this.sendInApp(notification);
     }
