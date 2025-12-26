@@ -1,14 +1,10 @@
-import {
-  SendEmailRequest,
-  SendSmsRequest,
-  SendPushRequest,
-  SendInAppRequest,
-  NotificationRecipient,
-} from '../../interfaces';
+import { NotificationRecipient } from '../../interfaces';
+import { NotificationConfigurationException } from '../../exceptions';
 import { Notification } from '../notification';
 import { NotificationChannel } from '../../types';
 import { INotificationManagerBase } from './types';
 import { Constructor } from '../../utils';
+import { NotificationRequestMapper } from '../notification-request.mapper';
 
 /**
  * Mixin for building request objects
@@ -23,63 +19,70 @@ export function RequestBuilderMixin<
      * @internal
      * eslint-disable-next-line @typescript-eslint/no-explicit-any
      */
-    public buildRequest(
+    public async buildRequest(
       notification: Notification,
       channelType: string,
       recipient: NotificationRecipient,
-    ): any | null {
+    ): Promise<any | null> {
       const routingInfo = recipient[channelType];
 
       switch (channelType) {
         case NotificationChannel.EMAIL:
           if (notification.toEmail) {
             const emailData = notification.toEmail();
-            return {
-              ...emailData,
-              to: routingInfo,
-              reference: notification.reference,
-              metadata: notification.metadata,
-              priority: notification.priority,
-            } as SendEmailRequest;
+
+            // Handle Template Rendering
+            if (emailData.template) {
+              if (!this.renderer) {
+                throw new NotificationConfigurationException(
+                  'Template provided but no renderer configured.',
+                  {
+                    template: emailData.template,
+                  },
+                );
+              }
+
+              emailData.html = await this.renderer.render(
+                emailData.template,
+                emailData.context || {},
+              );
+            }
+
+            if (!routingInfo) return null;
+
+            return NotificationRequestMapper.createEmailRequest(
+              emailData,
+              routingInfo,
+              notification,
+            );
           }
           break;
 
         case NotificationChannel.SMS:
           if (notification.toSms) {
             const smsData = notification.toSms();
-            return {
-              ...smsData,
-              to: routingInfo,
-              reference: notification.reference,
-              metadata: notification.metadata,
-              priority: notification.priority,
-            } as SendSmsRequest;
+            if (!routingInfo) return null;
+            return NotificationRequestMapper.createSmsRequest(smsData, routingInfo, notification);
           }
           break;
 
         case NotificationChannel.PUSH:
           if (notification.toPush) {
             const pushData = notification.toPush();
-            return {
-              ...pushData,
-              to: routingInfo,
-              reference: notification.reference,
-              metadata: notification.metadata,
-              priority: notification.priority,
-            } as SendPushRequest;
+            if (!routingInfo) return null;
+            return NotificationRequestMapper.createPushRequest(pushData, routingInfo, notification);
           }
           break;
 
         case NotificationChannel.IN_APP:
           if (notification.toInApp) {
             const inAppData = notification.toInApp();
-            return {
-              ...inAppData,
-              to: routingInfo,
-              reference: notification.reference,
-              metadata: notification.metadata,
-              priority: notification.priority,
-            } as SendInAppRequest;
+            if (!routingInfo) return null;
+            return NotificationRequestMapper.createInAppRequest(
+              inAppData,
+              routingInfo,
+              notification,
+            );
           }
           break;
 

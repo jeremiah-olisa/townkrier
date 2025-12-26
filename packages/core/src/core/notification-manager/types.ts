@@ -1,5 +1,10 @@
 import { NotificationEventDispatcher } from '../../events';
-import { INotificationChannel, ChannelConfig, ChannelFactory } from '../../interfaces';
+import {
+  INotificationChannel,
+  ChannelConfig,
+  ChannelFactory,
+  ITemplateRenderer,
+} from '../../interfaces';
 export { Constructor } from '../../utils';
 
 /**
@@ -14,6 +19,7 @@ export interface INotificationManagerBase<T extends string = string> {
   defaultChannel?: T;
   enableFallback: boolean;
   eventDispatcher?: NotificationEventDispatcher;
+  renderer?: ITemplateRenderer;
 
   getChannel(name: T): INotificationChannel;
   getAvailableChannels(): T[];
@@ -45,7 +51,7 @@ export interface IChannelManager<T extends string = string> {
  * Interface for the Request Builder Mixin
  */
 export interface IRequestBuilder {
-  buildRequest(notification: any, channelType: string, recipient: any): any | null;
+  buildRequest(notification: any, channelType: string, recipient: any): Promise<any | null>;
 }
 
 /**

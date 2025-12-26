@@ -1,3 +1,5 @@
+import { ITemplateRenderer } from './template-renderer.interface';
+
 /**
  * Base configuration for notification channels
  */
@@ -110,9 +112,21 @@ export interface NotificationManagerConfig {
   defaultChannel?: string;
 
   /**
+   * Delivery strategy to use
+   * - 'all-or-nothing': Fails immediately if any channel fails (default)
+   * - 'best-effort': Continues sending to other channels even if one fails
+   */
+  strategy?: 'all-or-nothing' | 'best-effort';
+
+  /**
    * Enable fallback to other channels on failure
    */
   enableFallback?: boolean;
+
+  /**
+   * Template renderer for rendering notification content
+   */
+  renderer?: ITemplateRenderer;
 
   /**
    * List of channel configurations

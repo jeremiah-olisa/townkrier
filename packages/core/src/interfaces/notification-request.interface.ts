@@ -42,27 +42,10 @@ export interface BaseNotificationRequest {
 /**
  * Email notification request
  */
-export interface SendEmailRequest extends BaseNotificationRequest {
-  /**
-   * Sender email address
-   */
-  from: EmailRecipient;
-
-  /**
-   * Recipient(s)
-   */
-  to: EmailRecipient | EmailRecipient[];
-
-  /**
-   * CC recipients
-   */
-  cc?: EmailRecipient[];
-
-  /**
-   * BCC recipients
-   */
-  bcc?: EmailRecipient[];
-
+/**
+ * Email content definition
+ */
+export interface EmailContent {
   /**
    * Email subject
    */
@@ -79,9 +62,34 @@ export interface SendEmailRequest extends BaseNotificationRequest {
   html?: string;
 
   /**
+   * Template to use for rendering
+   */
+  template?: string;
+
+  /**
+   * Context data for template rendering
+   */
+  context?: Record<string, unknown>;
+
+  /**
+   * Sender email address override
+   */
+  from?: EmailRecipient;
+
+  /**
    * Reply-to email
    */
   replyTo?: EmailRecipient;
+
+  /**
+   * CC recipients
+   */
+  cc?: EmailRecipient[];
+
+  /**
+   * BCC recipients
+   */
+  bcc?: EmailRecipient[];
 
   /**
    * Attachments
@@ -90,29 +98,52 @@ export interface SendEmailRequest extends BaseNotificationRequest {
 }
 
 /**
- * SMS notification request
+ * Email notification request
  */
-export interface SendSmsRequest extends BaseNotificationRequest {
+export interface SendEmailRequest extends BaseNotificationRequest, EmailContent {
   /**
-   * Sender ID or phone number
+   * Sender email address (Required for request if not in config, but declared in Content as optional override)
+   * Re-declaring 'from' to match BaseNotificationRequest pattern if needed, but here we just merge properties.
+   * However, 'from' in Content is for the Notification class to specify overrides.
+   * In the Request context, it might be populated from config or content.
    */
-  from?: string;
+  from: EmailRecipient;
 
   /**
    * Recipient(s)
    */
-  to: SmsRecipient | SmsRecipient[];
+  to: EmailRecipient | EmailRecipient[];
+}
 
+/**
+ * SMS content definition
+ */
+export interface SmsContent {
   /**
    * SMS message text
    */
   text: string;
+
+  /**
+   * Sender ID or phone number override
+   */
+  from?: string;
 }
 
 /**
- * Push notification request
+ * SMS notification request
  */
-export interface SendPushRequest extends BaseNotificationRequest {
+export interface SendSmsRequest extends BaseNotificationRequest, SmsContent {
+  /**
+   * Recipient(s)
+   */
+  to: SmsRecipient | SmsRecipient[];
+}
+
+/**
+ * Push notification content definition
+ */
+export interface PushContent {
   /**
    * Notification title
    */
@@ -122,11 +153,6 @@ export interface SendPushRequest extends BaseNotificationRequest {
    * Notification body
    */
   body: string;
-
-  /**
-   * Recipient(s)
-   */
-  to: PushRecipient | PushRecipient[];
 
   /**
    * Image URL for rich notifications
@@ -160,18 +186,28 @@ export interface SendPushRequest extends BaseNotificationRequest {
 }
 
 /**
- * In-app notification request
+ * Push notification request
  */
-export interface SendInAppRequest extends BaseNotificationRequest {
+export interface SendPushRequest extends Omit<BaseNotificationRequest, 'title'>, PushContent {
   /**
-   * Recipient user ID(s)
+   * Recipient(s)
    */
-  to: InAppRecipient | InAppRecipient[];
+  to: PushRecipient | PushRecipient[];
+}
 
+/**
+ * In-app notification content definition
+ */
+export interface InAppContent {
   /**
    * Notification title
    */
   title: string;
+
+  /**
+   * Notification message
+   */
+  message: string;
 
   /**
    * Notification type/category
@@ -192,6 +228,16 @@ export interface SendInAppRequest extends BaseNotificationRequest {
    * Additional data
    */
   data?: NotificationMetadata;
+}
+
+/**
+ * In-app notification request
+ */
+export interface SendInAppRequest extends Omit<BaseNotificationRequest, 'title'>, InAppContent {
+  /**
+   * Recipient user ID(s)
+   */
+  to: InAppRecipient | InAppRecipient[];
 }
 
 /**

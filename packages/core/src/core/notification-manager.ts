@@ -1,5 +1,10 @@
 import { INotificationChannel } from '../interfaces/notification-channel.interface';
-import { ChannelConfig, ChannelFactory, NotificationManagerConfig } from '../interfaces';
+import {
+  ChannelConfig,
+  ChannelFactory,
+  NotificationManagerConfig,
+  ITemplateRenderer,
+} from '../interfaces';
 import { NotificationEventDispatcher } from '../events';
 import { INotificationManagerBase } from './notification-manager/types';
 import { ChannelManagerMixin } from './notification-manager/channel-manager.mixin';
@@ -22,14 +27,18 @@ class BaseNotificationManager<TChannel extends string = string>
   public readonly channelConfigs: Map<string, ChannelConfig> = new Map();
   public defaultChannel?: TChannel;
   public enableFallback: boolean = false;
+  public strategy: 'all-or-nothing' | 'best-effort' = 'all-or-nothing';
   public eventDispatcher?: NotificationEventDispatcher;
+  public renderer?: ITemplateRenderer;
 
   constructor(config?: NotificationManagerConfig, eventDispatcher?: NotificationEventDispatcher) {
     if (config) {
       if (config.defaultChannel) {
         this.defaultChannel = config.defaultChannel as TChannel;
       }
+      this.strategy = config.strategy || 'all-or-nothing';
       this.enableFallback = config.enableFallback ?? false;
+      this.renderer = config.renderer;
 
       // Store channel configs for later initialization
       config.channels.forEach((channelConfig) => {

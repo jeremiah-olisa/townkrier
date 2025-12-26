@@ -8,6 +8,8 @@ import {
   SendPushResponse,
   SendInAppResponse,
   NotificationRecipient,
+  DeliveryStrategy,
+  NotificationResult,
 } from '../../interfaces';
 import { NotificationSending, NotificationSent, NotificationFailed } from '../../events';
 import { Notification } from '../notification';
@@ -22,6 +24,7 @@ import { Logger } from '../../logger';
 // from other mixins (ChannelManager, RequestBuilder)
 export interface IBaseWithDependencies<TChannel extends string = string>
   extends INotificationManagerBase<TChannel> {
+  strategy: DeliveryStrategy;
   // From ChannelManagerMixin
   getChannel(name: TChannel): any;
   getChannelNameByType(channelType: string): string | null;
@@ -32,7 +35,7 @@ export interface IBaseWithDependencies<TChannel extends string = string>
     notification: Notification,
     channelType: string,
     recipient: NotificationRecipient,
-  ): any | null;
+  ): Promise<any | null>;
 }
 
 /**
@@ -104,66 +107,94 @@ export function NotificationSenderMixin<
     async send(
       notification: Notification,
       recipient: NotificationRecipient,
-    ): Promise<Map<TChannel, unknown>> {
+      strategyOverride?: DeliveryStrategy,
+    ): Promise<NotificationResult> {
       const channels = notification.via();
-      const responses = new Map<TChannel, unknown>();
+      const strategy = strategyOverride || this.strategy;
+      const results = new Map<string, unknown>();
+      const errors = new Map<string, Error>();
 
       // Dispatch sending event
       if (this.eventDispatcher) {
         await this.eventDispatcher.dispatch(new NotificationSending(notification, channels));
       }
 
+      const sendToChannel = async (channelType: string) => {
+        try {
+          const request = await this.buildRequest(notification, channelType, recipient);
+
+          if (!request) {
+            // Channel defined in via() but no toX method or recipient info -> skip or consider no-op
+            return;
+          }
+
+          let response;
+          const channelName = this.getChannelNameByType(channelType);
+
+          if (channelName && this.channelAdapters.has(channelName)) {
+            response = await this.sendWithAdapterFallback(channelName as TChannel, request);
+          } else {
+            const channel = this.getChannelByType(channelType);
+            response = await channel.send(request);
+          }
+
+          results.set(channelType, response);
+        } catch (error) {
+          const err = error instanceof Error ? error : new Error(String(error));
+          errors.set(channelType, err);
+
+          // Dispatch failed event per channel
+          if (this.eventDispatcher) {
+            await this.eventDispatcher.dispatch(
+              new NotificationFailed(
+                notification,
+                channels,
+                err,
+                channelType as NotificationChannel,
+              ),
+            );
+          }
+
+          if (strategy === 'all-or-nothing') {
+            throw err; // Fail fast
+          }
+        }
+      };
+
       try {
-        for (const channelType of channels) {
-          try {
-            const request = this.buildRequest(notification, channelType, recipient);
-
-            if (request) {
-              // Check if this channel has multiple adapters configured
-              const channelName = this.getChannelNameByType(channelType);
-
-              let response;
-              if (channelName && this.channelAdapters.has(channelName)) {
-                // Use adapter fallback for channels with multiple adapters
-                response = await this.sendWithAdapterFallback(channelName as TChannel, request);
-              } else {
-                // Use legacy single channel approach
-                const channel = this.getChannelByType(channelType);
-                response = await channel.send(request);
-              }
-
-              responses.set(channelType as TChannel, response);
-            }
-          } catch (error) {
-            // Dispatch failed event for this channel
-            if (this.eventDispatcher) {
-              await this.eventDispatcher.dispatch(
-                new NotificationFailed(
-                  notification,
-                  channels,
-                  error instanceof Error ? error : new Error(String(error)),
-                  channelType as NotificationChannel,
-                ),
-              );
-            }
-
-            // Re-throw if fallback is not enabled
-            if (!this.enableFallback) {
-              throw error;
-            }
+        if (strategy === 'best-effort') {
+          // Run all in parallel (or sequential if preferred, but parallel is usually better for best-effort)
+          await Promise.allSettled(channels.map((ch) => sendToChannel(String(ch))));
+        } else {
+          // Sequential for all-or-nothing to fail fast reliably?
+          // actually parallel fail-fast (Promise.all) is also an option, but sequential is safer for "stop on error"
+          // Let's stick to sequential loop for all-or-nothing to match previous behavior
+          for (const channelType of channels) {
+            await sendToChannel(String(channelType));
           }
         }
 
-        // Dispatch sent event if at least one channel succeeded
-        if (responses.size > 0 && this.eventDispatcher) {
+        const status = errors.size === 0 ? 'success' : results.size > 0 ? 'partial' : 'failed';
+
+        // Dispatch final sent event if at least one succeeded
+        if (results.size > 0 && this.eventDispatcher) {
+          // Note: responses map in event might need to be Map<TChannel, unknown>
+          // casting keys for now
+          const typedResults = new Map<TChannel, unknown>();
+          results.forEach((v, k) => typedResults.set(k as TChannel, v));
+
           await this.eventDispatcher.dispatch(
-            new NotificationSent(notification, channels, responses),
+            new NotificationSent(notification, channels, typedResults),
           );
         }
 
-        return responses;
+        return {
+          status,
+          results,
+          errors,
+        };
       } catch (error) {
-        // Dispatch failed event
+        // This catch block is hit only for 'all-or-nothing' fast fail or unexpected errors
         if (this.eventDispatcher) {
           await this.eventDispatcher.dispatch(
             new NotificationFailed(

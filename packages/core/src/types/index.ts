@@ -93,3 +93,4 @@ export interface Attachment {
   contentType?: string;
   url?: string;
 }
+export * from './delivery-strategy.type';

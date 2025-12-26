@@ -10,7 +10,10 @@
     "smtp": "ts-node src/smtp.playground.ts",
     "fallback": "ts-node src/fallback.playground.ts",
     "fcm": "ts-node src/fcm.playground.ts",
-    "termii": "ts-node src/termii.playground.ts"
+    "termii": "ts-node src/termii.playground.ts",
+    "multi-channel": "ts-node src/multi-channel.playground.ts",
+    "template": "ts-node src/template.playground.ts",
+    "strategy": "ts-node src/strategy.playground.ts"
   },
   "dependencies": {
     "@townkrier/core": "workspace:*",

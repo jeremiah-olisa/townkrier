@@ -26,7 +26,7 @@ townkrier make:notification WelcomeUser
 townkrier make:notification OrderConfirmation --channels email,sms
 
 # With all channels
-townkrier make:notification ImportantAlert --channels email,sms,push,in-app
+townkrier make:notification ImportantAlert --all-channels
 
 # Custom output path
 townkrier make:notification UserInvite --path ./src/app/notifications
@@ -45,6 +45,7 @@ Arguments:
 
 Options:
   -c, --channels <channels>  Comma-separated list of channels (email,sms,push,in-app)
+  -a, --all-channels         Include all available channels
   -p, --path <path>          Custom path for the notification file
   -f, --force                Overwrite existing notification file
   -h, --help                 Display help for command
