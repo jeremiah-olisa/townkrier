@@ -1,5 +1,10 @@
 import { Stack } from 'expo-router';
+import PushNotificationHandler from '../components/PushNotificationHandler';
 
 export default function RootLayout() {
-  return <Stack />;
+  return (
+    <PushNotificationHandler>
+      <Stack />
+    </PushNotificationHandler>
+  );
 }

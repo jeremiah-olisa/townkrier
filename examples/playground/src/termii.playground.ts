@@ -30,7 +30,7 @@ async function run() {
 
   try {
     const result = await factory.sendWithAdapterFallback('Termii', {
-      to: { phoneNumber: to },
+      to: { phone: to },
       message: 'Hello from Townkrier! This is a test SMS via Termii.',
     });
 

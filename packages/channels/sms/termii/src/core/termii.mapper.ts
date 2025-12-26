@@ -19,7 +19,11 @@ export class TermiiMapper {
 
     // Map recipients to single string or array of strings
     const recipients = Array.isArray(request.to) ? request.to : [request.to];
-    const to = recipients.length > 1 ? recipients.map((r) => r.phone) : recipients[0].phone;
+    const to = recipients.length > 1 ? recipients.map((r) => r.phone) : recipients[0]?.phone;
+
+    if (!to || (Array.isArray(to) && to.length === 0)) {
+      throw new Error('Recipient (to) is required');
+    }
 
     return {
       to,

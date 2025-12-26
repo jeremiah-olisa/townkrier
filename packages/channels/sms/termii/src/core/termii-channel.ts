@@ -110,7 +110,13 @@ export class TermiiChannel extends SmsChannel {
       let finalError = error;
       if (axios.isAxiosError(error) && error.response) {
         const errorData = error.response.data;
-        const message = errorData?.message || (errorData as any)?.error || error.message;
+        let message = errorData?.message || (errorData as any)?.error || error.message;
+
+        // If message is an object, try to extract a string or stringify it
+        if (typeof message === 'object') {
+          message = JSON.stringify(message);
+        }
+
         finalError = new Error(message);
       }
       return TermiiMapper.toErrorResponse(finalError, 'Failed to send SMS');
