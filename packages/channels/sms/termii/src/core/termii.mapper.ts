@@ -17,18 +17,9 @@ export class TermiiMapper {
       throw new Error('Sender ID (from) is required for Termii');
     }
 
-    // Termii specific: "to" must be a single number for this en0]dpoint usually,
-    // but our abstraction might handle arrays. The basic Termii /send endpoint takes one "to".
-    // We will assume the Channel handles iteration or this mapper handles single request.
-    // Let's assume single recipient for the prompt, but if request has multiple, the channel loops.
-    // So this mapper maps ONE request context.
-
-    // Warning: request.to is NotificationRecipient | NotificationRecipient[]
-    // We'll take the first one or assume the channel passes a normalized request.
-    // Ideally the channel iterates.
+    // Map recipients to single string or array of strings
     const recipients = Array.isArray(request.to) ? request.to : [request.to];
-    // TODO: Handle multiple recipients
-    const to = recipients[0].phone; // Naive, but Termii API is 1-to-1 typically.
+    const to = recipients.length > 1 ? recipients.map((r) => r.phone) : recipients[0].phone;
 
     return {
       to,

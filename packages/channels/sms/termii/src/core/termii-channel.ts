@@ -88,23 +88,30 @@ export class TermiiChannel extends SmsChannel {
 
       const data = TermiiMapper.toTermiiData(request, this.termiiConfig);
 
+      // Determine endpoint based on whether we have multiple recipients
+      const endpoint = Array.isArray(data.to) ? '/api/sms/send/bulk' : '/api/sms/send';
+
       // Send SMS
-      const response = await this.client.post<TermiiApiResponse>('/api/sms/send', data);
+      const response = await this.client.post<TermiiApiResponse>(endpoint, data);
 
       if (!response.data || !response.data.message_id) {
-        // Some Termii error responses might still have 200 OK but contain error fields?
-        // Assuming client throws on 4xx/5xx, but if 200 with error msg:
+        // Handle cases where Termii returns 200 but with error message
         if (response.data && (response.data as any).message && !(response.data as any).message_id) {
           throw new Error((response.data as any).message);
         }
+        // Fallback for unexpected successful response without message_id
+        // (Unless bulk response allows partial success? The simple implementation assumes all or nothing or validates response)
+        // For bulk, the docs sample response is similar to single.
       }
 
       return TermiiMapper.toSuccessResponse(response.data, request);
     } catch (error) {
-      // Extract axios error details if available
+      // Enhanced error handling
       let finalError = error;
       if (axios.isAxiosError(error) && error.response) {
-        finalError = new Error(`Termii API Error: ${JSON.stringify(error.response.data)}`);
+        const errorData = error.response.data;
+        const message = errorData?.message || (errorData as any)?.error || error.message;
+        finalError = new Error(message);
       }
       return TermiiMapper.toErrorResponse(finalError, 'Failed to send SMS');
     }
