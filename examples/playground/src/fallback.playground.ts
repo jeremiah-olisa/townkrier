@@ -1,4 +1,4 @@
-import { NotificationFactory, NotificationStatus, Logger, SendEmailRequest } from '@townkrier/core';
+import { TownkrierFactory, NotificationStatus, Logger, SendEmailRequest } from '@townkrier/core';
 import { createResendChannel } from '@townkrier/resend';
 import { createSmtpChannel } from '@townkrier/smtp';
 import * as dotenv from 'dotenv';
@@ -42,9 +42,9 @@ async function run() {
 
   const smtpChannel = createSmtpChannel(smtpConfig);
 
-  const factory = new NotificationFactory();
-  factory.addChannel(resendChannel);
-  factory.addChannel(smtpChannel);
+  const factory = TownkrierFactory.create({
+    channels: [resendChannel, smtpChannel],
+  });
 
   Logger.log('Attempting to send email with fallback logic...');
 
@@ -67,7 +67,7 @@ async function run() {
   for (const channelName of channelsToTry) {
     Logger.log(`Trying channel: ${channelName}...`);
     try {
-      const result = await factory.send(channelName, request);
+      const result = await factory.sendWithAdapterFallback(channelName, request);
 
       if (result.status === NotificationStatus.SENT) {
         Logger.log(`✅ Successfully sent via ${channelName}!`);

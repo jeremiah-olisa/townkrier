@@ -8,7 +8,9 @@
     "mailtrap": "ts-node src/mailtrap.playground.ts",
     "postmark": "ts-node src/postmark.playground.ts",
     "smtp": "ts-node src/smtp.playground.ts",
-    "fallback": "ts-node src/fallback.playground.ts"
+    "fallback": "ts-node src/fallback.playground.ts",
+    "fcm": "ts-node src/fcm.playground.ts",
+    "termii": "ts-node src/termii.playground.ts"
   },
   "dependencies": {
     "@townkrier/core": "workspace:*",
@@ -16,6 +18,8 @@
     "@townkrier/mailtrap": "workspace:*",
     "@townkrier/postmark": "workspace:*",
     "@townkrier/smtp": "workspace:*",
+    "@townkrier/fcm": "workspace:*",
+    "@townkrier/termii": "workspace:*",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

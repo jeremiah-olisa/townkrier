@@ -1,4 +1,6 @@
 packages:
   - 'packages/*'
   - 'packages/channels/email/*'
+  - 'packages/channels/push/*'
+  - 'packages/channels/sms/*'
   - 'examples/playground'

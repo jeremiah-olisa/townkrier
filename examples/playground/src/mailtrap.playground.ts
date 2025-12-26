@@ -1,4 +1,4 @@
-import { NotificationFactory, NotificationStatus, Logger } from '@townkrier/core';
+import { TownkrierFactory, NotificationStatus, Logger } from '@townkrier/core';
 import { createMailtrapChannel } from '@townkrier/mailtrap';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -25,11 +25,12 @@ async function run() {
     fromName: 'Townkrier Mailtrap Demo',
   });
 
-  const factory = new NotificationFactory();
-  factory.addChannel(mailtrapChannel);
+  const factory = TownkrierFactory.create({
+    channels: [mailtrapChannel],
+  });
 
   try {
-    const result = await factory.send('Mailtrap', {
+    const result = await factory.sendWithAdapterFallback('Mailtrap', {
       to: { email: 'test-recipient@example.com' }, // Replace with real email for actual test if needed, or use Mailtrap inbox
       subject: 'Hello from Townkrier + Mailtrap',
       html: '<h1>It works!</h1><p>This is a test email sent via Mailtrap.</p>',

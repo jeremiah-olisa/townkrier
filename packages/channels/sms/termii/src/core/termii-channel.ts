@@ -1,20 +1,15 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
 import {
   SmsChannel,
   SendSmsRequest,
   SendSmsResponse,
-  NotificationStatus,
   NotificationConfigurationException,
-  NotificationInvalidResponseError,
-  generateReference,
-  isValidPhone,
-  normalizePhone,
-  sanitizeMetadata,
   Logger,
 } from '@townkrier/core';
 
 import { TermiiConfig } from '../types';
-import { TermiiSmsData, TermiiApiResponse, TermiiError } from '../interfaces';
+import { TermiiApiResponse } from '../interfaces';
+import { TermiiMapper } from './termii.mapper';
+import axios, { AxiosInstance } from 'axios';
 
 /**
  * Termii SMS channel implementation
@@ -78,130 +73,55 @@ export class TermiiChannel extends SmsChannel {
    */
   async sendSms(request: SendSmsRequest): Promise<SendSmsResponse> {
     try {
-      // Validate recipients
       const recipients = Array.isArray(request.to) ? request.to : [request.to];
-      const validRecipients = recipients.filter((r) => {
-        if (!isValidPhone(r.phone)) {
-          Logger.warn(`Invalid phone number skipped: ${r.phone}`);
-          return false;
-        }
-        return true;
-      });
 
-      if (validRecipients.length === 0) {
-        throw new NotificationConfigurationException('No valid phone numbers provided', {
+      if (recipients.length === 0) {
+        throw new NotificationConfigurationException('No recipients provided', {
           recipients,
         });
       }
 
-      // Termii sends one message at a time, so we'll send to the first recipient
-      // For multiple recipients, you'd need to make multiple API calls
-      const recipient = validRecipients[0];
-      const normalizedPhone = normalizePhone(recipient.phone);
+      // To adhere to the mapper logic which handles one recipient:
+      // We will perform a single send for the first recipient as per the current design constraint
+      // or simplistic implementation. A robust implementation would loop or bulk send.
+      // TermiiMapper.toTermiiData expects the request object.
 
-      // Prepare SMS data
-      const from = request.from || this.termiiConfig.senderId || 'Townkrier';
-      const channel = this.termiiConfig.channel || 'generic';
-
-      const smsData: TermiiSmsData = {
-        api_key: this.termiiConfig.apiKey,
-        to: normalizedPhone,
-        from,
-        sms: request.text,
-        type: 'plain',
-        channel,
-      };
+      const data = TermiiMapper.toTermiiData(request, this.termiiConfig);
 
       // Send SMS
-      const response = await this.client.post<TermiiApiResponse>('/api/sms/send', smsData);
+      const response = await this.client.post<TermiiApiResponse>('/api/sms/send', data);
 
       if (!response.data || !response.data.message_id) {
-        throw new NotificationInvalidResponseError(
-          response.data?.message || 'No response data from Termii',
-          response.status,
-          response.data,
-        );
+        // Some Termii error responses might still have 200 OK but contain error fields?
+        // Assuming client throws on 4xx/5xx, but if 200 with error msg:
+        if (response.data && (response.data as any).message && !(response.data as any).message_id) {
+          throw new Error((response.data as any).message);
+        }
       }
 
-      const data = response.data;
-      const reference = request.reference || generateReference('SMS');
-
-      return {
-        messageId: data.message_id,
-        reference,
-        status: NotificationStatus.SENT,
-        sentAt: new Date(),
-        units: 1, // Termii charges per message
-        metadata: sanitizeMetadata(request.metadata),
-        raw: response.data,
-      };
+      return TermiiMapper.toSuccessResponse(response.data, request);
     } catch (error) {
-      return this.handleError(error, 'Failed to send SMS') as SendSmsResponse;
+      // Extract axios error details if available
+      let finalError = error;
+      if (axios.isAxiosError(error) && error.response) {
+        finalError = new Error(`Termii API Error: ${JSON.stringify(error.response.data)}`);
+      }
+      return TermiiMapper.toErrorResponse(finalError, 'Failed to send SMS');
     }
+  }
+
+  protected isValidNotificationRequest(request: any): request is SendSmsRequest {
+    return request && request.message && (request.to || Array.isArray(request.to));
   }
 
   /**
    * Handle errors and convert to standard notification response
+   * @deprecated Use Mapper.toErrorResponse instead, this is kept/unused or can be removed if strictly following mapper pattern.
+   * I will remove the specific logic here to rely on Mapper, but keep the method if the base class requires it or just delegate.
+   * Base class doesn't mandate it private helper.
    */
   private handleError(error: unknown, defaultMessage: string): SendSmsResponse {
-    if (axios.isAxiosError(error)) {
-      const axiosError = error as AxiosError<TermiiError>;
-      const message = axiosError.response?.data?.message || axiosError.message || defaultMessage;
-      const statusCode = axiosError.response?.status;
-
-      // Check for timeout
-      if (axiosError.code === 'ECONNABORTED' || axiosError.code === 'ETIMEDOUT') {
-        return {
-          messageId: '',
-          status: NotificationStatus.FAILED,
-          error: {
-            code: 'TERMII_TIMEOUT',
-            message: 'Termii API request timed out',
-            details: {
-              statusCode,
-              response: axiosError.response?.data,
-            },
-          },
-        };
-      }
-
-      return {
-        messageId: '',
-        status: NotificationStatus.FAILED,
-        error: {
-          code: 'TERMII_ERROR',
-          message,
-          details: {
-            statusCode,
-            response: axiosError.response?.data,
-          },
-        },
-      };
-    }
-
-    // Handle notification exceptions from core
-    if (error instanceof Error && error.name && error.name.includes('Exception')) {
-      const notificationError = error as Error & { code?: string; details?: unknown };
-      return {
-        messageId: '',
-        status: NotificationStatus.FAILED,
-        error: {
-          code: notificationError.code || 'NOTIFICATION_ERROR',
-          message: error.message || defaultMessage,
-          details: notificationError.details,
-        },
-      };
-    }
-
-    return {
-      messageId: '',
-      status: NotificationStatus.FAILED,
-      error: {
-        code: 'UNKNOWN_ERROR',
-        message: error instanceof Error ? error.message : defaultMessage,
-        details: error,
-      },
-    };
+    return TermiiMapper.toErrorResponse(error, defaultMessage);
   }
 }
 

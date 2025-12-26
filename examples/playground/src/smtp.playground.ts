@@ -1,4 +1,4 @@
-import { NotificationFactory, NotificationStatus, Logger } from '@townkrier/core';
+import { TownkrierFactory, NotificationStatus, Logger } from '@townkrier/core';
 import { createSmtpChannel } from '@townkrier/smtp';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -27,11 +27,12 @@ async function run() {
     fromName: 'Townkrier SMTP Demo',
   });
 
-  const factory = new NotificationFactory();
-  factory.addChannel(smtpChannel);
+  const factory = TownkrierFactory.create({
+    channels: [smtpChannel],
+  });
 
   try {
-    const result = await factory.send('SMTP', {
+    const result = await factory.sendWithAdapterFallback('SMTP', {
       to: { email: 'test-recipient@example.com' },
       from: { email: from, name: 'Townkrier SMTP Demo' },
       subject: 'Hello from Townkrier + SMTP',

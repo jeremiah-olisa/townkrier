@@ -3,14 +3,12 @@ import {
   PushChannel,
   SendPushRequest,
   SendPushResponse,
-  NotificationStatus,
   NotificationConfigurationException,
-  generateReference,
-  sanitizeMetadata,
 } from '@townkrier/core';
 
 import { FcmConfig } from '../types';
-import { FcmMessageData, FcmSendResponse } from '../interfaces';
+import { FcmSendResponse } from '../interfaces';
+import { FcmMapper } from './fcm.mapper';
 
 /**
  * Firebase Cloud Messaging push notification channel implementation
@@ -20,15 +18,6 @@ export class FcmChannel extends PushChannel {
   private app: admin.app.App;
 
   constructor(config: FcmConfig) {
-    if (!config.serviceAccount && !config.serviceAccountPath) {
-      throw new NotificationConfigurationException(
-        'Service account credentials or path is required for FCM',
-        {
-          channel: 'FCM',
-        },
-      );
-    }
-
     super(config, 'FCM');
     this.fcmConfig = config;
 
@@ -60,6 +49,28 @@ export class FcmChannel extends PushChannel {
   }
 
   /**
+   * Validate channel configuration
+   */
+  protected validateConfig(): void {
+    const config = this.config as unknown as FcmConfig;
+    if (!config.serviceAccount && !config.serviceAccountPath) {
+      throw new NotificationConfigurationException(
+        'Service account credentials or path is required for FCM',
+        {
+          channel: 'FCM',
+        },
+      );
+    }
+  }
+
+  /**
+   * Check if the channel is ready
+   */
+  isReady(): boolean {
+    return !!this.app;
+  }
+
+  /**
    * Send a push notification
    */
   async sendPush(request: SendPushRequest): Promise<SendPushResponse> {
@@ -74,61 +85,8 @@ export class FcmChannel extends PushChannel {
         });
       }
 
-      // Prepare FCM message
-      const message: FcmMessageData = {
-        notification: {
-          title: request.title,
-          body: request.body,
-          imageUrl: request.imageUrl,
-        },
-      };
-
-      // Add platform-specific configurations
-      if (request.icon || request.sound || request.badge) {
-        message.android = {
-          priority:
-            request.priority === 'urgent' || request.priority === 'high' ? 'high' : 'normal',
-          notification: {
-            icon: request.icon,
-            sound: request.sound,
-          },
-        };
-
-        if (request.sound || request.badge) {
-          message.apns = {
-            payload: {
-              aps: {
-                ...(request.sound && { sound: request.sound }),
-                ...(request.badge !== undefined && { badge: request.badge }),
-              },
-            },
-          };
-        }
-
-        message.webpush = {
-          notification: {
-            icon: request.icon,
-          },
-        };
-      }
-
-      // Add data payload
-      if (request.data) {
-        // FCM requires all data values to be strings
-        message.data = Object.entries(request.data).reduce(
-          (acc, [key, value]) => {
-            acc[key] = String(value);
-            return acc;
-          },
-          {} as Record<string, string>,
-        );
-      }
-
-      // Add action URL as data
-      if (request.actionUrl) {
-        if (!message.data) message.data = {};
-        message.data.actionUrl = request.actionUrl;
-      }
+      // Prepare FCM message using Mapper
+      const message = FcmMapper.toFcmMessage(request);
 
       let response: FcmSendResponse;
 
@@ -139,90 +97,24 @@ export class FcmChannel extends PushChannel {
           ...message,
         } as admin.messaging.Message);
 
-        response = {
-          successCount: 1,
-          failureCount: 0,
-          responses: [
-            {
-              success: true,
-              messageId: result,
-            },
-          ],
-        };
+        response = FcmMapper.toChannelResponse(result);
       } else {
         const result = await admin.messaging(this.app).sendEachForMulticast({
           tokens: deviceTokens,
           ...message,
         } as admin.messaging.MulticastMessage);
 
-        response = {
-          successCount: result.successCount,
-          failureCount: result.failureCount,
-          responses: result.responses.map((r) => ({
-            success: r.success,
-            messageId: r.messageId,
-            error: r.error
-              ? {
-                  code: r.error.code,
-                  message: r.error.message,
-                }
-              : undefined,
-          })),
-        };
+        response = FcmMapper.toChannelResponse(result);
       }
 
-      const reference = request.reference || generateReference('PUSH');
-      const messageId = response.responses[0]?.messageId || '';
-
-      return {
-        success: response.successCount > 0,
-        messageId,
-        reference,
-        status: response.successCount > 0 ? NotificationStatus.SENT : NotificationStatus.FAILED,
-        sentAt: new Date(),
-        successCount: response.successCount,
-        failureCount: response.failureCount,
-        metadata: sanitizeMetadata(request.metadata),
-        raw: response,
-      };
+      return FcmMapper.toSuccessResponse(response, request);
     } catch (error) {
-      return this.handleError(error, 'Failed to send push notification') as SendPushResponse;
+      return FcmMapper.toErrorResponse(error, 'Failed to send push notification');
     }
   }
 
-  /**
-   * Handle errors and convert to standard notification response
-   */
-  private handleError(error: unknown, defaultMessage: string): SendPushResponse {
-    if (error instanceof Error) {
-      const fcmError = error as Error & { code?: string };
-
-      return {
-        success: false,
-        messageId: '',
-        status: NotificationStatus.FAILED,
-        successCount: 0,
-        failureCount: 1,
-        error: {
-          code: fcmError.code || 'FCM_ERROR',
-          message: error.message || defaultMessage,
-          details: error,
-        },
-      };
-    }
-
-    return {
-      success: false,
-      messageId: '',
-      status: NotificationStatus.FAILED,
-      successCount: 0,
-      failureCount: 1,
-      error: {
-        code: 'UNKNOWN_ERROR',
-        message: defaultMessage,
-        details: error,
-      },
-    };
+  protected isValidNotificationRequest(request: any): request is SendPushRequest {
+    return request && (request.title || request.body) && (request.to || Array.isArray(request.to));
   }
 
   /**
