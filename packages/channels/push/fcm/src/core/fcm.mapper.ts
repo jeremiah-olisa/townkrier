@@ -10,41 +10,86 @@ import { FcmMessageData, FcmSendResponse } from '../interfaces';
 
 export class FcmMapper {
   static toFcmMessage(request: SendPushRequest): FcmMessageData {
+    const { metadata = {} } = request;
+
+    // Extract common platform specific options from metadata
+    const channelId = metadata.channelId as string | undefined;
+    const ttl = metadata.ttl !== undefined ? Number(metadata.ttl) : undefined;
+    const collapseKey = metadata.collapseKey as string | undefined;
+
     const message: FcmMessageData = {
       notification: {
         title: request.title,
         body: request.body,
+      },
+    };
+
+    // Android Config
+    message.android = {
+      // Priority mapping
+      priority: request.priority === 'urgent' || request.priority === 'high' ? 'high' : 'normal',
+      // TTL and Collapse Key
+      ttl: ttl ? ttl * 1000 : undefined, // FCM expects milliseconds
+      collapseKey,
+      notification: {
+        icon: request.icon,
+        sound: request.sound,
+        channelId: channelId,
+        imageUrl: request.imageUrl, // Redundant but good for some Android versions
+        clickAction: request.actionUrl, // Common way to handle clicks on Android
+      },
+      data: request.data as Record<string, string>,
+    };
+
+    // iOS (APNs) Config
+    message.apns = {
+      headers: {
+        'apns-priority': request.priority === 'urgent' || request.priority === 'high' ? '10' : '5',
+        ...(collapseKey && { 'apns-collapse-id': collapseKey }),
+      },
+      payload: {
+        aps: {
+          alert: {
+            title: request.title,
+            body: request.body,
+          },
+          ...(request.sound && { sound: request.sound }),
+          ...(request.badge !== undefined && { badge: request.badge }),
+          'mutable-content': 1, // Enable rich notifications (images)
+        },
+      },
+      fcmOptions: {
         imageUrl: request.imageUrl,
       },
     };
 
-    if (request.icon || request.sound || request.badge) {
-      message.android = {
-        priority: request.priority === 'urgent' || request.priority === 'high' ? 'high' : 'normal',
-        notification: {
-          icon: request.icon,
-          sound: request.sound,
-        },
-      };
-
-      if (request.sound || request.badge) {
-        message.apns = {
-          payload: {
-            aps: {
-              ...(request.sound && { sound: request.sound }),
-              ...(request.badge !== undefined && { badge: request.badge }),
-            },
+    // WebPush Config
+    message.webpush = {
+      headers: {
+        Urgency: request.priority === 'urgent' || request.priority === 'high' ? 'high' : 'normal',
+        ...(ttl && { TTL: String(ttl) }),
+      },
+      notification: {
+        title: request.title,
+        body: request.body,
+        icon: request.icon,
+        image: request.imageUrl,
+        data: request.data,
+        // Standard Web Push link
+        ...(request.actionUrl && {
+          data: {
+            ...(request.data || {}),
+            url: request.actionUrl,
           },
-        };
-      }
+        }),
+      },
+      fcmOptions: {
+        link: request.actionUrl,
+      },
+    };
 
-      message.webpush = {
-        notification: {
-          icon: request.icon,
-        },
-      };
-    }
-
+    // Common Data Payload
+    // Ensure data values are strings for FCM compatibility
     if (request.data) {
       message.data = Object.entries(request.data).reduce(
         (acc, [key, value]) => {
@@ -53,11 +98,13 @@ export class FcmMapper {
         },
         {} as Record<string, string>,
       );
-    }
 
-    if (request.actionUrl) {
-      if (!message.data) message.data = {};
-      message.data.actionUrl = request.actionUrl;
+      // Also add actionUrl to data if present, for custom handling
+      if (request.actionUrl) {
+        message.data.actionUrl = request.actionUrl;
+      }
+    } else if (request.actionUrl) {
+      message.data = { actionUrl: request.actionUrl };
     }
 
     return message;

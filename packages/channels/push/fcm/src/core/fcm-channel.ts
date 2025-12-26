@@ -52,7 +52,7 @@ export class FcmChannel extends PushChannel {
    * Validate channel configuration
    */
   protected validateConfig(): void {
-    const config = this.config as unknown as FcmConfig;
+    const config = this.fcmConfig;
     if (!config.serviceAccount && !config.serviceAccountPath) {
       throw new NotificationConfigurationException(
         'Service account credentials or path is required for FCM',
@@ -77,7 +77,7 @@ export class FcmChannel extends PushChannel {
     try {
       // Get recipients
       const recipients = Array.isArray(request.to) ? request.to : [request.to];
-      const deviceTokens = recipients.map((r) => r.deviceToken);
+      const deviceTokens = recipients.map((r: any) => r.deviceToken);
 
       if (deviceTokens.length === 0) {
         throw new NotificationConfigurationException('No device tokens provided', {
@@ -85,19 +85,39 @@ export class FcmChannel extends PushChannel {
         });
       }
 
-      // Prepare FCM message using Mapper
       const message = FcmMapper.toFcmMessage(request);
 
       let response: FcmSendResponse;
 
       // Send to single or multiple tokens
       if (deviceTokens.length === 1) {
-        const result = await admin.messaging(this.app).send({
-          token: deviceTokens[0],
-          ...message,
-        } as admin.messaging.Message);
+        try {
+          const result = await admin.messaging(this.app).send({
+            token: deviceTokens[0],
+            ...message,
+          } as admin.messaging.Message);
 
-        response = FcmMapper.toChannelResponse(result);
+          response = FcmMapper.toChannelResponse(result);
+        } catch (error) {
+          // Handle single message send error specifically to return partial success/failure structure if needed
+          // or just let it fall through to the general catch if it's a critical failure.
+          // However, FCM single send throws on error, whereas multicast returns a response object with errors.
+          // We should normalize this.
+          response = {
+            successCount: 0,
+            failureCount: 1,
+            responses: [
+              {
+                success: false,
+                messageId: '',
+                error:
+                  error instanceof Error
+                    ? { code: (error as any).code || 'UNKNOWN', message: error.message }
+                    : { code: 'UNKNOWN', message: 'Unknown error' },
+              },
+            ],
+          };
+        }
       } else {
         const result = await admin.messaging(this.app).sendEachForMulticast({
           tokens: deviceTokens,
