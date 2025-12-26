@@ -62,9 +62,21 @@ importers:
       '@townkrier/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@townkrier/mailtrap':
+        specifier: workspace:*
+        version: link:../../packages/channels/email/mailtrap
+      '@townkrier/postmark':
+        specifier: workspace:*
+        version: link:../../packages/channels/email/postmark
       '@townkrier/resend':
         specifier: workspace:*
         version: link:../../packages/channels/email/resend
+      '@townkrier/smtp':
+        specifier: workspace:*
+        version: link:../../packages/channels/email/smtp
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.4.7
     devDependencies:
       ts-node:
         specifier: ^10.9.2
@@ -98,6 +110,31 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/channels/email/postmark:
+    dependencies:
+      '@townkrier/core':
+        specifier: workspace:*
+        version: link:../../../core
+      postmark:
+        specifier: ^4.0.2
+        version: 4.0.2
+    devDependencies:
+      '@types/jest':
+        specifier: ^30.0.0
+        version: 30.0.0
+      '@types/node':
+        specifier: ^24.9.1
+        version: 24.9.1
+      jest:
+        specifier: ^30.2.0
+        version: 30.2.0(@types/node@24.9.1)
+      ts-jest:
+        specifier: ^29.4.5
+        version: 29.4.5(@babel/core@7.28.5)(jest@30.2.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/channels/email/resend:
     dependencies:
       '@townkrier/core':
@@ -113,6 +150,34 @@ importers:
       '@types/node':
         specifier: ^24.9.1
         version: 24.9.1
+      jest:
+        specifier: ^30.2.0
+        version: 30.2.0(@types/node@24.9.1)
+      ts-jest:
+        specifier: ^29.4.5
+        version: 29.4.5(@babel/core@7.28.5)(jest@30.2.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
+  packages/channels/email/smtp:
+    dependencies:
+      '@townkrier/core':
+        specifier: workspace:*
+        version: link:../../../core
+      nodemailer:
+        specifier: ^6.9.15
+        version: 6.9.15
+    devDependencies:
+      '@types/jest':
+        specifier: ^30.0.0
+        version: 30.0.0
+      '@types/node':
+        specifier: ^24.9.1
+        version: 24.9.1
+      '@types/nodemailer':
+        specifier: ^6.4.16
+        version: 6.4.16
       jest:
         specifier: ^30.2.0
         version: 30.2.0(@types/node@24.9.1)
@@ -1899,6 +1964,12 @@ packages:
     dependencies:
       undici-types: 7.16.0
 
+  /@types/nodemailer@6.4.16:
+    resolution: {integrity: sha512-uz6hN6Pp0upXMcilM61CoKyjT7sskBoOWpptkjjJp8jIMlTdc3xG01U7proKkXzruMS4hS0zqtHNkNPFB20rKQ==}
+    dependencies:
+      '@types/node': 24.9.1
+    dev: true
+
   /@types/normalize-package-data@2.4.4:
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
     dev: true
@@ -3653,7 +3724,6 @@ packages:
   /dotenv@16.4.7:
     resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
     engines: {node: '>=12'}
-    dev: true
 
   /dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -6802,6 +6872,11 @@ packages:
     resolution: {integrity: sha512-S2M9YimhSjBSvYnlr5/+umAnPHE++ODwt5e2Ij6FoX45HA/s4vHdkDx1eax2pAPeAOqu4s9b7ppahsyEFdVqQA==}
     dev: true
 
+  /nodemailer@6.9.15:
+    resolution: {integrity: sha512-AHf04ySLC6CIfuRtRiEYtGEXgRfa6INgWGluDhnxTZhHSKvrBu7lc1VVchQ0d8nPc4cFaZoPq8vkyNoZr0TpGQ==}
+    engines: {node: '>=6.0.0'}
+    dev: false
+
   /nopt@7.2.1:
     resolution: {integrity: sha512-taM24ViiimT/XntxbPyJQzCG+p4EKOpgD3mxFwW38mGjVUrfERQOeY4EDHjdnptttfHuHQXFx+lTP08Q+mLa/w==}
     engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
@@ -7413,6 +7488,14 @@ packages:
       cssesc: 3.0.0
       util-deprecate: 1.0.2
     dev: true
+
+  /postmark@4.0.2:
+    resolution: {integrity: sha512-2zlCv+KVVQ0KoamXZHE7d+gXzLlr8tPE+PxQmtUaIZhbHzZAq4D6yH2b+ykhA8wYCc5ISodcx8U1aNLenXBs9g==}
+    dependencies:
+      axios: 1.12.2
+    transitivePeerDependencies:
+      - debug
+    dev: false
 
   /prelude-ls@1.2.1:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
