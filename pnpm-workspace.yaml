@@ -4,3 +4,4 @@ packages:
   - 'packages/channels/push/*'
   - 'packages/channels/sms/*'
   - 'examples/playground'
+  - 'examples/expo-townkrier'
