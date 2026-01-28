@@ -1,6 +1,6 @@
 {
   "name": "townkrier-resend",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "Resend email adapter for Townkrier notification system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,8 +26,8 @@
     "access": "public"
   },
   "dependencies": {
-    "townkrier-core": "workspace:*",
-    "resend": "^4.0.1"
+    "resend": "^4.0.1",
+    "townkrier-core": "workspace:*"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

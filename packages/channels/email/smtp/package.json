@@ -1,6 +1,6 @@
 {
   "name": "townkrier-smtp",
-  "version": "1.0.0-alpha.2",
+  "version": "1.0.0-alpha.3",
   "description": "SMTP email adapter for Townkrier notification system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -26,8 +26,8 @@
     "access": "public"
   },
   "dependencies": {
-    "townkrier-core": "workspace:*",
-    "nodemailer": "^6.9.15"
+    "nodemailer": "^6.9.15",
+    "townkrier-core": "workspace:*"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
