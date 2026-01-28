@@ -4,7 +4,7 @@ import {
   NotificationStatus,
   sanitizeMetadata,
   generateReference,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { MailtrapConfig } from '../types';
 import { MailtrapEmailData, MailtrapApiResponse } from '../interfaces';
 

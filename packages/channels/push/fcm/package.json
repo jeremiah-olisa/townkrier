@@ -1,5 +1,5 @@
 {
-  "name": "@townkrier/fcm",
+  "name": "townkrier-fcm",
   "version": "1.0.0-alpha.2",
   "description": "Firebase Cloud Messaging adapter for Townkrier notification system",
   "main": "dist/index.js",
@@ -27,7 +27,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@townkrier/core": "workspace:*",
+    "townkrier-core": "workspace:*",
     "firebase-admin": "^13.0.1"
   },
   "devDependencies": {

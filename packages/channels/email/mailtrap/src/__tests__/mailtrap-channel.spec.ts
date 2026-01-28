@@ -2,7 +2,7 @@ import {
   SendEmailRequest,
   NotificationStatus,
   NotificationConfigurationException,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { MailtrapChannel } from '../core/mailtrap-channel';
 import { MailtrapConfig } from '../types';
 import { MailtrapClient } from 'mailtrap';

@@ -1,5 +1,5 @@
-import { TownkrierFactory, NotificationStatus, Logger } from '@townkrier/core';
-import { createPostmarkChannel } from '@townkrier/postmark';
+import { TownkrierFactory, NotificationStatus, Logger } from 'townkrier-core';
+import { createPostmarkChannel } from 'townkrier-postmark';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 

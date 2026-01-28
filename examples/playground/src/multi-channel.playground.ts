@@ -7,10 +7,10 @@ import {
   SendEmailResponse,
   SendSmsResponse,
   SendPushResponse,
-} from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
-import { createFcmChannel } from '@townkrier/fcm';
-import { createTermiiChannel } from '@townkrier/termii';
+} from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
+import { createFcmChannel } from 'townkrier-fcm';
+import { createTermiiChannel } from 'townkrier-termii';
 import { WelcomeNotification } from './welcome-notification';
 
 // Mock Config from .env

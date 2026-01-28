@@ -1,4 +1,4 @@
-# @townkrier/fcm
+# townkrier-fcm
 
 Firebase Cloud Messaging (FCM) push notification adapter for the TownKrier notification system.
 
@@ -15,16 +15,16 @@ Firebase Cloud Messaging (FCM) push notification adapter for the TownKrier notif
 ## Installation
 
 ```bash
-npm install @townkrier/fcm @townkrier/core
+npm install townkrier-fcm townkrier-core
 # or
-pnpm add @townkrier/fcm @townkrier/core
+pnpm add townkrier-fcm townkrier-core
 ```
 
 ## Quick Start
 
 ```typescript
-import { NotificationManager, NotificationChannel } from '@townkrier/core';
-import { createFcmChannel } from '@townkrier/fcm';
+import { NotificationManager, NotificationChannel } from 'townkrier-core';
+import { createFcmChannel } from 'townkrier-fcm';
 
 // Configure the manager with FCM channel
 const manager = new NotificationManager({
@@ -281,7 +281,7 @@ class ChatMessageNotification extends Notification {
 ### Scheduled Notifications
 
 ```typescript
-import { QueueManager } from '@townkrier/queue';
+import { QueueManager } from 'townkrier-queue';
 
 // Schedule notification for future delivery
 const queueManager = new QueueManager(queueAdapter, manager);
@@ -381,7 +381,7 @@ await messaging().unsubscribeFromTopic('news-alerts');
 ## Error Handling
 
 ```typescript
-import { NotificationFailed } from '@townkrier/core';
+import { NotificationFailed } from 'townkrier-core';
 
 eventDispatcher.on(NotificationFailed, async (event) => {
   console.error('Push notification failed:', event.error.message);
@@ -526,11 +526,11 @@ Additional Firebase services may have costs. Check [Firebase Pricing](https://fi
 
 ## Related Packages
 
-- [@townkrier/core](../../core) - Core notification system
-- [@townkrier/resend](../../resend) - Email provider
-- [@townkrier/termii](../sms/termii) - SMS provider
-- [@townkrier/queue](../../queue) - Queue system for background processing
-- [@townkrier/dashboard](../../dashboard) - Monitoring dashboard
+- [townkrier-core](../../core) - Core notification system
+- [townkrier-resend](../../resend) - Email provider
+- [townkrier-termii](../sms/termii) - SMS provider
+- [townkrier-queue](../../queue) - Queue system for background processing
+- [townkrier-dashboard](../../dashboard) - Monitoring dashboard
 
 ## Examples
 

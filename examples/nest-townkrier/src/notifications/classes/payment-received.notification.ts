@@ -2,7 +2,7 @@ import {
   Notification,
   NotificationChannel,
   NotificationPriority,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 /**
  * Payment received notification

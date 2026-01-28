@@ -38,9 +38,9 @@ This document summarizes all the work done to stabilize TownKrier notification p
 ### 5. Documentation
 
 - ✅ Created comprehensive adapter documentation (35KB total)
-- ✅ Added detailed README for @townkrier/resend (14KB)
-- ✅ Added detailed README for @townkrier/termii (7KB)
-- ✅ Added detailed README for @townkrier/fcm (13KB)
+- ✅ Added detailed README for townkrier-resend (14KB)
+- ✅ Added detailed README for townkrier-termii (7KB)
+- ✅ Added detailed README for townkrier-fcm (13KB)
 - ✅ Created GETTING_STARTED.md with simple example
 - ✅ Updated main README with proper documentation links
 
@@ -50,56 +50,56 @@ This document summarizes all the work done to stabilize TownKrier notification p
 
 All packages are now production-ready:
 
-### @townkrier/core
+### townkrier-core
 
 - ✅ Builds successfully
 - ✅ 21 unit tests passing
 - ✅ No linting warnings
 - ✅ Comprehensive documentation
 
-### @townkrier/cli
+### townkrier-cli
 
 - ✅ Builds successfully
 - ✅ Jest config with passWithNoTests
 - ✅ No linting warnings
 - ✅ Complete documentation
 
-### @townkrier/resend (Email)
+### townkrier-resend (Email)
 
 - ✅ Builds successfully
 - ✅ Jest config added
 - ✅ No linting warnings
 - ✅ Comprehensive 14KB documentation with examples
 
-### @townkrier/termii (SMS)
+### townkrier-termii (SMS)
 
 - ✅ Builds successfully
 - ✅ Jest config added
 - ✅ No linting warnings
 - ✅ Comprehensive 7KB documentation with examples
 
-### @townkrier/fcm (Push)
+### townkrier-fcm (Push)
 
 - ✅ Builds successfully
 - ✅ Jest config added
 - ✅ No linting warnings
 - ✅ Comprehensive 13KB documentation with examples
 
-### @townkrier/queue
+### townkrier-queue
 
 - ✅ Builds successfully
 - ✅ Jest config added
 - ✅ No linting warnings
 - ✅ BullMQ type issue fixed
 
-### @townkrier/storage
+### townkrier-storage
 
 - ✅ Builds successfully
 - ✅ Jest config added
 - ✅ No linting warnings
 - ✅ Existing documentation
 
-### @townkrier/dashboard
+### townkrier-dashboard
 
 - ✅ Builds successfully
 - ✅ Jest config added
@@ -179,7 +179,7 @@ The packages are now truly plug-and-play:
 ### Easy Installation
 
 ```bash
-npm install @townkrier/core @townkrier/resend
+npm install townkrier-core townkrier-resend
 ```
 
 ### Simple Configuration
@@ -247,8 +247,8 @@ await manager.send(notification, recipient);
 ### Email Notifications
 
 ```typescript
-import { NotificationManager } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
+import { NotificationManager } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
 
 const manager = new NotificationManager({
   /* config */
@@ -260,7 +260,7 @@ await manager.send(notification, recipient);
 ### SMS Notifications
 
 ```typescript
-import { createTermiiChannel } from '@townkrier/termii';
+import { createTermiiChannel } from 'townkrier-termii';
 
 manager.registerFactory('sms', createTermiiChannel);
 ```
@@ -268,7 +268,7 @@ manager.registerFactory('sms', createTermiiChannel);
 ### Push Notifications
 
 ```typescript
-import { createFcmChannel } from '@townkrier/fcm';
+import { createFcmChannel } from 'townkrier-fcm';
 
 manager.registerFactory('push', createFcmChannel);
 ```
@@ -276,7 +276,7 @@ manager.registerFactory('push', createFcmChannel);
 ### Multi-Channel with Queue
 
 ```typescript
-import { QueueManager } from '@townkrier/queue';
+import { QueueManager } from 'townkrier-queue';
 
 const queueManager = new QueueManager(adapter, manager);
 await queueManager.enqueue(notification, recipient);
@@ -285,7 +285,7 @@ await queueManager.enqueue(notification, recipient);
 ### With Dashboard
 
 ```typescript
-import { DashboardServer } from '@townkrier/dashboard';
+import { DashboardServer } from 'townkrier-dashboard';
 
 const dashboard = new DashboardServer({ queueManager, storageManager });
 dashboard.start();
@@ -314,7 +314,7 @@ dashboard.start();
 
 ## 📝 Next Steps for Users
 
-1. **Install packages**: `npm install @townkrier/core @townkrier/resend`
+1. **Install packages**: `npm install townkrier-core townkrier-resend`
 2. **Read GETTING_STARTED.md**: Simple working example
 3. **Get API keys**: Follow provider documentation
 4. **Create notifications**: Use examples as templates

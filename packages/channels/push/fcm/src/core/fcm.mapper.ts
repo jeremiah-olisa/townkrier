@@ -5,7 +5,7 @@ import {
   NotificationStatus,
   sanitizeMetadata,
   generateReference,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { FcmMessageData, FcmSendResponse } from '../interfaces';
 
 export class FcmMapper {

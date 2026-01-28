@@ -6,10 +6,10 @@ The TownKrier dashboard can be injected into your existing Express application i
 
 ```typescript
 import express from 'express';
-import { DashboardServer } from '@townkrier/dashboard';
-import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
-import { NotificationManager } from '@townkrier/core';
+import { DashboardServer } from 'townkrier-dashboard';
+import { QueueManager, InMemoryQueueAdapter } from 'townkrier-queue';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
+import { NotificationManager } from 'townkrier-core';
 
 // Create your main Express app
 const app = express();
@@ -60,10 +60,10 @@ app.listen(PORT, () => {
 If you prefer to run the dashboard as a separate server:
 
 ```typescript
-import { DashboardServer } from '@townkrier/dashboard';
-import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
-import { NotificationManager } from '@townkrier/core';
+import { DashboardServer } from 'townkrier-dashboard';
+import { QueueManager, InMemoryQueueAdapter } from 'townkrier-queue';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
+import { NotificationManager } from 'townkrier-core';
 
 // Setup notification system components
 const notificationManager = new NotificationManager(/* config */);
@@ -94,7 +94,7 @@ You can mount the dashboard at any path in your application:
 
 ```typescript
 import express from 'express';
-import { DashboardServer } from '@townkrier/dashboard';
+import { DashboardServer } from 'townkrier-dashboard';
 
 const app = express();
 
@@ -117,7 +117,7 @@ You can even mount multiple dashboard instances if needed:
 
 ```typescript
 import express from 'express';
-import { DashboardServer } from '@townkrier/dashboard';
+import { DashboardServer } from 'townkrier-dashboard';
 
 const app = express();
 

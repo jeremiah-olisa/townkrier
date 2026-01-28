@@ -8,7 +8,7 @@ import {
   NotificationInvalidResponseError,
   isValidEmail,
   Logger,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 import { PostmarkConfig } from '../types';
 import { PostmarkMapper } from './postmark.mapper';

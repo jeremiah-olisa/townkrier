@@ -16,14 +16,14 @@ Common issues and their solutions.
 
 ### Package Not Found
 
-**Problem:** `Cannot find module '@townkrier/core'`
+**Problem:** `Cannot find module 'townkrier-core'`
 
 **Solutions:**
 
 1. Ensure packages are installed:
 
    ```bash
-   npm install @townkrier/core
+   npm install townkrier-core
    ```
 
 2. If using the monorepo, build all packages:

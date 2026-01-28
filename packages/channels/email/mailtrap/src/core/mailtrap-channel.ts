@@ -8,7 +8,7 @@ import {
   NotificationInvalidResponseError,
   isValidEmail,
   Logger,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 import { MailtrapConfig } from '../types';
 import { MailtrapMapper } from './mailtrap.mapper';

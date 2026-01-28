@@ -26,14 +26,14 @@ TownKrier provides a complete background job processing system for notifications
 ### Installation
 
 ```bash
-npm install @townkrier/queue
+npm install townkrier-queue
 ```
 
 ### Basic Setup
 
 ```typescript
-import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
-import { NotificationManager } from '@townkrier/core';
+import { QueueManager, InMemoryQueueAdapter } from 'townkrier-queue';
+import { NotificationManager } from 'townkrier-core';
 
 // Create queue adapter
 const queueAdapter = new InMemoryQueueAdapter({
@@ -131,7 +131,7 @@ Jobs are marked as failed after `maxRetries` attempts.
 ### Job Priorities
 
 ```typescript
-import { JobPriority } from '@townkrier/queue';
+import { JobPriority } from 'townkrier-queue';
 
 // Available priorities (higher number = higher priority)
 JobPriority.LOW; // 1
@@ -157,13 +157,13 @@ queueManager.stopProcessing();
 ### Installation
 
 ```bash
-npm install @townkrier/storage
+npm install townkrier-storage
 ```
 
 ### Basic Setup
 
 ```typescript
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
 
 // Create storage adapter
 const storageAdapter = new InMemoryStorageAdapter({
@@ -252,13 +252,13 @@ console.log(`Deleted ${deletedCount} old logs`);
 ### Installation
 
 ```bash
-npm install @townkrier/dashboard
+npm install townkrier-dashboard
 ```
 
 ### Basic Setup
 
 ```typescript
-import { DashboardServer } from '@townkrier/dashboard';
+import { DashboardServer } from 'townkrier-dashboard';
 
 // Create dashboard server
 const dashboard = new DashboardServer({
@@ -295,7 +295,7 @@ dashboard.start();
 
 ```typescript
 import express from 'express';
-import { createDashboardRouter } from '@townkrier/dashboard';
+import { createDashboardRouter } from 'townkrier-dashboard';
 
 const app = express();
 
@@ -366,11 +366,11 @@ The web UI provides:
 ## Complete Example
 
 ```typescript
-import { NotificationManager, Notification, NotificationChannel } from '@townkrier/core';
-import { QueueManager, InMemoryQueueAdapter, JobPriority } from '@townkrier/queue';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
-import { DashboardServer } from '@townkrier/dashboard';
-import { createResendChannel } from '@townkrier/resend';
+import { NotificationManager, Notification, NotificationChannel } from 'townkrier-core';
+import { QueueManager, InMemoryQueueAdapter, JobPriority } from 'townkrier-queue';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
+import { DashboardServer } from 'townkrier-dashboard';
+import { createResendChannel } from 'townkrier-resend';
 
 // 1. Setup Notification Manager
 const notificationManager = new NotificationManager({

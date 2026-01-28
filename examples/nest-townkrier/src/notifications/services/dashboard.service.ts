@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, Logger } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
-import { setupDashboard, DashboardServer } from '@townkrier/dashboard';
+import { setupDashboard, DashboardServer } from 'townkrier-dashboard';
 import { NotificationService } from './notification.service';
 
 @Injectable()

@@ -1,4 +1,4 @@
-# @townkrier/storage
+# townkrier-storage
 
 Storage adapters for TownKrier notification logs and history.
 
@@ -13,13 +13,13 @@ Storage adapters for TownKrier notification logs and history.
 ## Installation
 
 ```bash
-npm install @townkrier/storage
+npm install townkrier-storage
 ```
 
 ## Usage
 
 ```typescript
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
 
 // Create storage adapter
 const storageAdapter = new InMemoryStorageAdapter();

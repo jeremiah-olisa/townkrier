@@ -4,7 +4,7 @@ import {
   NotificationRecipient,
   Logger,
   NotificationResult,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { IQueueAdapter, QueueJobConfig, QueueJob } from '../interfaces';
 import { JobStatus } from '../types';
 import { JobExecutionException } from '../exceptions';

@@ -1,4 +1,4 @@
-# @townkrier/termii
+# townkrier-termii
 
 Termii SMS adapter for the TownKrier notification system.
 
@@ -14,16 +14,16 @@ Termii SMS adapter for the TownKrier notification system.
 ## Installation
 
 ```bash
-npm install @townkrier/termii @townkrier/core
+npm install townkrier-termii townkrier-core
 # or
-pnpm add @townkrier/termii @townkrier/core
+pnpm add townkrier-termii townkrier-core
 ```
 
 ## Quick Start
 
 ```typescript
-import { NotificationManager, NotificationChannel } from '@townkrier/core';
-import { createTermiiChannel } from '@townkrier/termii';
+import { NotificationManager, NotificationChannel } from 'townkrier-core';
+import { createTermiiChannel } from 'townkrier-termii';
 
 // Configure the manager with Termii channel
 const manager = new NotificationManager({
@@ -185,7 +185,7 @@ class CriticalAlertNotification extends Notification {
 The adapter includes comprehensive error handling:
 
 ```typescript
-import { NotificationFailed } from '@townkrier/core';
+import { NotificationFailed } from 'townkrier-core';
 
 // Listen for failures
 eventDispatcher.on(NotificationFailed, async (event) => {
@@ -268,11 +268,11 @@ Check [Termii Pricing](https://termii.com/pricing) for current rates.
 
 ## Related Packages
 
-- [@townkrier/core](../../core) - Core notification system
-- [@townkrier/resend](../../resend) - Email provider
-- [@townkrier/fcm](../push/fcm) - Push notifications provider
-- [@townkrier/queue](../../queue) - Queue system for background processing
-- [@townkrier/dashboard](../../dashboard) - Monitoring dashboard
+- [townkrier-core](../../core) - Core notification system
+- [townkrier-resend](../../resend) - Email provider
+- [townkrier-fcm](../push/fcm) - Push notifications provider
+- [townkrier-queue](../../queue) - Queue system for background processing
+- [townkrier-dashboard](../../dashboard) - Monitoring dashboard
 
 ## Examples
 

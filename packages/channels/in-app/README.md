@@ -1,15 +1,15 @@
-# @townkrier/in-app
+# townkrier-in-app
 
 In-app/database notification adapter for the TownKrier notification system. This package provides a channel for storing notifications in a database for display within your application (similar to notification bells in modern apps).
 
 ## Installation
 
 ```bash
-npm install @townkrier/in-app
+npm install townkrier-in-app
 # or
-pnpm add @townkrier/in-app
+pnpm add townkrier-in-app
 # or
-yarn add @townkrier/in-app
+yarn add townkrier-in-app
 ```
 
 ## Features
@@ -26,8 +26,8 @@ yarn add @townkrier/in-app
 ### Basic Setup
 
 ```typescript
-import { NotificationManager } from '@townkrier/core';
-import { createInAppChannel, InMemoryInAppStorageAdapter } from '@townkrier/in-app';
+import { NotificationManager } from 'townkrier-core';
+import { createInAppChannel, InMemoryInAppStorageAdapter } from 'townkrier-in-app';
 
 // 1. Create a storage adapter
 const storageAdapter = new InMemoryInAppStorageAdapter();
@@ -53,7 +53,7 @@ notificationManager.registerFactory('in-app', createInAppChannel);
 ### Sending In-App Notifications
 
 ```typescript
-import { NotificationChannel } from '@townkrier/core';
+import { NotificationChannel } from 'townkrier-core';
 
 // Send to single user
 await notificationManager.send(
@@ -115,7 +115,7 @@ await channel.deleteNotification('notification-id');
 The in-memory adapter is suitable for testing, but for production you should implement a database-backed adapter:
 
 ```typescript
-import { InAppStorageAdapter, InAppNotificationData } from '@townkrier/in-app';
+import { InAppStorageAdapter, InAppNotificationData } from 'townkrier-in-app';
 
 class MongoDBStorageAdapter implements InAppStorageAdapter {
   private db: MongoClient;
@@ -233,8 +233,8 @@ class MongoDBStorageAdapter implements InAppStorageAdapter {
 
 ```typescript
 import express from 'express';
-import { NotificationManager, NotificationChannel } from '@townkrier/core';
-import { createInAppChannel, DatabaseInAppChannel } from '@townkrier/in-app';
+import { NotificationManager, NotificationChannel } from 'townkrier-core';
+import { createInAppChannel, DatabaseInAppChannel } from 'townkrier-in-app';
 
 const app = express();
 app.use(express.json());

@@ -423,7 +423,7 @@ townkrier install:database --orm=prisma
 
 #### FR-4.7.2 NestJS Integration
 
-- **Package:** `@townkrier/nestjs`
+- **Package:** `townkrier-nestjs`
 - **Requirements:**
   - Injectable services with DI support
   - Module-based configuration
@@ -460,7 +460,7 @@ export class OrderService {
 
 #### FR-4.7.3 Express Integration
 
-- **Package:** `@townkrier/express`
+- **Package:** `townkrier-express`
 - **Requirements:**
   - Middleware for adding TownKrier to request object
   - Simple configuration function
@@ -469,7 +469,7 @@ export class OrderService {
 **Example:**
 
 ```typescript
-import { setupTownKrier } from '@townkrier/express';
+import { setupTownKrier } from 'townkrier-express';
 
 const app = express();
 setupTownKrier(app, {
@@ -485,9 +485,9 @@ app.post('/orders/:id/ship', async (req, res) => {
 #### FR-4.7.4 Other Framework Support
 
 - **Future packages:**
-  - `@townkrier/fastify`
-  - `@townkrier/hono`
-  - `@townkrier/adonis`
+  - `townkrier-fastify`
+  - `townkrier-hono`
+  - `townkrier-adonis`
 
 ---
 
@@ -730,44 +730,44 @@ class ReminderNotification extends Notification {
 
 ```
 packages/
-├── core/                    # @townkrier/core
-├── cli/                     # @townkrier/cli
-├── nestjs/                  # @townkrier/nestjs
-├── express/                 # @townkrier/express
+├── core/                    # townkrier-core
+├── cli/                     # townkrier-cli
+├── nestjs/                  # townkrier-nestjs
+├── express/                 # townkrier-express
 ├── channels/
-│   ├── mail/               # @townkrier/channel-mail
-│   ├── sms/                # @townkrier/channel-sms
-│   ├── push/               # @townkrier/channel-push
-│   └── database/           # @townkrier/channel-database
+│   ├── mail/               # townkrier-channel-mail
+│   ├── sms/                # townkrier-channel-sms
+│   ├── push/               # townkrier-channel-push
+│   └── database/           # townkrier-channel-database
 ├── providers/
-│   ├── resend/             # @townkrier/provider-resend
-│   ├── postmark/           # @townkrier/provider-postmark
-│   ├── twilio/             # @townkrier/provider-twilio
-│   ├── termii/             # @townkrier/provider-termii
-│   └── fcm/                # @townkrier/provider-fcm
+│   ├── resend/             # townkrier-provider-resend
+│   ├── postmark/           # townkrier-provider-postmark
+│   ├── twilio/             # townkrier-provider-twilio
+│   ├── termii/             # townkrier-provider-termii
+│   └── fcm/                # townkrier-provider-fcm
 └── queues/
-    ├── bullmq/             # @townkrier/queue-bullmq
-    ├── sqs/                # @townkrier/queue-sqs
-    └── redis/              # @townkrier/queue-redis
+    ├── bullmq/             # townkrier-queue-bullmq
+    ├── sqs/                # townkrier-queue-sqs
+    └── redis/              # townkrier-queue-redis
 ```
 
 ### 7.2 Installation Examples
 
 ```bash
 # Core package
-npm install @townkrier/core
+npm install townkrier-core
 
 # With NestJS
-npm install @townkrier/core @townkrier/nestjs
+npm install townkrier-core townkrier-nestjs
 
 # With email support
-npm install @townkrier/core @townkrier/channel-mail @townkrier/provider-resend
+npm install townkrier-core townkrier-channel-mail townkrier-provider-resend
 
 # Full setup
-npm install @townkrier/core @townkrier/cli \
-  @townkrier/channel-mail @townkrier/channel-sms @townkrier/channel-database \
-  @townkrier/provider-resend @townkrier/provider-twilio \
-  @townkrier/queue-bullmq
+npm install townkrier-core townkrier-cli \
+  townkrier-channel-mail townkrier-channel-sms townkrier-channel-database \
+  townkrier-provider-resend townkrier-provider-twilio \
+  townkrier-queue-bullmq
 ```
 
 ---

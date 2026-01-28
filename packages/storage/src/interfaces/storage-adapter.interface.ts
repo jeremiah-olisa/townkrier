@@ -1,4 +1,4 @@
-import { NotificationChannel, NotificationPriority } from '@townkrier/core';
+import { NotificationChannel, NotificationPriority } from 'townkrier-core';
 import { NotificationLogStatus, ContentPrivacy } from '../types';
 
 /**

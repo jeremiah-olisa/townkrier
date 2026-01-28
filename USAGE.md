@@ -16,12 +16,12 @@ A Laravel-inspired notification system for Node.js/TypeScript with support for m
 
 ```bash
 # Core package (required)
-npm install @townkrier/core
+npm install townkrier-core
 
 # Channel packages (install as needed)
-npm install @townkrier/resend    # Email via Resend
-npm install @townkrier/termii    # SMS via Termii
-npm install @townkrier/fcm       # Push via Firebase Cloud Messaging
+npm install townkrier-resend    # Email via Resend
+npm install townkrier-termii    # SMS via Termii
+npm install townkrier-fcm       # Push via Firebase Cloud Messaging
 ```
 
 ## Quick Start
@@ -29,10 +29,10 @@ npm install @townkrier/fcm       # Push via Firebase Cloud Messaging
 ### 1. Setup Notification Manager
 
 ```typescript
-import { NotificationManager, getEventDispatcher } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
-import { createTermiiChannel } from '@townkrier/termii';
-import { createFcmChannel } from '@townkrier/fcm';
+import { NotificationManager, getEventDispatcher } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
+import { createTermiiChannel } from 'townkrier-termii';
+import { createFcmChannel } from 'townkrier-fcm';
 
 // Initialize the manager
 const manager = new NotificationManager(
@@ -82,7 +82,7 @@ manager.registerFactory('push-fcm', createFcmChannel);
 ### 2. Create a Notification
 
 ```typescript
-import { Notification, NotificationChannel, NotificationPriority } from '@townkrier/core';
+import { Notification, NotificationChannel, NotificationPriority } from 'townkrier-core';
 
 class WelcomeNotification extends Notification {
   constructor(private userName: string) {
@@ -163,7 +163,7 @@ try {
 You can also use channels directly without the manager:
 
 ```typescript
-import { createResendChannel } from '@townkrier/resend';
+import { createResendChannel } from 'townkrier-resend';
 
 const emailChannel = createResendChannel({
   apiKey: process.env.RESEND_API_KEY,
@@ -192,7 +192,7 @@ import {
   NotificationSending,
   NotificationSent,
   NotificationFailed,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 const dispatcher = getEventDispatcher();
 
@@ -253,7 +253,7 @@ const channel = manager.getChannelWithFallback('email-primary');
 Implement the `Notifiable` interface on your user/entity models:
 
 ```typescript
-import { Notifiable, NotificationChannel } from '@townkrier/core';
+import { Notifiable, NotificationChannel } from 'townkrier-core';
 
 class User implements Notifiable {
   constructor(
@@ -364,21 +364,21 @@ Ensure your `tsconfig.json` includes:
 
 ### Email
 
-- **@townkrier/resend** - Email via [Resend](https://resend.com)
+- **townkrier-resend** - Email via [Resend](https://resend.com)
   - Transactional emails
   - Template support
   - Attachment support
 
 ### SMS
 
-- **@townkrier/termii** - SMS via [Termii](https://termii.com)
+- **townkrier-termii** - SMS via [Termii](https://termii.com)
   - International SMS
   - Sender ID support
   - Cost tracking
 
 ### Push Notifications
 
-- **@townkrier/fcm** - Push via [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging)
+- **townkrier-fcm** - Push via [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging)
   - iOS, Android, Web push
   - Rich notifications
   - Topic/token support
@@ -400,7 +400,7 @@ import {
   SendEmailRequest,
   SendEmailResponse,
   NotificationStatus,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 class CustomEmailChannel extends MailChannel {
   constructor(config: CustomEmailConfig) {
@@ -438,7 +438,7 @@ export function createCustomEmailChannel(config: CustomEmailConfig): CustomEmail
 ## Testing
 
 ```typescript
-import { NotificationManager } from '@townkrier/core';
+import { NotificationManager } from 'townkrier-core';
 
 // Use test mode or mock configurations
 const testManager = new NotificationManager({

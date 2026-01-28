@@ -1,4 +1,4 @@
-import { Notification, NotificationChannel, NotificationChannelType } from '@townkrier/core';
+import { Notification, NotificationChannel, NotificationChannelType } from 'townkrier-core';
 
 /**
  * Example Welcome Notification

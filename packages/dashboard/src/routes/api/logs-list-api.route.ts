@@ -1,7 +1,7 @@
 import type { Request, Response } from 'express';
 import type { DashboardApiConfig } from '../../types';
-import type { NotificationChannel } from '@townkrier/core';
-import type { NotificationLogStatus } from '@townkrier/storage';
+import type { NotificationChannel } from 'townkrier-core';
+import type { NotificationLogStatus } from 'townkrier-storage';
 
 /**
  * GET /api/logs - Query notification logs

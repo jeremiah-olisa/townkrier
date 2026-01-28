@@ -9,19 +9,19 @@ import {
   Notification,
   NotificationChannel,
   NotificationRecipient,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import {
   QueueManager,
   InMemoryQueueAdapter,
   JobPriority,
   QueueJobConfig,
-} from '@townkrier/queue';
+} from 'townkrier-queue';
 import {
   StorageManager,
   InMemoryStorageAdapter,
   ContentPrivacy,
-} from '@townkrier/storage';
-import { createResendChannel } from '@townkrier/resend';
+} from 'townkrier-storage';
+import { createResendChannel } from 'townkrier-resend';
 import {
   SendNotificationDto,
   QueueNotificationDto,

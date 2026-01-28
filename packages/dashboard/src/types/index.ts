@@ -1,5 +1,5 @@
-import { QueueManager } from '@townkrier/queue';
-import { StorageManager } from '@townkrier/storage';
+import { QueueManager } from 'townkrier-queue';
+import { StorageManager } from 'townkrier-storage';
 
 /**
  * Dashboard API Router configuration

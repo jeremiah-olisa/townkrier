@@ -1,5 +1,5 @@
 {
-  "name": "@townkrier/termii",
+  "name": "townkrier-termii",
   "version": "1.0.0-alpha.2",
   "description": "Termii SMS adapter for Townkrier notification system",
   "main": "dist/index.js",
@@ -26,7 +26,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@townkrier/core": "workspace:*",
+    "townkrier-core": "workspace:*",
     "axios": "^1.12.2"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-# @townkrier/queue
+# townkrier-queue
 
 Queue adapter system for TownKrier notifications with retry capabilities, similar to Hangfire.
 
@@ -16,7 +16,7 @@ Queue adapter system for TownKrier notifications with retry capabilities, simila
 ## Installation
 
 ```bash
-npm install @townkrier/queue
+npm install townkrier-queue
 
 # For BullMQ adapter (Redis-backed)
 npm install bullmq ioredis
@@ -29,8 +29,8 @@ npm install bullmq ioredis
 Perfect for development and testing:
 
 ```typescript
-import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
-import { NotificationManager } from '@townkrier/core';
+import { QueueManager, InMemoryQueueAdapter } from 'townkrier-queue';
+import { NotificationManager } from 'townkrier-core';
 
 const queueAdapter = new InMemoryQueueAdapter({
   maxRetries: 3,
@@ -47,7 +47,7 @@ const queueManager = new QueueManager(queueAdapter, notificationManager);
 Redis-backed persistent queue for production:
 
 ```typescript
-import { QueueManager, BullMQQueueAdapter } from '@townkrier/queue';
+import { QueueManager, BullMQQueueAdapter } from 'townkrier-queue';
 
 const queueAdapter = new BullMQQueueAdapter({
   redis: {
@@ -72,7 +72,7 @@ const queueManager = new QueueManager(queueAdapter, notificationManager);
 ### Sending Notifications
 
 ```typescript
-import { JobPriority } from '@townkrier/queue';
+import { JobPriority } from 'townkrier-queue';
 
 // Send immediately (synchronous)
 const result = await queueManager.sendNow(notification, recipient);
@@ -138,12 +138,12 @@ console.log(stats);
 ## Job Priorities
 
 ```typescript
-import { JobPriority } from '@townkrier/queue';
+import { JobPriority } from 'townkrier-queue';
 
-JobPriority.LOW;       // 1  - Background tasks
-JobPriority.NORMAL;    // 5  - Standard notifications
-JobPriority.HIGH;      // 10 - Important notifications
-JobPriority.CRITICAL;  // 20 - Urgent notifications (password resets, etc.)
+JobPriority.LOW; // 1  - Background tasks
+JobPriority.NORMAL; // 5  - Standard notifications
+JobPriority.HIGH; // 10 - Important notifications
+JobPriority.CRITICAL; // 20 - Urgent notifications (password resets, etc.)
 
 // Higher priority jobs are processed first
 await queueManager.enqueue(notification, recipient, {
@@ -179,6 +179,7 @@ queueManager.startProcessing();
 ### Redis Persistence
 
 All jobs are persisted in Redis:
+
 - Survives application restarts
 - Distributed queue support
 - Horizontal scaling capability
@@ -203,10 +204,10 @@ await queueManager.enqueue(notification, recipient, {
 
 ```typescript
 interface QueueAdapterConfig {
-  maxRetries?: number;      // Default: 3
-  retryDelay?: number;      // Default: 1000ms
-  timeout?: number;         // Default: 30000ms
-  pollInterval?: number;    // Default: 1000ms
+  maxRetries?: number; // Default: 3
+  retryDelay?: number; // Default: 1000ms
+  timeout?: number; // Default: 30000ms
+  pollInterval?: number; // Default: 1000ms
 }
 ```
 
@@ -215,13 +216,13 @@ interface QueueAdapterConfig {
 ```typescript
 interface BullMQQueueAdapterConfig extends QueueAdapterConfig {
   redis?: {
-    host?: string;          // Default: 'localhost'
-    port?: number;          // Default: 6379
-    password?: string;      // Optional
-    db?: number;            // Default: 0
-    maxRetriesPerRequest?: null;  // Required: null
+    host?: string; // Default: 'localhost'
+    port?: number; // Default: 6379
+    password?: string; // Optional
+    db?: number; // Default: 0
+    maxRetriesPerRequest?: null; // Required: null
   };
-  queueName?: string;       // Default: 'townkrier-notifications'
+  queueName?: string; // Default: 'townkrier-notifications'
 }
 ```
 
@@ -251,7 +252,7 @@ services:
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
     volumes:
       - redis-data:/data
     command: redis-server --appendonly yes
@@ -293,11 +294,11 @@ REDIS_PASSWORD=your-secure-password
 process.on('SIGTERM', async () => {
   console.log('Shutting down...');
   await queueManager.stopProcessing();
-  
+
   // Close BullMQ connections
   const adapter = queueManager.getAdapter() as BullMQQueueAdapter;
   await adapter.close();
-  
+
   process.exit(0);
 });
 ```
@@ -312,10 +313,10 @@ process.on('SIGTERM', async () => {
 
 ### Monitoring
 
-Use the [@townkrier/dashboard](../dashboard) package for monitoring:
+Use the [townkrier-dashboard](../dashboard) package for monitoring:
 
 ```typescript
-import { DashboardServer } from '@townkrier/dashboard';
+import { DashboardServer } from 'townkrier-dashboard';
 
 const dashboard = new DashboardServer({
   queueManager,
@@ -339,23 +340,23 @@ See [examples/bullmq-dashboard-example.ts](../../examples/bullmq-dashboard-examp
 class QueueManager {
   // Send immediately (like Laravel's sendNow)
   sendNow(notification, recipient): Promise<Map<Channel, any>>;
-  
+
   // Queue for background (like Laravel's send)
   enqueue(notification, recipient, config?): Promise<QueueJob>;
-  
+
   // Job management
   getJob(jobId): Promise<QueueJob | null>;
   getJobs(filters?): Promise<QueueJob[]>;
   retryJob(jobId): Promise<void>;
   deleteJob(jobId): Promise<void>;
-  
+
   // Statistics
   getStats(): Promise<QueueStats>;
-  
+
   // Processing control
   startProcessing(options?): void;
   stopProcessing(): Promise<void>;
-  
+
   // Get underlying adapter
   getAdapter(): IQueueAdapter;
 }
@@ -366,16 +367,19 @@ class QueueManager {
 ### Jobs not processing
 
 1. Ensure processing is started:
+
 ```typescript
 queueManager.startProcessing();
 ```
 
 2. For BullMQ, check Redis connection:
+
 ```bash
 redis-cli ping
 ```
 
 3. Check queue stats:
+
 ```typescript
 const stats = await queueManager.getStats();
 console.log(stats);
@@ -398,4 +402,3 @@ console.log(stats);
 ## License
 
 MIT
-

@@ -53,7 +53,7 @@ This creates a notification with all available channel methods.
 After generating a notification, you can use it in your application:
 
 ```typescript
-import { NotificationManager, NotificationChannel } from '@townkrier/core';
+import { NotificationManager, NotificationChannel } from 'townkrier-core';
 import { WelcomeEmailNotification } from './notifications/WelcomeEmail.notification';
 
 // Setup notification manager (see complete-example.ts for full setup)

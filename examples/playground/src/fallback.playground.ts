@@ -1,6 +1,6 @@
-import { TownkrierFactory, NotificationStatus, Logger, SendEmailRequest } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
-import { createSmtpChannel } from '@townkrier/smtp';
+import { TownkrierFactory, NotificationStatus, Logger, SendEmailRequest } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
+import { createSmtpChannel } from 'townkrier-smtp';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 

@@ -34,7 +34,7 @@ Let's create a VoIP channel for making voice calls.
 ### Step 1: Define the Channel Interface
 
 ```typescript
-import { NotificationChannel } from '@townkrier/core';
+import { NotificationChannel } from 'townkrier-core';
 
 // Add your custom channel type to the NotificationChannel enum
 // This would typically be done by extending the core types
@@ -73,7 +73,7 @@ export interface SendVoipResponse {
 
 ```typescript
 // voip.channel.ts
-import { BaseNotificationChannel } from '@townkrier/core';
+import { BaseNotificationChannel } from 'townkrier-core';
 import { SendVoipRequest, SendVoipResponse } from './interfaces';
 
 export abstract class VoipChannel extends BaseNotificationChannel {
@@ -215,7 +215,7 @@ export function createVonageVoipChannel(config: VonageVoipConfig): VonageVoipCha
 Now let's configure the NotificationManager to use multiple adapters with automatic fallback:
 
 ```typescript
-import { NotificationManager } from '@townkrier/core';
+import { NotificationManager } from 'townkrier-core';
 import { createTwilioVoipChannel, createVonageVoipChannel } from './voip';
 
 const manager = new NotificationManager({
@@ -265,8 +265,8 @@ The system automatically handles fallback when you configure multiple adapters:
 
 ```typescript
 // Example: Email channel with multiple adapters
-import { NotificationManager } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
+import { NotificationManager } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
 import { createSmtpChannel } from './custom-smtp';
 import { createPostmarkChannel } from './custom-postmark';
 
@@ -334,7 +334,7 @@ manager.registerFactory('postmark', createPostmarkChannel);
 
 ```typescript
 // twitter-channel.ts
-import { BaseNotificationChannel } from '@townkrier/core';
+import { BaseNotificationChannel } from 'townkrier-core';
 
 export interface TwitterConfig {
   apiKey: string;
@@ -400,9 +400,9 @@ export function createTwitterChannel(config: TwitterConfig): TwitterChannel {
 ### Example 2: Complete Multi-Channel Setup
 
 ```typescript
-import { NotificationManager, Notification, NotificationChannel } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
-import { createTermiiChannel } from '@townkrier/termii';
+import { NotificationManager, Notification, NotificationChannel } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
+import { createTermiiChannel } from 'townkrier-termii';
 import { createTwilioVoipChannel } from './voip/twilio';
 import { createTwitterChannel } from './social/twitter';
 

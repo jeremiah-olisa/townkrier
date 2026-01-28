@@ -1,6 +1,6 @@
 import { IStorageAdapter, NotificationLog } from '../interfaces';
 import { NotificationLogStatus } from '../types';
-import { NotificationChannel } from '@townkrier/core';
+import { NotificationChannel } from 'townkrier-core';
 
 /**
  * Storage Manager for notification logs

@@ -1,4 +1,4 @@
-import { Logger, ILogger } from '@townkrier/core';
+import { Logger, ILogger } from 'townkrier-core';
 
 // 1. Test Default Logger
 console.log('--- Testing Default Logger ---');

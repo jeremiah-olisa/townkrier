@@ -3,7 +3,7 @@ import {
   SendEmailResponse,
   NotificationStatus,
   generateReference,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { SmtpConfig } from '../types';
 import { SmtpEmailData, SmtpApiResponse } from '../interfaces';
 

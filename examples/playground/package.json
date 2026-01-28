@@ -1,5 +1,5 @@
 {
-  "name": "@townkrier/playground",
+  "name": "townkrier-playground",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -16,13 +16,13 @@
     "strategy": "ts-node src/strategy.playground.ts"
   },
   "dependencies": {
-    "@townkrier/core": "workspace:*",
-    "@townkrier/resend": "workspace:*",
-    "@townkrier/mailtrap": "workspace:*",
-    "@townkrier/postmark": "workspace:*",
-    "@townkrier/smtp": "workspace:*",
-    "@townkrier/fcm": "workspace:*",
-    "@townkrier/termii": "workspace:*",
+    "townkrier-core": "workspace:*",
+    "townkrier-resend": "workspace:*",
+    "townkrier-mailtrap": "workspace:*",
+    "townkrier-postmark": "workspace:*",
+    "townkrier-smtp": "workspace:*",
+    "townkrier-fcm": "workspace:*",
+    "townkrier-termii": "workspace:*",
     "dotenv": "^16.4.5"
   },
   "devDependencies": {

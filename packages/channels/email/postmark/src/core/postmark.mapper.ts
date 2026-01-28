@@ -4,7 +4,7 @@ import {
   NotificationStatus,
   generateReference,
   sanitizeMetadata,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { PostmarkConfig } from '../types';
 import { PostmarkEmailData, PostmarkApiResponse } from '../interfaces';
 

@@ -1,4 +1,4 @@
-# @townkrier/resend
+# townkrier-resend
 
 Resend email adapter for the TownKrier notification system.
 
@@ -16,16 +16,16 @@ Resend email adapter for the TownKrier notification system.
 ## Installation
 
 ```bash
-npm install @townkrier/resend @townkrier/core
+npm install townkrier-resend townkrier-core
 # or
-pnpm add @townkrier/resend @townkrier/core
+pnpm add townkrier-resend townkrier-core
 ```
 
 ## Quick Start
 
 ```typescript
-import { NotificationManager, NotificationChannel } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
+import { NotificationManager, NotificationChannel } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
 
 // Configure the manager with Resend channel
 const manager = new NotificationManager({
@@ -331,7 +331,7 @@ class TeamUpdateNotification extends Notification {
 ## Error Handling
 
 ```typescript
-import { NotificationFailed } from '@townkrier/core';
+import { NotificationFailed } from 'townkrier-core';
 
 eventDispatcher.on(NotificationFailed, async (event) => {
   console.error('Email failed:', event.error.message);
@@ -475,7 +475,7 @@ Resend rate limits vary by plan:
 Implement queuing for bulk emails:
 
 ```typescript
-import { QueueManager } from '@townkrier/queue';
+import { QueueManager } from 'townkrier-queue';
 
 const queueManager = new QueueManager(queueAdapter, manager);
 
@@ -492,11 +492,11 @@ for (const user of users) {
 
 ## Related Packages
 
-- [@townkrier/core](../core) - Core notification system
-- [@townkrier/termii](../channels/sms/termii) - SMS provider
-- [@townkrier/fcm](../channels/push/fcm) - Push notifications provider
-- [@townkrier/queue](../queue) - Queue system for background processing
-- [@townkrier/dashboard](../dashboard) - Monitoring dashboard
+- [townkrier-core](../core) - Core notification system
+- [townkrier-termii](../channels/sms/termii) - SMS provider
+- [townkrier-fcm](../channels/push/fcm) - Push notifications provider
+- [townkrier-queue](../queue) - Queue system for background processing
+- [townkrier-dashboard](../dashboard) - Monitoring dashboard
 
 ## Examples
 

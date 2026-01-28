@@ -1,6 +1,6 @@
 import { TermiiChannel } from './termii-channel';
 import axios from 'axios';
-import { SendSmsRequest } from '@townkrier/core';
+import { SendSmsRequest } from 'townkrier-core';
 
 jest.mock('axios');
 const mockedAxios = axios as jest.Mocked<typeof axios>;

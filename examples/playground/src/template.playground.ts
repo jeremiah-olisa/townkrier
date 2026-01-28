@@ -8,7 +8,7 @@ import {
   EmailContent,
   ITemplateRenderer,
   NotificationChannelConfig,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 // 1. Define a simple Template Notification
 class WelcomeTemplateNotification extends Notification {

@@ -92,7 +92,7 @@ export function generateNotificationTemplate(options: NotificationTemplateOption
   // Build channel array for via() method
   const channelArray = channels.length > 0 ? channels.join(', ') : 'NotificationChannel.EMAIL';
 
-  const template = `import { Notification, NotificationChannel, NotificationPriority } from '@townkrier/core';
+  const template = `import { Notification, NotificationChannel, NotificationPriority } from 'townkrier-core';
 
 /**
  * ${className}

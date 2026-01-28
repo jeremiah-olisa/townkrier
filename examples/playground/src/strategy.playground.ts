@@ -8,7 +8,7 @@ import {
   EmailContent,
   SmsContent,
   NotificationChannelConfig,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 // 1. Define Notification
 class StrategyTestNotification extends Notification {

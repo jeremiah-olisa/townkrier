@@ -4,8 +4,8 @@ import {
   NotificationRecipient,
   SmsContent,
   SmsRecipient,
-} from '@townkrier/core';
-import { createTermiiChannel } from '@townkrier/termii';
+} from 'townkrier-core';
+import { createTermiiChannel } from 'townkrier-termii';
 
 // Define a concrete Notification class
 class DemoSmsNotification extends Notification {

@@ -1,4 +1,4 @@
-# @townkrier/cli - Implementation Complete ✅
+# townkrier-cli - Implementation Complete ✅
 
 ## 🎉 Status: Ready to Use!
 
@@ -139,7 +139,7 @@ Input: `OrderConfirmation --channels email,sms`
 Generates: `OrderConfirmation.notification.ts`
 
 ```typescript
-import { Notification, NotificationChannel, NotificationPriority } from '@townkrier/core';
+import { Notification, NotificationChannel, NotificationPriority } from 'townkrier-core';
 
 /**
  * OrderConfirmationNotification
@@ -177,7 +177,7 @@ export class OrderConfirmationNotification extends Notification {
 ## 🔧 Using Generated Notifications
 
 ```typescript
-import { NotificationManager, NotificationChannel } from '@townkrier/core';
+import { NotificationManager, NotificationChannel } from 'townkrier-core';
 import { OrderConfirmationNotification } from './notifications/OrderConfirmation.notification';
 
 // Configure manager
@@ -253,7 +253,7 @@ Each channel type includes commented examples and best practices:
 
 The CLI integrates seamlessly with:
 
-- ✅ @townkrier/core
+- ✅ townkrier-core
 - ✅ Lerna monorepo structure
 - ✅ TypeScript projects
 - ✅ NestJS applications

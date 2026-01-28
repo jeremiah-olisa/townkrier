@@ -1,5 +1,5 @@
-import { TownkrierFactory, NotificationStatus, Logger } from '@townkrier/core';
-import { createMailtrapChannel } from '@townkrier/mailtrap';
+import { TownkrierFactory, NotificationStatus, Logger } from 'townkrier-core';
+import { createMailtrapChannel } from 'townkrier-mailtrap';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 

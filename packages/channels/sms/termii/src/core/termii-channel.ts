@@ -4,7 +4,7 @@ import {
   SendSmsResponse,
   NotificationConfigurationException,
   Logger,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 import { TermiiConfig } from '../types';
 import { TermiiApiResponse } from '../interfaces';

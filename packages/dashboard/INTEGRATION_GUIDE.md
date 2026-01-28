@@ -25,7 +25,7 @@ Use `setupDashboard()` to integrate the dashboard into your existing Express or 
 
 ```typescript
 import express from 'express';
-import { setupDashboard } from '@townkrier/dashboard';
+import { setupDashboard } from 'townkrier-dashboard';
 
 const app = express();
 
@@ -57,7 +57,7 @@ console.log('Dashboard: http://localhost:3000/dashboard');
 ```typescript
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import { setupDashboard } from '@townkrier/dashboard';
+import { setupDashboard } from 'townkrier-dashboard';
 
 @Injectable()
 export class DashboardService implements OnModuleInit {
@@ -89,7 +89,7 @@ export class DashboardService implements OnModuleInit {
 Use `DashboardServer` class to run the dashboard on a separate port:
 
 ```typescript
-import { DashboardServer } from '@townkrier/dashboard';
+import { DashboardServer } from 'townkrier-dashboard';
 
 const dashboard = new DashboardServer({
   queueManager,
@@ -154,7 +154,7 @@ dashboard.start();
 ### After (Integrated)
 
 ```typescript
-import { setupDashboard } from '@townkrier/dashboard';
+import { setupDashboard } from 'townkrier-dashboard';
 
 // In your Express app
 setupDashboard(app, {

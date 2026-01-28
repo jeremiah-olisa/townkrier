@@ -2,7 +2,7 @@ import {
   SendEmailRequest,
   NotificationStatus,
   NotificationConfigurationException,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { ResendChannel } from '../core/resend-channel';
 import { ResendConfig } from '../types';
 import { Resend } from 'resend';

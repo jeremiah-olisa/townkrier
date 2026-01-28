@@ -1,4 +1,4 @@
-import { Notification, NotificationRecipient } from '@townkrier/core';
+import { Notification, NotificationRecipient } from 'townkrier-core';
 import { IQueueAdapter, QueueAdapterConfig, QueueJob, QueueJobConfig } from '../interfaces';
 import { JobStatus, JobPriority } from '../types';
 import { JobNotFoundException } from '../exceptions';

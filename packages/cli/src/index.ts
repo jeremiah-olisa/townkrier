@@ -1,5 +1,5 @@
 /**
- * @townkrier/cli
+ * townkrier-cli
  * CLI tooling for TownKrier notification system
  *
  * Provides Laravel-style commands for generating notification classes

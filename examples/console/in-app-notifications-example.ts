@@ -3,12 +3,12 @@ import {
   Notification,
   NotificationChannel,
   NotificationPriority,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import {
   createInAppChannel,
   InMemoryInAppStorageAdapter,
   DatabaseInAppChannel,
-} from '@townkrier/in-app';
+} from 'townkrier-in-app';
 import express from 'express';
 
 /**

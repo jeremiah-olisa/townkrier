@@ -8,7 +8,7 @@ import {
   NotificationInvalidResponseError,
   isValidEmail,
   Logger,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 import { ResendConfig } from '../types';
 import { ResendMapper } from './resend.mapper';

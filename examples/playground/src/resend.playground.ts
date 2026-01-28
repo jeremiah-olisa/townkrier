@@ -6,8 +6,8 @@ import {
   NotificationChannelType,
   NotificationRecipient,
   Logger,
-} from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
+} from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
 
 // Mock Config
 const RESEND_API_KEY = process.env.RESEND_API_KEY || 're_123456789';

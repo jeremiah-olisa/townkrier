@@ -1,5 +1,5 @@
 {
-  "name": "@townkrier/core",
+  "name": "townkrier-core",
   "version": "1.0.0-alpha.2",
   "description": "Laravel-style notification system for Node.js with multiple channels and providers",
   "main": "dist/index.js",

@@ -103,7 +103,7 @@ This document summarizes the stabilization work done to make TownKrier a truly p
 1. **Easy Installation**
 
    ```bash
-   npm install @townkrier/core @townkrier/resend @townkrier/termii @townkrier/fcm
+   npm install townkrier-core townkrier-resend townkrier-termii townkrier-fcm
    ```
 
 2. **Simple Configuration**
@@ -155,14 +155,14 @@ This document summarizes the stabilization work done to make TownKrier a truly p
 
 ### ✅ Fully Functional
 
-- `@townkrier/core` - Core notification system
-- `@townkrier/resend` - Email via Resend
-- `@townkrier/termii` - SMS via Termii
-- `@townkrier/fcm` - Push via Firebase
-- `@townkrier/queue` - Queue system
-- `@townkrier/storage` - Notification logs
-- `@townkrier/dashboard` - Monitoring UI
-- `@townkrier/cli` - CLI tooling
+- `townkrier-core` - Core notification system
+- `townkrier-resend` - Email via Resend
+- `townkrier-termii` - SMS via Termii
+- `townkrier-fcm` - Push via Firebase
+- `townkrier-queue` - Queue system
+- `townkrier-storage` - Notification logs
+- `townkrier-dashboard` - Monitoring UI
+- `townkrier-cli` - CLI tooling
 
 ### 📝 Features Available
 

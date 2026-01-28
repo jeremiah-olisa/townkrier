@@ -7,7 +7,7 @@ import {
   generateReference,
   sanitizeMetadata,
   Logger,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 import { InAppConfig, InAppNotificationData } from '../types';
 import { InAppNotificationResponse } from '../interfaces';

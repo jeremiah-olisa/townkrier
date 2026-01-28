@@ -76,7 +76,7 @@ User Request → Notification Creation → Interceptor Chain (Before)
 
 ## 3. Core Package Architecture
 
-### 3.1 Package: `@townkrier/core`
+### 3.1 Package: `townkrier-core`
 
 #### 3.1.1 Directory Structure
 
@@ -819,8 +819,8 @@ export abstract class BaseChannel implements Channel {
 
 ```typescript
 // packages/channels/mail/src/index.ts
-import { BaseChannel } from '@townkrier/core';
-import type { Notification, Notifiable, ChannelConfig } from '@townkrier/core';
+import { BaseChannel } from 'townkrier-core';
+import type { Notification, Notifiable, ChannelConfig } from 'townkrier-core';
 
 export interface MailProvider {
   send(message: MailMessage): Promise<void>;
@@ -968,7 +968,7 @@ export interface ProviderResponse {
 ```typescript
 // packages/providers/resend/src/index.ts
 import { Resend as ResendSDK } from 'resend';
-import type { MailProvider, MailMessage } from '@townkrier/channel-mail';
+import type { MailProvider, MailMessage } from 'townkrier-channel-mail';
 
 export interface ResendConfig {
   apiKey: string;

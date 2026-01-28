@@ -5,8 +5,8 @@ import {
   PushContent,
   NotificationResult,
   NotificationPriority,
-} from '@townkrier/core';
-import { createFcmChannel } from '@townkrier/fcm';
+} from 'townkrier-core';
+import { createFcmChannel } from 'townkrier-fcm';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 

@@ -4,7 +4,7 @@ import {
   NotificationStatus,
   sanitizeMetadata,
   generateReference,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { ResendConfig } from '../types';
 import { ResendEmailData, ResendApiResponse } from '../interfaces';
 

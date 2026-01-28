@@ -11,9 +11,9 @@ import {
   Notification,
   NotificationChannel,
   NotificationPriority,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
-import { createResendChannel } from '@townkrier/resend';
+import { createResendChannel } from 'townkrier-resend';
 
 // ============================================================================
 // Scenario: Email channel with multiple adapters

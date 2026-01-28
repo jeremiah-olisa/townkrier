@@ -30,7 +30,7 @@ townkrier make:notification WelcomeUser --channels email,sms
 
 ```bash
 # From the root of the TownKrier project
-pnpm --filter @townkrier/cli exec townkrier make:notification MyNotification --channels email
+pnpm --filter townkrier-cli exec townkrier make:notification MyNotification --channels email
 ```
 
 ## 📝 Usage Examples
@@ -83,7 +83,7 @@ node bin/townkrier.js make:notification OrderConfirmation --channels email,sms
 It generates: `OrderConfirmation.notification.ts`
 
 ```typescript
-import { Notification, NotificationChannel, NotificationPriority } from '@townkrier/core';
+import { Notification, NotificationChannel, NotificationPriority } from 'townkrier-core';
 
 export class OrderConfirmationNotification extends Notification {
   constructor() {
@@ -114,7 +114,7 @@ export class OrderConfirmationNotification extends Notification {
 ## 🔧 Using Generated Notifications
 
 ```typescript
-import { NotificationManager } from '@townkrier/core';
+import { NotificationManager } from 'townkrier-core';
 import { OrderConfirmationNotification } from './notifications/OrderConfirmation.notification';
 
 const manager = new NotificationManager(config);
@@ -165,7 +165,7 @@ pnpm unlink --global
 pnpm link --global
 ```
 
-### "Cannot find module '@townkrier/core'"
+### "Cannot find module 'townkrier-core'"
 
 Make sure to build the core package first:
 

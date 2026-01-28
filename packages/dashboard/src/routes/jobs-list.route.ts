@@ -1,4 +1,4 @@
-import type { JobStatus } from '@townkrier/queue';
+import type { JobStatus } from 'townkrier-queue';
 import type { Request, Response } from 'express';
 import type { DashboardLogger, DashboardConfig } from '../types';
 

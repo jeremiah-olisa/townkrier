@@ -175,11 +175,11 @@ RESEND_FROM_NAME=TownKrier Demo App
 - `@nestjs/config` - Configuration management
 - `class-validator` - Input validation
 - `class-transformer` - DTO transformation
-- `@townkrier/core` - Core notification system
-- `@townkrier/queue` - Queue management
-- `@townkrier/storage` - Storage adapters
-- `@townkrier/dashboard` - Monitoring UI
-- `@townkrier/resend` - Email channel
+- `townkrier-core` - Core notification system
+- `townkrier-queue` - Queue management
+- `townkrier-storage` - Storage adapters
+- `townkrier-dashboard` - Monitoring UI
+- `townkrier-resend` - Email channel
 
 ## 🎨 Notification Templates
 

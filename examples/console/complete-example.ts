@@ -20,11 +20,11 @@ import {
   NotificationSent,
   NotificationFailed,
   NotificationRecipient,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
-import { createResendChannel } from '@townkrier/resend';
-import { createTermiiChannel } from '@townkrier/termii';
-import { createFcmChannel } from '@townkrier/fcm';
+import { createResendChannel } from 'townkrier-resend';
+import { createTermiiChannel } from 'townkrier-termii';
+import { createFcmChannel } from 'townkrier-fcm';
 
 // ============================================================================
 // 1. Setup Event Listeners (Optional but recommended)

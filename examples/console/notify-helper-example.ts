@@ -12,9 +12,9 @@ import {
   NotificationPriority,
   Notifiable,
   notify, // The helper function
-} from '@townkrier/core';
+} from 'townkrier-core';
 
-import { createResendChannel } from '@townkrier/resend';
+import { createResendChannel } from 'townkrier-resend';
 
 // ============================================================================
 // 1. Create a User class that implements Notifiable

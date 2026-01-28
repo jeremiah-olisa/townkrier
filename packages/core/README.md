@@ -1,4 +1,4 @@
-# @townkrier/core
+# townkrier-core
 
 Laravel-style notification system for Node.js with multiple channels and providers.
 
@@ -20,17 +20,17 @@ Townkrier is a flexible, provider-agnostic notification system inspired by Larav
 ## Installation
 
 ```bash
-npm install @townkrier/core
+npm install townkrier-core
 # or
-pnpm add @townkrier/core
+pnpm add townkrier-core
 ```
 
 ## Quick Start
 
 ```typescript
-import { NotificationManager } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
-import { createTermiiChannel } from '@townkrier/termii';
+import { NotificationManager } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
+import { createTermiiChannel } from 'townkrier-termii';
 
 // Initialize notification manager
 const manager = new NotificationManager({
@@ -75,17 +75,17 @@ await channel.send({
 
 ## Available Adapters
 
-- `@townkrier/resend` - Email via Resend
-- `@townkrier/termii` - SMS via Termii
-- `@townkrier/fcm` - Push notifications via Firebase Cloud Messaging
-- `@townkrier/in-app` - In-app notifications with storage interface
+- `townkrier-resend` - Email via Resend
+- `townkrier-termii` - SMS via Termii
+- `townkrier-fcm` - Push notifications via Firebase Cloud Messaging
+- `townkrier-in-app` - In-app notifications with storage interface
 
 ## Architecture
 
 The package follows a clean architecture pattern similar to the payment module:
 
 ```
-@townkrier/core
+townkrier-core
 ├── interfaces/          # Channel interfaces and contracts
 ├── types/              # Type definitions and enums
 ├── core/               # Core classes (Manager, Base classes)
@@ -93,7 +93,7 @@ The package follows a clean architecture pattern similar to the payment module:
 ├── exceptions/         # Custom exceptions
 └── utils/              # Utility functions
 
-@townkrier/adapter-name
+townkrier-adapter-name
 ├── core/               # Adapter implementation
 ├── types/              # Adapter-specific types
 └── interfaces/         # Adapter-specific interfaces
@@ -102,7 +102,7 @@ The package follows a clean architecture pattern similar to the payment module:
 ## Creating Custom Channels
 
 ```typescript
-import { MailChannel, SendEmailRequest, SendEmailResponse } from '@townkrier/core';
+import { MailChannel, SendEmailRequest, SendEmailResponse } from 'townkrier-core';
 
 export class CustomEmailChannel extends MailChannel {
   constructor(config: CustomConfig) {

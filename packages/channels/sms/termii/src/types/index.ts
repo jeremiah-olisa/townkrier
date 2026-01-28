@@ -1,4 +1,4 @@
-import { NotificationChannelConfig } from '@townkrier/core';
+import { NotificationChannelConfig } from 'townkrier-core';
 
 /**
  * Termii-specific configuration

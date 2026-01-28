@@ -3,16 +3,16 @@ import {
   Notification,
   NotificationChannel,
   NotificationPriority,
-} from '@townkrier/core';
-import { QueueManager, InMemoryQueueAdapter, JobPriority } from '@townkrier/queue';
+} from 'townkrier-core';
+import { QueueManager, InMemoryQueueAdapter, JobPriority } from 'townkrier-queue';
 import {
   StorageManager,
   InMemoryStorageAdapter,
   NotificationLogStatus,
   ContentPrivacy,
-} from '@townkrier/storage';
-import { DashboardServer } from '@townkrier/dashboard';
-import { createResendChannel } from '@townkrier/resend';
+} from 'townkrier-storage';
+import { DashboardServer } from 'townkrier-dashboard';
+import { createResendChannel } from 'townkrier-resend';
 
 /**
  * Example demonstrating the queue system with retry logic and dashboard

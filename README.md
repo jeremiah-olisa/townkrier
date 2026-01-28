@@ -23,14 +23,14 @@ TownKrier is a flexible, provider-agnostic notification system inspired by Larav
 
 This monorepo contains the following packages:
 
-- **[@townkrier/core](./packages/core)** - Core notification system and interfaces
-- **[@townkrier/cli](./packages/cli)** - CLI tooling for generating notification classes (Laravel-style)
-- **[@townkrier/resend](./packages/resend)** - Resend email adapter
-- **[@townkrier/fcm](./packages/channels/push/fcm)** - Firebase Cloud Messaging adapter for push notifications
-- **[@townkrier/termii](./packages/channels/sms/termii)** - Termii SMS adapter
-- **[@townkrier/queue](./packages/queue)** - Queue system with retry logic (Hangfire-like)
-- **[@townkrier/storage](./packages/storage)** - Notification logs storage and history
-- **[@townkrier/dashboard](./packages/dashboard)** - Monitoring dashboard UI (Hangfire-style)
+- **[townkrier-core](./packages/core)** - Core notification system and interfaces
+- **[townkrier-cli](./packages/cli)** - CLI tooling for generating notification classes (Laravel-style)
+- **[townkrier-resend](./packages/resend)** - Resend email adapter
+- **[townkrier-fcm](./packages/channels/push/fcm)** - Firebase Cloud Messaging adapter for push notifications
+- **[townkrier-termii](./packages/channels/sms/termii)** - Termii SMS adapter
+- **[townkrier-queue](./packages/queue)** - Queue system with retry logic (Hangfire-like)
+- **[townkrier-storage](./packages/storage)** - Notification logs storage and history
+- **[townkrier-dashboard](./packages/dashboard)** - Monitoring dashboard UI (Hangfire-style)
 
 ## 🚀 Quick Start
 
@@ -41,10 +41,10 @@ This monorepo contains the following packages:
 
 ```bash
 # Install core and channels you need
-npm install @townkrier/core @townkrier/resend @townkrier/termii @townkrier/fcm
+npm install townkrier-core townkrier-resend townkrier-termii townkrier-fcm
 
 # Optional: Queue and monitoring
-npm install @townkrier/queue @townkrier/storage @townkrier/dashboard
+npm install townkrier-queue townkrier-storage townkrier-dashboard
 ```
 
 ### For Contributors/Development
@@ -66,8 +66,8 @@ pnpm verify
 ### Basic Usage
 
 ```typescript
-import { NotificationManager, Notification, NotificationChannel } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
+import { NotificationManager, Notification, NotificationChannel } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
 
 // Setup manager
 const manager = new NotificationManager({
@@ -112,9 +112,9 @@ await manager.send(notification, recipient);
 ### Queue and Background Processing
 
 ```typescript
-import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
-import { DashboardServer } from '@townkrier/dashboard';
+import { QueueManager, InMemoryQueueAdapter } from 'townkrier-queue';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
+import { DashboardServer } from 'townkrier-dashboard';
 
 // Setup queue with retry logic (Hangfire-like)
 const queueAdapter = new InMemoryQueueAdapter({
@@ -178,7 +178,7 @@ The CLI automatically generates properly structured notification classes with:
 - Helpful comments and examples
 - Consistent naming conventions
 
-**For more CLI usage details, see [@townkrier/cli documentation](./packages/cli/README.md)**
+**For more CLI usage details, see [townkrier-cli documentation](./packages/cli/README.md)**
 
 ## 📖 Development
 
@@ -248,7 +248,7 @@ townkrier-monorepo/
 ### Adding a New Package
 
 1. Create a new directory under `packages/` or `packages/channels/[type]/`
-2. Add a `package.json` with the package name following the pattern `@townkrier/package-name`
+2. Add a `package.json` with the package name following the pattern `townkrier-package-name`
 3. Add a `tsconfig.json` that extends the base configuration
 4. The workspace will automatically pick it up
 

@@ -4,7 +4,7 @@ import {
   SendPushRequest,
   SendPushResponse,
   NotificationConfigurationException,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 import { FcmConfig } from '../types';
 import { FcmSendResponse } from '../interfaces';

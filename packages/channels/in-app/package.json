@@ -1,5 +1,5 @@
 {
-  "name": "@townkrier/in-app",
+  "name": "townkrier-in-app",
   "version": "1.0.0-alpha.1",
   "description": "In-app/database notification adapter for Townkrier notification system",
   "main": "dist/index.js",
@@ -26,7 +26,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@townkrier/core": "workspace:*"
+    "townkrier-core": "workspace:*"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

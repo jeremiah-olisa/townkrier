@@ -211,7 +211,7 @@ function checkPushConfig() {
 function checkPackages() {
   header('Package Installation Check');
 
-  const packages = ['@townkrier/core', '@townkrier/resend', '@townkrier/termii', '@townkrier/fcm'];
+  const packages = ['townkrier-core', 'townkrier-resend', 'townkrier-termii', 'townkrier-fcm'];
 
   let allInstalled = true;
 
@@ -227,9 +227,9 @@ function checkPackages() {
 
   if (!allInstalled) {
     info('Install missing packages with:');
-    log('  npm install @townkrier/core @townkrier/resend @townkrier/termii @townkrier/fcm', 'cyan');
+    log('  npm install townkrier-core townkrier-resend townkrier-termii townkrier-fcm', 'cyan');
     log('  or', 'cyan');
-    log('  pnpm add @townkrier/core @townkrier/resend @townkrier/termii @townkrier/fcm', 'cyan');
+    log('  pnpm add townkrier-core townkrier-resend townkrier-termii townkrier-fcm', 'cyan');
   }
 
   return allInstalled;

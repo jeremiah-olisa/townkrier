@@ -1,4 +1,4 @@
-import { Notification, NotificationChannel, NotificationPriority } from '@townkrier/core';
+import { Notification, NotificationChannel, NotificationPriority } from 'townkrier-core';
 
 /**
  * PaymentReceivedNotification

@@ -1,4 +1,4 @@
-# @townkrier/cli
+# townkrier-cli
 
 CLI tooling for TownKrier notification system - Laravel-style commands for generating notification classes.
 
@@ -6,10 +6,10 @@ CLI tooling for TownKrier notification system - Laravel-style commands for gener
 
 ```bash
 # Install globally
-npm install -g @townkrier/cli
+npm install -g townkrier-cli
 
 # Or install as a dev dependency in your project
-npm install --save-dev @townkrier/cli
+npm install --save-dev townkrier-cli
 ```
 
 ## Usage
@@ -60,7 +60,7 @@ Options:
 
 ## Generated Notification Structure
 
-The CLI generates a TypeScript notification class that extends the `Notification` base class from `@townkrier/core`.
+The CLI generates a TypeScript notification class that extends the `Notification` base class from `townkrier-core`.
 
 ### Naming Convention
 
@@ -71,7 +71,7 @@ The CLI generates a TypeScript notification class that extends the `Notification
 ### Example Structure
 
 ```typescript
-import { Notification, NotificationChannel, NotificationPriority } from '@townkrier/core';
+import { Notification, NotificationChannel, NotificationPriority } from 'townkrier-core';
 
 export class WelcomeUserNotification extends Notification {
   constructor() {
@@ -124,7 +124,7 @@ This generates the notification in the specified custom path.
 After generating a notification, you can use it with the TownKrier notification manager:
 
 ```typescript
-import { NotificationManager } from '@townkrier/core';
+import { NotificationManager } from 'townkrier-core';
 import { WelcomeUserNotification } from './notifications/WelcomeUser.notification';
 
 const manager = new NotificationManager(config);
@@ -166,7 +166,7 @@ Jeremiah Olisa
 
 ## Related Packages
 
-- [@townkrier/core](../core) - Core notification system
-- [@townkrier/resend](../resend) - Email provider (Resend)
-- [@townkrier/termii](../channels/sms/termii) - SMS provider (Termii)
-- [@townkrier/fcm](../channels/push/fcm) - Push provider (Firebase Cloud Messaging)
+- [townkrier-core](../core) - Core notification system
+- [townkrier-resend](../resend) - Email provider (Resend)
+- [townkrier-termii](../channels/sms/termii) - SMS provider (Termii)
+- [townkrier-fcm](../channels/push/fcm) - Push provider (Firebase Cloud Messaging)

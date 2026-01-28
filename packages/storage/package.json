@@ -1,5 +1,5 @@
 {
-  "name": "@townkrier/storage",
+  "name": "townkrier-storage",
   "version": "1.0.0-alpha.2",
   "description": "Storage adapters for TownKrier notification logs and history",
   "main": "dist/index.js",
@@ -27,7 +27,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@townkrier/core": "^1.0.0-alpha.2"
+    "townkrier-core": "^1.0.0-alpha.2"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",

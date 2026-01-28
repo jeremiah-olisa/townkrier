@@ -20,21 +20,21 @@ Install the core package and the channels you need:
 
 ```bash
 # Using npm
-npm install @townkrier/core
+npm install townkrier-core
 
 # Install channel packages as needed
-npm install @townkrier/resend   # For email via Resend
-npm install @townkrier/termii   # For SMS via Termii
-npm install @townkrier/fcm      # For push notifications via Firebase
+npm install townkrier-resend   # For email via Resend
+npm install townkrier-termii   # For SMS via Termii
+npm install townkrier-fcm      # For push notifications via Firebase
 
 # Optional: Queue system and monitoring
-npm install @townkrier/queue @townkrier/storage @townkrier/dashboard
+npm install townkrier-queue townkrier-storage townkrier-dashboard
 ```
 
 Or install all at once:
 
 ```bash
-npm install @townkrier/core @townkrier/resend @townkrier/termii @townkrier/fcm
+npm install townkrier-core townkrier-resend townkrier-termii townkrier-fcm
 ```
 
 ### Step 2: TypeScript Setup (Optional but Recommended)
@@ -108,7 +108,7 @@ FIREBASE_PROJECT_ID=your-firebase-project-id
 Create a test file `test-notification.ts`:
 
 ```typescript
-import { NotificationManager } from '@townkrier/core';
+import { NotificationManager } from 'townkrier-core';
 
 const manager = new NotificationManager({
   defaultChannel: 'email-resend',
@@ -276,7 +276,7 @@ townkrier/
 
    ```json
    {
-     "name": "@townkrier/your-package",
+     "name": "townkrier-your-package",
      "version": "1.0.0-alpha.1",
      "main": "dist/index.js",
      "types": "dist/index.d.ts",
@@ -359,13 +359,13 @@ pnpm test -- path/to/test.test.ts
 
 ### Module Not Found
 
-**Problem:** `Cannot find module '@townkrier/core'`
+**Problem:** `Cannot find module 'townkrier-core'`
 
 **Solution:**
 
 ```bash
 # For users
-npm install @townkrier/core
+npm install townkrier-core
 
 # For contributors
 pnpm install && pnpm build

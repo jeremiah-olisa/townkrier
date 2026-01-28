@@ -1,4 +1,4 @@
-import { Notification, NotificationRecipient } from '@townkrier/core';
+import { Notification, NotificationRecipient } from 'townkrier-core';
 import { JobStatus, JobPriority } from '../types';
 
 /**

@@ -1,5 +1,5 @@
 import { randomUUID } from 'crypto';
-import { NotificationChannel } from '@townkrier/core';
+import { NotificationChannel } from 'townkrier-core';
 import { IStorageAdapter, NotificationLog, StorageAdapterConfig } from '../interfaces';
 import { NotificationLogStatus, ContentPrivacy } from '../types';
 import { LogNotFoundException } from '../exceptions';

@@ -14,21 +14,21 @@ Install the core package and the channels you need:
 
 ```bash
 # Using npm
-npm install @townkrier/core
+npm install townkrier-core
 
 # Install channel packages as needed
-npm install @townkrier/resend  # For email
-npm install @townkrier/termii  # For SMS
-npm install @townkrier/fcm     # For push notifications
+npm install townkrier-resend  # For email
+npm install townkrier-termii  # For SMS
+npm install townkrier-fcm     # For push notifications
 
 # Optional: Queue and monitoring
-npm install @townkrier/queue @townkrier/storage @townkrier/dashboard
+npm install townkrier-queue townkrier-storage townkrier-dashboard
 ```
 
 Or with pnpm:
 
 ```bash
-pnpm add @townkrier/core @townkrier/resend @townkrier/termii @townkrier/fcm
+pnpm add townkrier-core townkrier-resend townkrier-termii townkrier-fcm
 ```
 
 ## Step 2: Get Your API Keys
@@ -93,8 +93,8 @@ This will check if all your API keys and configuration are correct.
 Create a file `send-notification.ts`:
 
 ```typescript
-import { NotificationManager, Notification, NotificationChannel } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
+import { NotificationManager, Notification, NotificationChannel } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
 
 // Setup manager
 const manager = new NotificationManager({
@@ -207,7 +207,7 @@ npm run make:notification WelcomeUser
 Process notifications in the background:
 
 ```typescript
-import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
+import { QueueManager, InMemoryQueueAdapter } from 'townkrier-queue';
 
 const queueManager = new QueueManager(new InMemoryQueueAdapter(), notificationManager);
 
@@ -223,8 +223,8 @@ queueManager.startProcessing();
 Monitor your notifications:
 
 ```typescript
-import { DashboardServer } from '@townkrier/dashboard';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+import { DashboardServer } from 'townkrier-dashboard';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
 
 const storage = new StorageManager(new InMemoryStorageAdapter());
 const dashboard = new DashboardServer({

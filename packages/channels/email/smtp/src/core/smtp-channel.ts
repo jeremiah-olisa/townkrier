@@ -7,7 +7,7 @@ import {
   NotificationConfigurationException,
   isValidEmail,
   Logger,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 import { SmtpConfig } from '../types';
 import { SmtpMapper } from './smtp.mapper';

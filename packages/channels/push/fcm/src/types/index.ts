@@ -1,4 +1,4 @@
-import type { NotificationChannelConfig } from '@townkrier/core';
+import type { NotificationChannelConfig } from 'townkrier-core';
 import type { ServiceAccount } from 'firebase-admin';
 
 /**

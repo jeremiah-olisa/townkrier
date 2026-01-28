@@ -10,7 +10,7 @@ import {
   analysisRoute,
 } from '../routes';
 import type { DashboardServerConfig, DashboardConfig, DashboardStats } from '../types';
-import { Logger } from '@townkrier/core';
+import { Logger } from 'townkrier-core';
 
 /**
  * Setup dashboard routes and middleware on an existing Express app

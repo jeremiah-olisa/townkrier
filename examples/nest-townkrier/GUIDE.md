@@ -189,7 +189,7 @@ import {
   Notification,
   NotificationChannel,
   NotificationPriority,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 export class CustomNotification extends Notification {
   constructor(private customData: any) {
@@ -239,12 +239,12 @@ private createNotification(dto: SendNotificationDto): Notification {
 ### SMS (Termii)
 
 ```bash
-pnpm add @townkrier/termii
+pnpm add townkrier-termii
 ```
 
 ```typescript
 // In notification.service.ts
-import { createTermiiChannel } from '@townkrier/termii';
+import { createTermiiChannel } from 'townkrier-termii';
 
 channels: [
   // ... existing channels
@@ -277,12 +277,12 @@ toSms() {
 ### Push Notifications (FCM)
 
 ```bash
-pnpm add @townkrier/fcm
+pnpm add townkrier-fcm
 ```
 
 ```typescript
 // In notification.service.ts
-import { createFcmChannel } from '@townkrier/fcm';
+import { createFcmChannel } from 'townkrier-fcm';
 
 channels: [
   // ... existing channels

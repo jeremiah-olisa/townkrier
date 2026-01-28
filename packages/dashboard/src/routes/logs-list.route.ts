@@ -1,5 +1,5 @@
-import type { NotificationChannel } from '@townkrier/core';
-import type { NotificationLogStatus } from '@townkrier/storage';
+import type { NotificationChannel } from 'townkrier-core';
+import type { NotificationLogStatus } from 'townkrier-storage';
 import type { Request, Response } from 'express';
 import type { DashboardLogger, DashboardConfig } from '../types';
 

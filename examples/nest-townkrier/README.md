@@ -201,7 +201,7 @@ import {
   Notification,
   NotificationChannel,
   NotificationPriority,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 export class CustomNotification extends Notification {
   constructor(private data: any) {
@@ -251,8 +251,8 @@ To add SMS or Push notifications:
 1. Install the channel package:
 
 ```bash
-pnpm add @townkrier/termii  # For SMS
-pnpm add @townkrier/fcm     # For Push
+pnpm add townkrier-termii  # For SMS
+pnpm add townkrier-fcm     # For Push
 ```
 
 2. Update the service configuration:
@@ -283,7 +283,7 @@ channels: [
 3. Register the factory:
 
 ```typescript
-import { createTermiiChannel } from '@townkrier/termii';
+import { createTermiiChannel } from 'townkrier-termii';
 
 this.notificationManager.registerFactory('sms-termii', createTermiiChannel);
 ```

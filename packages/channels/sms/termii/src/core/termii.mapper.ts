@@ -4,7 +4,7 @@ import {
   NotificationStatus,
   sanitizeMetadata,
   generateReference,
-} from '@townkrier/core';
+} from 'townkrier-core';
 import { TermiiSmsData, TermiiApiResponse } from '../interfaces';
 import { TermiiConfig } from '../types';
 

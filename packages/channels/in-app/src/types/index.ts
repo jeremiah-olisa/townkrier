@@ -1,4 +1,4 @@
-import { NotificationChannelConfig } from '@townkrier/core';
+import { NotificationChannelConfig } from 'townkrier-core';
 
 /**
  * In-app notification storage adapter interface

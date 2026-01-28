@@ -12,9 +12,9 @@ This is a minimal example to help you get started with TownKrier quickly.
 ### 1. Install Dependencies
 
 ```bash
-npm install @townkrier/core @townkrier/resend
+npm install townkrier-core townkrier-resend
 # or
-pnpm add @townkrier/core @townkrier/resend
+pnpm add townkrier-core townkrier-resend
 ```
 
 ### 2. Get API Keys
@@ -30,8 +30,8 @@ pnpm add @townkrier/core @townkrier/resend
 Create a file `send-email.ts`:
 
 ```typescript
-import { NotificationManager, Notification, NotificationChannel } from '@townkrier/core';
-import { createResendChannel } from '@townkrier/resend';
+import { NotificationManager, Notification, NotificationChannel } from 'townkrier-core';
+import { createResendChannel } from 'townkrier-resend';
 import * as dotenv from 'dotenv';
 
 // Load environment variables
@@ -145,11 +145,11 @@ Results: Map(1) {
 ### Add SMS Notifications
 
 ```bash
-npm install @townkrier/termii
+npm install townkrier-termii
 ```
 
 ```typescript
-import { createTermiiChannel } from '@townkrier/termii';
+import { createTermiiChannel } from 'townkrier-termii';
 
 // Add to channels config
 {
@@ -182,11 +182,11 @@ class WelcomeNotification extends Notification {
 ### Add Push Notifications
 
 ```bash
-npm install @townkrier/fcm
+npm install townkrier-fcm
 ```
 
 ```typescript
-import { createFcmChannel } from '@townkrier/fcm';
+import { createFcmChannel } from 'townkrier-fcm';
 
 // Add to channels config
 {
@@ -205,11 +205,11 @@ manager.registerFactory('push-fcm', createFcmChannel);
 ### Add Queue for Background Processing
 
 ```bash
-npm install @townkrier/queue
+npm install townkrier-queue
 ```
 
 ```typescript
-import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
+import { QueueManager, InMemoryQueueAdapter } from 'townkrier-queue';
 
 const queueManager = new QueueManager(new InMemoryQueueAdapter(), notificationManager);
 
@@ -223,12 +223,12 @@ queueManager.startProcessing();
 ### Add Dashboard for Monitoring
 
 ```bash
-npm install @townkrier/dashboard @townkrier/storage
+npm install townkrier-dashboard townkrier-storage
 ```
 
 ```typescript
-import { DashboardServer } from '@townkrier/dashboard';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+import { DashboardServer } from 'townkrier-dashboard';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
 
 const storageManager = new StorageManager(new InMemoryStorageAdapter());
 const dashboard = new DashboardServer({

@@ -1,4 +1,4 @@
-import { Notification, NotificationRecipient } from '@townkrier/core';
+import { Notification, NotificationRecipient } from 'townkrier-core';
 import { Queue, Worker, Job, QueueEvents } from 'bullmq';
 import Redis from 'ioredis';
 import { IQueueAdapter, QueueAdapterConfig, QueueJob, QueueJobConfig, JobLog } from '../interfaces';

@@ -6,14 +6,14 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@townkrier/core": "workspace:1.0.0-alpha.1",
-    "@townkrier/dashboard": "workspace:1.0.0-alpha.1",
-    "@townkrier/fcm": "workspace:1.0.0-alpha.1",
-    "@townkrier/in-app": "workspace:1.0.0-alpha.1",
-    "@townkrier/queue": "workspace:^1.0.0-alpha.1",
-    "@townkrier/resend": "workspace:1.0.0-alpha.1",
-    "@townkrier/storage": "workspace:^1.0.0-alpha.1",
-    "@townkrier/termii": "workspace:1.0.0-alpha.1",
+    "townkrier-core": "workspace:1.0.0-alpha.1",
+    "townkrier-dashboard": "workspace:1.0.0-alpha.1",
+    "townkrier-fcm": "workspace:1.0.0-alpha.1",
+    "townkrier-in-app": "workspace:1.0.0-alpha.1",
+    "townkrier-queue": "workspace:^1.0.0-alpha.1",
+    "townkrier-resend": "workspace:1.0.0-alpha.1",
+    "townkrier-storage": "workspace:^1.0.0-alpha.1",
+    "townkrier-termii": "workspace:1.0.0-alpha.1",
     "express": "^4.18.2"
   },
   "keywords": [],

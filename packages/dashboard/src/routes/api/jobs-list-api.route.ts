@@ -1,6 +1,6 @@
 import type { Request, Response } from 'express';
 import type { DashboardApiConfig } from '../../types';
-import type { JobStatus } from '@townkrier/queue';
+import type { JobStatus } from 'townkrier-queue';
 
 /**
  * GET /api/jobs - List jobs with filters

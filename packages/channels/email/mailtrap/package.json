@@ -1,5 +1,5 @@
 {
-  "name": "@townkrier/mailtrap",
+  "name": "townkrier-mailtrap",
   "version": "1.0.0-alpha.2",
   "description": "Mailtrap email adapter for Townkrier notification system",
   "main": "dist/index.js",
@@ -26,7 +26,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@townkrier/core": "workspace:*",
+    "townkrier-core": "workspace:*",
     "mailtrap": "^3.4.0"
   },
   "devDependencies": {

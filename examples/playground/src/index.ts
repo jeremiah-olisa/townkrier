@@ -7,7 +7,7 @@ import {
   SendSmsResponse,
   NotificationChannelConfig,
   NotificationManager,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 // 1. Define Typed Configuration
 interface MySmsConfig extends NotificationChannelConfig {
@@ -90,7 +90,7 @@ class OtpNotification extends Notification {
   }
 }
 
-import { NotifiableMixin } from '@townkrier/core';
+import { NotifiableMixin } from 'townkrier-core';
 
 // 6. Test Mixin
 class BaseEntity {

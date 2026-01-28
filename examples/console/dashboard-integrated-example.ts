@@ -6,10 +6,10 @@
  */
 
 import express from 'express';
-import { setupDashboard } from '@townkrier/dashboard';
-import { NotificationManager } from '@townkrier/core';
-import { QueueManager, InMemoryQueueAdapter } from '@townkrier/queue';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+import { setupDashboard } from 'townkrier-dashboard';
+import { NotificationManager } from 'townkrier-core';
+import { QueueManager, InMemoryQueueAdapter } from 'townkrier-queue';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
 
 // Initialize notification system
 const notificationManager = new NotificationManager({

@@ -1,5 +1,5 @@
-import { TownkrierFactory, NotificationStatus, Logger } from '@townkrier/core';
-import { createTermiiChannel } from '@townkrier/termii';
+import { TownkrierFactory, NotificationStatus, Logger } from 'townkrier-core';
+import { createTermiiChannel } from 'townkrier-termii';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 

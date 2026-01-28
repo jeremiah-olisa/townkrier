@@ -1,4 +1,4 @@
-# @townkrier/dashboard
+# townkrier-dashboard
 
 Hangfire-style dashboard for monitoring TownKrier notifications with EJS templates.
 
@@ -18,7 +18,7 @@ Hangfire-style dashboard for monitoring TownKrier notifications with EJS templat
 ## Installation
 
 ```bash
-npm install @townkrier/dashboard @townkrier/queue @townkrier/storage
+npm install townkrier-dashboard townkrier-queue townkrier-storage
 # For BullMQ support
 npm install bullmq ioredis
 ```
@@ -31,9 +31,9 @@ Integrate the dashboard into your existing Express/NestJS application on the sam
 
 ```typescript
 import express from 'express';
-import { setupDashboard } from '@townkrier/dashboard';
-import { QueueManager, BullMQQueueAdapter } from '@townkrier/queue';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+import { setupDashboard } from 'townkrier-dashboard';
+import { QueueManager, BullMQQueueAdapter } from 'townkrier-queue';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
 
 const app = express();
 
@@ -56,9 +56,9 @@ app.listen(3000);
 Run the dashboard on a separate port:
 
 ```typescript
-import { DashboardServer } from '@townkrier/dashboard';
-import { QueueManager, BullMQQueueAdapter } from '@townkrier/queue';
-import { StorageManager, InMemoryStorageAdapter } from '@townkrier/storage';
+import { DashboardServer } from 'townkrier-dashboard';
+import { QueueManager, BullMQQueueAdapter } from 'townkrier-queue';
+import { StorageManager, InMemoryStorageAdapter } from 'townkrier-storage';
 
 // Setup BullMQ queue adapter (Redis-backed)
 const queueAdapter = new BullMQQueueAdapter({
@@ -121,7 +121,7 @@ const dashboard = new DashboardServer({
 ```typescript
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { HttpAdapterHost } from '@nestjs/core';
-import { setupDashboard } from '@townkrier/dashboard';
+import { setupDashboard } from 'townkrier-dashboard';
 
 @Injectable()
 export class DashboardService implements OnModuleInit {
@@ -264,7 +264,7 @@ interface DashboardServerConfig {
 The dashboard fully supports BullMQ with Redis for persistent queue storage:
 
 ```typescript
-import { BullMQQueueAdapter } from '@townkrier/queue';
+import { BullMQQueueAdapter } from 'townkrier-queue';
 
 const adapter = new BullMQQueueAdapter({
   redis: {

@@ -2,7 +2,7 @@ import {
   Notification,
   NotificationChannel,
   NotificationPriority,
-} from '@townkrier/core';
+} from 'townkrier-core';
 
 /**
  * Welcome notification sent to new users
