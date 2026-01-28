@@ -11,8 +11,6 @@ This is a minimal example to help you get started with TownKrier quickly.
 
 ### 1. Install Dependencies
 
-trigger update
-
 ```bash
 npm install townkrier-core townkrier-resend
 # or
