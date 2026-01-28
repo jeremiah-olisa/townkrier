@@ -13,5 +13,10 @@
       "message": "chore(release): version"
     }
   },
-  "packages": ["packages/*", "packages/channels/email/*", "packages/channels/sms/*"]
+  "packages": [
+    "packages/*",
+    "packages/channels/email/*",
+    "packages/channels/push/*",
+    "packages/channels/sms/*"
+  ]
 }

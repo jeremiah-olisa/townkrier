@@ -4,6 +4,7 @@ import { NotificationManager } from '../notification-manager';
 import { NotificationRecipient } from '../../interfaces';
 import { notify } from './utils';
 import { Constructor } from '../../utils';
+import { NotificationResult } from '../../interfaces';
 
 /**
  * Interface definition for what the Mixin adds
@@ -14,10 +15,7 @@ export interface INotifiable {
   getNotificationName?(): string;
   setNotificationManager(manager: NotificationManager): this;
   getNotificationManager(): NotificationManager | undefined;
-  notify(
-    notification: Notification,
-    manager?: NotificationManager,
-  ): Promise<Map<NotificationChannelType, unknown>>;
+  notify(notification: Notification, manager?: NotificationManager): Promise<NotificationResult>;
   toRecipient(
     channels?: NotificationChannelType[],
     notification?: Notification,
@@ -76,10 +74,7 @@ export function NotifiableMixin<TBase extends Constructor>(Base: TBase) {
     /**
      * Send a notification to this entity
      */
-    notify(
-      notification: Notification,
-      manager?: NotificationManager,
-    ): Promise<Map<NotificationChannelType, unknown>> {
+    notify(notification: Notification, manager?: NotificationManager): Promise<NotificationResult> {
       const managerToUse = manager || this.notificationManager;
 
       if (!managerToUse) {

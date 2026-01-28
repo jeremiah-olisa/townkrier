@@ -1,9 +1,9 @@
 import {
   Notification,
-  NotificationChannel,
   NotificationManager,
   NotificationRecipient,
   Logger,
+  NotificationResult,
 } from '@townkrier/core';
 import { IQueueAdapter, QueueJobConfig, QueueJob } from '../interfaces';
 import { JobStatus } from '../types';
@@ -51,7 +51,7 @@ export class QueueManager {
   async sendNow(
     notification: Notification,
     recipient: NotificationRecipient,
-  ): Promise<Map<NotificationChannel, unknown>> {
+  ): Promise<NotificationResult> {
     if (!this.notificationManager) {
       throw new JobExecutionException(
         'NotificationManager not set. Cannot send notification immediately.',
@@ -59,9 +59,7 @@ export class QueueManager {
       );
     }
 
-    return this.notificationManager.send(notification, recipient) as Promise<
-      Map<NotificationChannel, unknown>
-    >;
+    return this.notificationManager.send(notification, recipient);
   }
 
   /**

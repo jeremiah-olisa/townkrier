@@ -15,7 +15,7 @@ const program = new Command();
 program
   .name('townkrier')
   .description('TownKrier CLI - Laravel-style notification system for Node.js')
-  .version(packageJson.version, '-v, --version', 'Display version number')
+  .version(packageJson.version, '-v, --version')
   .addHelpText(
     'after',
     `

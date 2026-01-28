@@ -4,7 +4,18 @@ import {
   ChannelConfig,
   ChannelFactory,
   ITemplateRenderer,
+  NotificationResult,
+  NotificationRecipient,
+  SendEmailRequest,
+  SendSmsRequest,
+  SendPushRequest,
+  SendInAppRequest,
+  SendEmailResponse,
+  SendSmsResponse,
+  SendPushResponse,
+  SendInAppResponse,
 } from '../../interfaces';
+import { Notification } from '../notification';
 export { Constructor } from '../../utils';
 
 /**
@@ -51,15 +62,29 @@ export interface IChannelManager<T extends string = string> {
  * Interface for the Request Builder Mixin
  */
 export interface IRequestBuilder {
-  buildRequest(notification: any, channelType: string, recipient: any): Promise<any | null>;
+  buildRequest(
+    notification: Notification,
+    channelType: string,
+    recipient: NotificationRecipient,
+  ): Promise<
+    | SendEmailRequest
+    | SendSmsRequest
+    | SendPushRequest
+    | SendInAppRequest
+    | Record<string, unknown>
+    | null
+  >;
 }
 
 /**
  * Interface for the Notification Sender Mixin
  */
 export interface INotificationSender<T extends string = string> {
-  sendWithAdapterFallback(channelName: T, request: any): Promise<any>;
-  send(notification: any, recipient: any): Promise<Map<T, unknown>>;
+  sendWithAdapterFallback(
+    channelName: T,
+    request: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
+  ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse>;
+  send(notification: Notification, recipient: NotificationRecipient): Promise<NotificationResult>;
 }
 
 /**

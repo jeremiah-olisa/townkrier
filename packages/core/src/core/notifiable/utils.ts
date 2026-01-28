@@ -1,8 +1,8 @@
 import type { Notification } from '../notification';
-import type { NotificationChannelType } from '../../types';
 import type { NotificationManager } from '../notification-manager';
 import type { NotificationRecipient } from '../../interfaces';
 import type { Notifiable } from '.';
+import type { NotificationResult } from '../../interfaces';
 
 /**
  * Helper function to send notifications to a notifiable entity
@@ -11,7 +11,7 @@ import type { Notifiable } from '.';
  * @param notifiable - The entity to notify (must implement Notifiable interface)
  * @param notification - The notification to send
  * @param manager - The notification manager instance
- * @returns Promise that resolves with a Map of channel types to their responses
+ * @returns Promise that resolves with a NotificationResult object
  *
  * @example
  * ```typescript
@@ -36,7 +36,7 @@ export async function notify(
   notifiable: Notifiable,
   notification: Notification,
   manager: NotificationManager,
-): Promise<Map<NotificationChannelType, unknown>> {
+): Promise<NotificationResult> {
   // Build recipient object from notifiable entity
   // Get all channels this notification wants to use
   const channels = notification.via();
