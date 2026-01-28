@@ -49,9 +49,9 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
-      - name: Build packages
+      - name: Build all packages
         run: pnpm run build
 
       - name: Run tests
@@ -79,7 +79,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/core..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -90,7 +90,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/cli..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -101,7 +101,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/dashboard..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -112,7 +112,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/queue..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -123,7 +123,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/storage..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -134,7 +134,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/channel-in-app..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -145,7 +145,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/channel-email-mailtrap..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -156,7 +156,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/channel-email-postmark..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -167,7 +167,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/channel-email-resend..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -178,7 +178,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/channel-email-smtp..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -189,7 +189,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/channel-sms-termii..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -200,7 +200,7 @@ jobs:
         run: |
           if [ -f "package.json" ]; then
             echo "Publishing @townkrier/channel-push-fcm..."
-            pnpm publish --access public --no-git-checks
+            pnpm publish --access public --no-git-checks --no-prepublish --no-prepublishOnly
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
