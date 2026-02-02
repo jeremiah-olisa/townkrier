@@ -62,45 +62,42 @@ jobs:
       - name: Check for version changes
         id: version-check
         run: |
-          # Check which packages have version changes
-          BEFORE_SHA="${{ github.event.before }}"
-          AFTER_SHA="${{ github.sha }}"
+          # Check if local version exists on npm registry
+          echo "Checking which packages need publishing..."
 
-          echo "Checking commits between $BEFORE_SHA and $AFTER_SHA"
-
-          # Handle initial push where before SHA is all zeros
-          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
-            BEFORE_SHA="$AFTER_SHA^"
-            echo "Initial push detected, using $BEFORE_SHA"
-          fi
-
-          # Check each package individually
           check_package() {
             local package_path=$1
             local output_name=$2
+            local npm_name=$3
+            
             echo "Checking $package_path..."
             
-            if git diff "$BEFORE_SHA" "$AFTER_SHA" -- "$package_path/package.json" | grep -q '"version"'; then
-              echo "  ✓ Version changed in $package_path"
-              echo "${output_name}=true" >> $GITHUB_OUTPUT
-            else
-              echo "  ✗ No version change in $package_path"
+            # Get local version
+            local local_version=$(node -p "require('./$package_path/package.json').version")
+            echo "  Local version: $local_version"
+            
+            # Check if version exists on npm (suppress errors for unpublished packages)
+            if npm view "$npm_name@$local_version" version 2>/dev/null; then
+              echo "  ✗ Version $local_version already published to npm"
               echo "${output_name}=false" >> $GITHUB_OUTPUT
+            else
+              echo "  ✓ Version $local_version not found on npm - will publish"
+              echo "${output_name}=true" >> $GITHUB_OUTPUT
             fi
           }
 
-          check_package "packages/core" "core_changed"
-          check_package "packages/cli" "cli_changed"
-          check_package "packages/dashboard" "dashboard_changed"
-          check_package "packages/queue" "queue_changed"
-          check_package "packages/storage" "storage_changed"
-          check_package "packages/channels/in-app" "in_app_changed"
-          check_package "packages/channels/email/mailtrap" "mailtrap_changed"
-          check_package "packages/channels/email/postmark" "postmark_changed"
-          check_package "packages/channels/email/resend" "resend_changed"
-          check_package "packages/channels/email/smtp" "smtp_changed"
-          check_package "packages/channels/sms/termii" "termii_changed"
-          check_package "packages/channels/push/fcm" "fcm_changed"
+          check_package "packages/core" "core_changed" "townkrier-core"
+          check_package "packages/cli" "cli_changed" "townkrier-cli"
+          check_package "packages/dashboard" "dashboard_changed" "townkrier-dashboard"
+          check_package "packages/queue" "queue_changed" "townkrier-queue"
+          check_package "packages/storage" "storage_changed" "townkrier-storage"
+          check_package "packages/channels/in-app" "in_app_changed" "townkrier-in-app"
+          check_package "packages/channels/email/mailtrap" "mailtrap_changed" "townkrier-mailtrap"
+          check_package "packages/channels/email/postmark" "postmark_changed" "townkrier-postmark"
+          check_package "packages/channels/email/resend" "resend_changed" "townkrier-resend"
+          check_package "packages/channels/email/smtp" "smtp_changed" "townkrier-smtp"
+          check_package "packages/channels/sms/termii" "termii_changed" "townkrier-termii"
+          check_package "packages/channels/push/fcm" "fcm_changed" "townkrier-fcm"
           
           echo "Version check completed"
 
