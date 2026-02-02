@@ -1,6 +1,6 @@
 {
   "name": "townkrier-resend",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "Resend email adapter for Townkrier notification system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -1,6 +1,6 @@
 {
   "name": "townkrier-mailtrap",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "Mailtrap email adapter for Townkrier notification system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

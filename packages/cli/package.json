@@ -1,6 +1,6 @@
 {
   "name": "townkrier-cli",
-  "version": "1.0.0-alpha.5",
+  "version": "1.0.0-alpha.6",
   "description": "CLI tooling for TownKrier notification system - Laravel-style commands for generating notifications",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
