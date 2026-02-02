@@ -4,6 +4,8 @@ import {
   ChannelFactory,
   NotificationManagerConfig,
   ITemplateRenderer,
+  CircuitBreakerConfig,
+  CircuitBreakerState,
 } from '../interfaces';
 import { NotificationEventDispatcher } from '../events';
 import { INotificationManagerBase } from './notification-manager/types';
@@ -30,8 +32,21 @@ class BaseNotificationManager<TChannel extends string = string>
   public strategy: 'all-or-nothing' | 'best-effort' = 'all-or-nothing';
   public eventDispatcher?: NotificationEventDispatcher;
   public renderer?: ITemplateRenderer;
+  public circuitBreaker: Required<CircuitBreakerConfig>;
+  public circuitBreakerState: Map<string, CircuitBreakerState> = new Map();
 
   constructor(config?: NotificationManagerConfig, eventDispatcher?: NotificationEventDispatcher) {
+    const defaultCircuitBreaker: Required<CircuitBreakerConfig> = {
+      enabled: false,
+      failureThreshold: 3,
+      cooldownMs: 30_000,
+    };
+
+    this.circuitBreaker = {
+      ...defaultCircuitBreaker,
+      ...(config?.circuitBreaker || {}),
+    };
+
     if (config) {
       if (config.defaultChannel) {
         this.defaultChannel = config.defaultChannel as TChannel;

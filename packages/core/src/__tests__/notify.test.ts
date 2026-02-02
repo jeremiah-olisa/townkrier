@@ -61,13 +61,15 @@ describe('notify helper function', () => {
       channels: [],
     });
 
-    // Mock the send method
-    mockSend = jest.spyOn(manager, 'send').mockResolvedValue(
-      new Map([
+    // Mock the send method to return NotificationResult
+    mockSend = jest.spyOn(manager, 'send').mockResolvedValue({
+      status: 'success',
+      results: new Map([
         [NotificationChannel.EMAIL, { success: true }],
         [NotificationChannel.SMS, { success: true }],
       ]),
-    );
+      errors: new Map(),
+    });
   });
 
   afterEach(() => {
@@ -107,10 +109,14 @@ describe('notify helper function', () => {
     const user = new TestUser('test@example.com', '+1234567890');
     const notification = new TestNotification();
 
-    const expectedResult = new Map([
-      [NotificationChannel.EMAIL, { success: true, id: '123' }],
-      [NotificationChannel.SMS, { success: true, id: '456' }],
-    ]);
+    const expectedResult = {
+      status: 'success' as const,
+      results: new Map([
+        [NotificationChannel.EMAIL, { success: true, id: '123' }],
+        [NotificationChannel.SMS, { success: true, id: '456' }],
+      ]),
+      errors: new Map(),
+    };
 
     mockSend.mockResolvedValue(expectedResult);
 

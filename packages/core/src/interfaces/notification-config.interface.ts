@@ -132,6 +132,39 @@ export interface NotificationManagerConfig {
    * List of channel configurations
    */
   channels: ChannelConfig[];
+
+  /**
+   * Circuit breaker configuration
+   */
+  circuitBreaker?: CircuitBreakerConfig;
+}
+
+/**
+ * Circuit breaker configuration
+ */
+export interface CircuitBreakerConfig {
+  /**
+   * Enable circuit breaker behavior
+   */
+  enabled?: boolean;
+
+  /**
+   * Number of consecutive failures before opening the circuit
+   */
+  failureThreshold?: number;
+
+  /**
+   * Cooldown duration (ms) before attempting again
+   */
+  cooldownMs?: number;
+}
+
+/**
+ * Circuit breaker state per channel
+ */
+export interface CircuitBreakerState {
+  failures: number;
+  openUntil?: number;
 }
 
 /**

@@ -256,9 +256,9 @@ describe('NotificationManager', () => {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
       } as Partial<NotificationRecipient> as NotificationRecipient;
 
-      const results = await manager.send(notification, recipient);
-      expect(results.size).toBe(1);
-      expect(results.has(NotificationChannel.EMAIL)).toBe(true);
+      const result = await manager.send(notification, recipient);
+      expect(result.results.size).toBe(1);
+      expect(result.results.has(NotificationChannel.EMAIL)).toBe(true);
     });
 
     it('should throw error when no channels are configured', async () => {

@@ -147,10 +147,10 @@ describe('NotificationManager - Adapter Fallback', () => {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
       } as NotificationRecipient;
 
-      const results = await manager.send(notification, recipient);
-      expect(results.size).toBe(1);
+      const result = await manager.send(notification, recipient);
+      expect(result.results.size).toBe(1);
 
-      const emailResult = results.get(NotificationChannel.EMAIL) as any;
+      const emailResult = result.results.get(NotificationChannel.EMAIL) as any;
       expect(emailResult.success).toBe(true);
       expect(emailResult.messageId).toBe('resend-123');
     });
@@ -193,10 +193,10 @@ describe('NotificationManager - Adapter Fallback', () => {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
       } as NotificationRecipient;
 
-      const results = await manager.send(notification, recipient);
-      expect(results.size).toBe(1);
+      const result = await manager.send(notification, recipient);
+      expect(result.results.size).toBe(1);
 
-      const emailResult = results.get(NotificationChannel.EMAIL) as any;
+      const emailResult = result.results.get(NotificationChannel.EMAIL) as any;
       expect(emailResult.success).toBe(true);
       expect(emailResult.messageId).toBe('smtp-123'); // Used fallback
     });
@@ -249,10 +249,10 @@ describe('NotificationManager - Adapter Fallback', () => {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
       } as NotificationRecipient;
 
-      const results = await manager.send(notification, recipient);
-      expect(results.size).toBe(1);
+      const result = await manager.send(notification, recipient);
+      expect(result.results.size).toBe(1);
 
-      const emailResult = results.get(NotificationChannel.EMAIL) as any;
+      const emailResult = result.results.get(NotificationChannel.EMAIL) as any;
       expect(emailResult.success).toBe(true);
       expect(emailResult.messageId).toBe('postmark-123'); // Used last fallback
     });
@@ -334,10 +334,10 @@ describe('NotificationManager - Adapter Fallback', () => {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
       } as NotificationRecipient;
 
-      const results = await manager.send(notification, recipient);
-      expect(results.size).toBe(1);
+      const result = await manager.send(notification, recipient);
+      expect(result.results.size).toBe(1);
 
-      const emailResult = results.get(NotificationChannel.EMAIL) as any;
+      const emailResult = result.results.get(NotificationChannel.EMAIL) as any;
       expect(emailResult.success).toBe(true);
       expect(emailResult.messageId).toBe('smtp-123'); // Skipped disabled resend
     });
@@ -364,10 +364,10 @@ describe('NotificationManager - Adapter Fallback', () => {
         [NotificationChannel.EMAIL]: { email: 'test@example.com' },
       } as NotificationRecipient;
 
-      const results = await manager.send(notification, recipient);
-      expect(results.size).toBe(1);
+      const result = await manager.send(notification, recipient);
+      expect(result.results.size).toBe(1);
 
-      const emailResult = results.get(NotificationChannel.EMAIL) as any;
+      const emailResult = result.results.get(NotificationChannel.EMAIL) as any;
       expect(emailResult.success).toBe(true);
       expect(emailResult.messageId).toBe('resend-123');
     });

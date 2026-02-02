@@ -6,6 +6,8 @@ import {
   ITemplateRenderer,
   NotificationResult,
   NotificationRecipient,
+  CircuitBreakerConfig,
+  CircuitBreakerState,
   SendEmailRequest,
   SendSmsRequest,
   SendPushRequest,
@@ -29,6 +31,8 @@ export interface INotificationManagerBase<T extends string = string> {
   channelConfigs: Map<string, ChannelConfig>;
   defaultChannel?: T;
   enableFallback: boolean;
+  circuitBreaker: Required<CircuitBreakerConfig>;
+  circuitBreakerState: Map<string, CircuitBreakerState>;
   eventDispatcher?: NotificationEventDispatcher;
   renderer?: ITemplateRenderer;
 

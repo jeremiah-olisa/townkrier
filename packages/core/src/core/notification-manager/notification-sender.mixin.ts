@@ -10,6 +10,8 @@ import {
   NotificationRecipient,
   DeliveryStrategy,
   NotificationResult,
+  CircuitBreakerState,
+  INotificationChannel,
 } from '../../interfaces';
 import { NotificationSending, NotificationSent, NotificationFailed } from '../../events';
 import { Notification } from '../notification';
@@ -26,16 +28,23 @@ export interface IBaseWithDependencies<TChannel extends string = string>
   extends INotificationManagerBase<TChannel> {
   strategy: DeliveryStrategy;
   // From ChannelManagerMixin
-  getChannel(name: TChannel): any;
+  getChannel(name: TChannel): INotificationChannel;
   getChannelNameByType(channelType: string): string | null;
-  getChannelByType(channelType: string): any;
+  getChannelByType(channelType: string): INotificationChannel;
 
   // From RequestBuilderMixin
   buildRequest(
     notification: Notification,
     channelType: string,
     recipient: NotificationRecipient,
-  ): Promise<any | null>;
+  ): Promise<
+    | SendEmailRequest
+    | SendSmsRequest
+    | SendPushRequest
+    | SendInAppRequest
+    | Record<string, unknown>
+    | null
+  >;
 }
 
 /**
@@ -47,12 +56,84 @@ export function NotificationSenderMixin<
 >(Base: TBase) {
   return class NotificationSender extends Base {
     /**
+     * Check if circuit breaker is enabled
+     */
+    public isCircuitBreakerEnabled(): boolean {
+      return this.circuitBreaker?.enabled === true;
+    }
+
+    /**
+     * Get circuit breaker state for a channel
+     */
+    public getCircuitState(channelKey: string): CircuitBreakerState {
+      const normalized = channelKey.toLowerCase();
+      const existing = this.circuitBreakerState.get(normalized);
+
+      if (existing) {
+        // If cooldown elapsed, reset
+        if (existing.openUntil && Date.now() >= existing.openUntil) {
+          const reset: CircuitBreakerState = { failures: 0 };
+          this.circuitBreakerState.set(normalized, reset);
+          return reset;
+        }
+
+        return existing;
+      }
+
+      const fresh: CircuitBreakerState = { failures: 0 };
+      this.circuitBreakerState.set(normalized, fresh);
+      return fresh;
+    }
+
+    /**
+     * Check if circuit is open for a channel
+     */
+    public isCircuitOpen(channelKey: string): boolean {
+      if (!this.isCircuitBreakerEnabled()) return false;
+      const state = this.getCircuitState(channelKey);
+      return !!state.openUntil && Date.now() < state.openUntil;
+    }
+
+    /**
+     * Record a successful send for a channel
+     */
+    public recordCircuitSuccess(channelKey: string): void {
+      if (!this.isCircuitBreakerEnabled()) return;
+      const state = this.getCircuitState(channelKey);
+      state.failures = 0;
+      delete state.openUntil;
+      this.circuitBreakerState.set(channelKey.toLowerCase(), state);
+    }
+
+    /**
+     * Record a failed send for a channel
+     */
+    public recordCircuitFailure(channelKey: string): void {
+      if (!this.isCircuitBreakerEnabled()) return;
+      const state = this.getCircuitState(channelKey);
+      state.failures += 1;
+
+      if (state.failures >= this.circuitBreaker.failureThreshold) {
+        state.openUntil = Date.now() + this.circuitBreaker.cooldownMs;
+      }
+
+      this.circuitBreakerState.set(channelKey.toLowerCase(), state);
+    }
+
+    /**
      * Send notification through a channel with adapter fallback support
      */
     async sendWithAdapterFallback(
       channelName: TChannel,
-      request: SendEmailRequest | SendSmsRequest | SendPushRequest | SendInAppRequest,
-    ): Promise<SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse> {
+      request:
+        | SendEmailRequest
+        | SendSmsRequest
+        | SendPushRequest
+        | SendInAppRequest
+        | Record<string, unknown>,
+    ): Promise<
+      SendEmailResponse | SendSmsResponse | SendPushResponse | SendInAppResponse | unknown
+    > {
       const adapters = this.channelAdapters.get(channelName.toLowerCase());
 
       // If no adapters configured for this channel, try legacy single channel approach
@@ -121,6 +202,26 @@ export function NotificationSenderMixin<
 
       const sendToChannel = async (channelType: string) => {
         try {
+          if (this.isCircuitOpen(channelType)) {
+            const circuitError = new Error(
+              `Circuit open for channel '${channelType}', skipping send`,
+            );
+            errors.set(channelType, circuitError);
+
+            if (this.eventDispatcher) {
+              await this.eventDispatcher.dispatch(
+                new NotificationFailed(
+                  notification,
+                  channels,
+                  circuitError,
+                  channelType as NotificationChannel,
+                ),
+              );
+            }
+
+            return;
+          }
+
           const request = await this.buildRequest(notification, channelType, recipient);
 
           if (!request) {
@@ -139,9 +240,11 @@ export function NotificationSenderMixin<
           }
 
           results.set(channelType, response);
+          this.recordCircuitSuccess(channelType);
         } catch (error) {
           const err = error instanceof Error ? error : new Error(String(error));
           errors.set(channelType, err);
+          this.recordCircuitFailure(channelType);
 
           // Dispatch failed event per channel
           if (this.eventDispatcher) {
@@ -155,7 +258,7 @@ export function NotificationSenderMixin<
             );
           }
 
-          if (strategy === 'all-or-nothing') {
+          if (strategy === 'all-or-nothing' && !this.isCircuitBreakerEnabled()) {
             throw err; // Fail fast
           }
         }
