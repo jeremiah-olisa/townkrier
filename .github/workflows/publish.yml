@@ -66,18 +66,25 @@ jobs:
           BEFORE_SHA="${{ github.event.before }}"
           AFTER_SHA="${{ github.sha }}"
 
+          echo "Checking commits between $BEFORE_SHA and $AFTER_SHA"
+
           # Handle initial push where before SHA is all zeros
           if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
             BEFORE_SHA="$AFTER_SHA^"
+            echo "Initial push detected, using $BEFORE_SHA"
           fi
 
           # Check each package individually
           check_package() {
             local package_path=$1
             local output_name=$2
+            echo "Checking $package_path..."
+            
             if git diff "$BEFORE_SHA" "$AFTER_SHA" -- "$package_path/package.json" | grep -q '"version"'; then
+              echo "  ✓ Version changed in $package_path"
               echo "${output_name}=true" >> $GITHUB_OUTPUT
             else
+              echo "  ✗ No version change in $package_path"
               echo "${output_name}=false" >> $GITHUB_OUTPUT
             fi
           }
@@ -94,6 +101,8 @@ jobs:
           check_package "packages/channels/email/smtp" "smtp_changed"
           check_package "packages/channels/sms/termii" "termii_changed"
           check_package "packages/channels/push/fcm" "fcm_changed"
+          
+          echo "Version check completed"
 
       - name: Configure npm authentication
         run: |
