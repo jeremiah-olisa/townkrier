@@ -61,8 +61,16 @@ jobs:
       - name: Check for version changes
         id: version-check
         run: |
-          # Check if any package.json versions have changed in this commit
-          if git diff HEAD~1 HEAD -- 'packages/*/package.json' | grep -q '"version"'; then
+          # Check if any package.json versions have changed in this push
+          BEFORE_SHA="${{ github.event.before }}"
+          AFTER_SHA="${{ github.sha }}"
+
+          # Handle initial push where before SHA is all zeros
+          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE_SHA="$AFTER_SHA^"
+          fi
+
+          if git diff "$BEFORE_SHA" "$AFTER_SHA" -- 'packages/*/package.json' | grep -q '"version"'; then
             echo "version_changed=true" >> $GITHUB_OUTPUT
           else
             echo "version_changed=false" >> $GITHUB_OUTPUT
