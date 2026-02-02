@@ -110,133 +110,121 @@ jobs:
 
       - name: Publish to npm (Core)
         if: steps.version-check.outputs.core_changed == 'true'
-        working-directory: ./packages/core
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/core..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/core
+          echo "Publishing @townkrier/core..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (CLI)
         if: steps.version-check.outputs.cli_changed == 'true'
-        working-directory: ./packages/cli
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/cli..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/cli
+          echo "Publishing @townkrier/cli..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Dashboard)
         if: steps.version-check.outputs.dashboard_changed == 'true'
-        working-directory: ./packages/dashboard
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/dashboard..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/dashboard
+          echo "Publishing @townkrier/dashboard..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Queue)
         if: steps.version-check.outputs.queue_changed == 'true'
-        working-directory: ./packages/queue
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/queue..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/queue
+          echo "Publishing @townkrier/queue..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Storage)
         if: steps.version-check.outputs.storage_changed == 'true'
-        working-directory: ./packages/storage
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/storage..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/storage
+          echo "Publishing @townkrier/storage..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (In-App Channel)
         if: steps.version-check.outputs.in_app_changed == 'true'
-        working-directory: ./packages/channels/in-app
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/channel-in-app..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/channels/in-app
+          echo "Publishing @townkrier/channel-in-app..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Email - Mailtrap)
         if: steps.version-check.outputs.mailtrap_changed == 'true'
-        working-directory: ./packages/channels/email/mailtrap
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/channel-email-mailtrap..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/channels/email/mailtrap
+          echo "Publishing @townkrier/channel-email-mailtrap..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Email - Postmark)
         if: steps.version-check.outputs.postmark_changed == 'true'
-        working-directory: ./packages/channels/email/postmark
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/channel-email-postmark..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/channels/email/postmark
+          echo "Publishing @townkrier/channel-email-postmark..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Email - Resend)
         if: steps.version-check.outputs.resend_changed == 'true'
-        working-directory: ./packages/channels/email/resend
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/channel-email-resend..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/channels/email/resend
+          echo "Publishing @townkrier/channel-email-resend..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Email - SMTP)
         if: steps.version-check.outputs.smtp_changed == 'true'
-        working-directory: ./packages/channels/email/smtp
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/channel-email-smtp..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/channels/email/smtp
+          echo "Publishing @townkrier/channel-email-smtp..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (SMS - Termii)
         if: steps.version-check.outputs.termii_changed == 'true'
-        working-directory: ./packages/channels/sms/termii
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/channel-sms-termii..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/channels/sms/termii
+          echo "Publishing @townkrier/channel-sms-termii..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Push - FCM)
         if: steps.version-check.outputs.fcm_changed == 'true'
-        working-directory: ./packages/channels/push/fcm
+        continue-on-error: true
         run: |
-          if [ -f "package.json" ]; then
-            echo "Publishing @townkrier/channel-push-fcm..."
-            pnpm publish --access public --ignore-scripts
-          fi
+          cd packages/channels/push/fcm
+          echo "Publishing @townkrier/channel-push-fcm..."
+          pnpm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
