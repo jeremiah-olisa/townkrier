@@ -8,6 +8,7 @@ on:
       - 'packages/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - '.github/workflows/publish.yml'
   workflow_dispatch: # Allow manual trigger
 
