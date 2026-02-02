@@ -1,6 +1,6 @@
 packages:
   - 'packages/*'
-  - 'packages/channels/in-app'
+  - 'packages/channels/in-app/*'
   - 'packages/channels/email/*'
   - 'packages/channels/push/*'
   - 'packages/channels/sms/*'

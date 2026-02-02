@@ -7,6 +7,17 @@ node_modules/
 dist/
 build/
 *.tsbuildinfo
+*.js
+*.d.ts
+*.js.map
+*.d.ts.map
+
+# But allow config files
+!*.config.js
+!jest.config.js
+!.eslintrc.js
+!prettier.config.js
+!lerna.config.js
 
 # Environment variables
 .env
