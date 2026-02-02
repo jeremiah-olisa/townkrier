@@ -4,5 +4,6 @@ packages:
   - 'packages/channels/email/*'
   - 'packages/channels/push/*'
   - 'packages/channels/sms/*'
+  - 'packages/channels/social-media/whatsapp/*'
   - 'examples/playground'
   - 'examples/expo-townkrier'

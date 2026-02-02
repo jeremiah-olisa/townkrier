@@ -99,6 +99,9 @@ jobs:
           check_package "packages/channels/email/smtp" "smtp_changed" "townkrier-smtp"
           check_package "packages/channels/sms/termii" "termii_changed" "townkrier-termii"
           check_package "packages/channels/push/fcm" "fcm_changed" "townkrier-fcm"
+          check_package "packages/channels/social-media/whatsapp/common" "whatsapp_common_changed" "townkrier-whatsapp-common"
+          check_package "packages/channels/social-media/whatsapp/wasender" "wasender_changed" "townkrier-wasender"
+          check_package "packages/channels/social-media/whatsapp/whapi" "whapi_changed" "townkrier-whapi"
           
           echo "Version check completed"
 
@@ -214,6 +217,33 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish to npm (WhatsApp - Common)
+        if: steps.version-check.outputs.whatsapp_common_changed == 'true'
+        continue-on-error: true
+        run: |
+          echo "Publishing @townkrier/whatsapp-common..."
+          pnpm --filter townkrier-whatsapp-common publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm (WhatsApp - Wasender)
+        if: steps.version-check.outputs.wasender_changed == 'true'
+        continue-on-error: true
+        run: |
+          echo "Publishing @townkrier/wasender..."
+          pnpm --filter townkrier-wasender publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm (WhatsApp - WHAPI)
+        if: steps.version-check.outputs.whapi_changed == 'true'
+        continue-on-error: true
+        run: |
+          echo "Publishing @townkrier/whapi..."
+          pnpm --filter townkrier-whapi publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Create Git Tag
         if: |
           steps.version-check.outputs.core_changed == 'true' ||
@@ -227,7 +257,10 @@ jobs:
           steps.version-check.outputs.resend_changed == 'true' ||
           steps.version-check.outputs.smtp_changed == 'true' ||
           steps.version-check.outputs.termii_changed == 'true' ||
-          steps.version-check.outputs.fcm_changed == 'true'
+          steps.version-check.outputs.fcm_changed == 'true' ||
+          steps.version-check.outputs.whatsapp_common_changed == 'true' ||
+          steps.version-check.outputs.wasender_changed == 'true' ||
+          steps.version-check.outputs.whapi_changed == 'true'
         run: |
           # Get the version from the core package
           VERSION=$(node -p "require('./packages/core/package.json').version")

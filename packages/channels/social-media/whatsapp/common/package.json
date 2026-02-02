@@ -1,0 +1,18 @@
+{
+  "name": "townkrier-whatsapp-common",
+  "version": "1.0.0-alpha.1",
+  "description": "Common classes and interfaces for WhatsApp channels in Townkrier",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "townkrier-core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

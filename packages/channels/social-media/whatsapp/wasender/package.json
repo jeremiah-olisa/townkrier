@@ -1,0 +1,24 @@
+{
+  "name": "townkrier-wasender",
+  "version": "1.0.0-alpha.1",
+  "description": "Wasender WhatsApp adapter for Townkrier notification system",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "jest"
+  },
+  "dependencies": {
+    "townkrier-core": "workspace:*",
+    "townkrier-whatsapp-common": "workspace:*",
+    "axios": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.9.1",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.5",
+    "typescript": "^5.0.0"
+  }
+}
