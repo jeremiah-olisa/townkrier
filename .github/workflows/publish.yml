@@ -109,9 +109,8 @@ jobs:
         if: steps.version-check.outputs.core_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/core
           echo "Publishing @townkrier/core..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-core publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -119,9 +118,8 @@ jobs:
         if: steps.version-check.outputs.cli_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/cli
           echo "Publishing @townkrier/cli..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-cli publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -129,9 +127,8 @@ jobs:
         if: steps.version-check.outputs.dashboard_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/dashboard
           echo "Publishing @townkrier/dashboard..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-dashboard publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -139,9 +136,8 @@ jobs:
         if: steps.version-check.outputs.queue_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/queue
           echo "Publishing @townkrier/queue..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-queue publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -149,9 +145,8 @@ jobs:
         if: steps.version-check.outputs.storage_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/storage
           echo "Publishing @townkrier/storage..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-storage publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -159,9 +154,8 @@ jobs:
         if: steps.version-check.outputs.in_app_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/channels/in-app
           echo "Publishing @townkrier/channel-in-app..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-in-app publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -169,9 +163,8 @@ jobs:
         if: steps.version-check.outputs.mailtrap_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/channels/email/mailtrap
           echo "Publishing @townkrier/channel-email-mailtrap..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-mailtrap publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -179,9 +172,8 @@ jobs:
         if: steps.version-check.outputs.postmark_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/channels/email/postmark
           echo "Publishing @townkrier/channel-email-postmark..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-postmark publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -189,9 +181,8 @@ jobs:
         if: steps.version-check.outputs.resend_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/channels/email/resend
           echo "Publishing @townkrier/channel-email-resend..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-resend publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -199,9 +190,8 @@ jobs:
         if: steps.version-check.outputs.smtp_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/channels/email/smtp
           echo "Publishing @townkrier/channel-email-smtp..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-smtp publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -209,9 +199,8 @@ jobs:
         if: steps.version-check.outputs.termii_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/channels/sms/termii
           echo "Publishing @townkrier/channel-sms-termii..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-termii publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -219,9 +208,8 @@ jobs:
         if: steps.version-check.outputs.fcm_changed == 'true'
         continue-on-error: true
         run: |
-          cd packages/channels/push/fcm
           echo "Publishing @townkrier/channel-push-fcm..."
-          pnpm publish --access public --no-git-checks
+          pnpm --filter townkrier-fcm publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
