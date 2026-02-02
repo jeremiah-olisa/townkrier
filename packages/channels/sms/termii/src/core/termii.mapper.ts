@@ -11,10 +11,10 @@ import { TermiiConfig } from '../types';
 export class TermiiMapper {
   static toTermiiData(request: SendSmsRequest, config: TermiiConfig): TermiiSmsData {
     // Determine sender ID
-    const from = String(config.from);
+    const from = config.senderId || (config as any).from;
 
     if (!from) {
-      throw new Error('Sender ID (from) is required for Termii');
+      throw new Error('Sender ID (senderId) is required for Termii');
     }
 
     // Map recipients to single string or array of strings
