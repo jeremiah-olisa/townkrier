@@ -13,38 +13,54 @@ export type NotificationEventListener<T extends NotificationEvent> = (
  * Similar to Laravel's notification events
  */
 export class NotificationEventDispatcher {
+  private static instance: NotificationEventDispatcher;
   private listeners: Map<string, NotificationEventListener<NotificationEvent>[]> = new Map();
 
-  /**
-   * Register an event listener
-   */
-  on<T extends NotificationEvent>(
-    // Constructor type needs to accept any arguments for flexibility
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    eventType: new (...args: any[]) => T,
-    listener: NotificationEventListener<T>,
-  ): void {
-    const eventName = eventType.name;
-    if (!this.listeners.has(eventName)) {
-      this.listeners.set(eventName, []);
+  constructor() {
+    if (!NotificationEventDispatcher.instance) {
+      NotificationEventDispatcher.instance = this;
     }
-    this.listeners.get(eventName)!.push(listener as NotificationEventListener<NotificationEvent>);
+    return NotificationEventDispatcher.instance;
   }
 
   /**
-   * Dispatch an event to all registered listeners
+   * Registers a listener for a specific event type.
+   *
+   * @param eventName - The class name of the event (e.g., 'NotificationSent').
+   * @param callback - Function to execute when the event is dispatched.
+   *
+   * @example
+   * ```typescript
+   * manager.events().on('NotificationSent', (event) => {
+   *   console.log('Sent!', event.responses);
+   * });
+   * ```
    */
-  async dispatch<T extends NotificationEvent>(event: T): Promise<void> {
-    const eventName = event.constructor.name;
-    const listeners = this.listeners.get(eventName) || [];
-
-    for (const listener of listeners) {
-      try {
-        await listener(event);
-      } catch (error) {
-        Logger.error(`Error in event listener for ${eventName}:`, error);
-      }
+  on<T extends NotificationEvent>(eventName: string, callback: (event: T) => void | Promise<void>) {
+    if (!this.listeners.has(eventName)) {
+      this.listeners.set(eventName, []);
     }
+    this.listeners.get(eventName)?.push(callback as unknown as NotificationEventListener<any>);
+  }
+
+  /**
+   * Dispatches an event to all registered listeners asynchronously.
+   *
+   * @param event - The event instance to dispatch.
+   */
+  async dispatch(event: NotificationEvent) {
+    const eventName = event.constructor.name;
+    const callbacks = this.listeners.get(eventName) || [];
+
+    await Promise.all(
+      callbacks.map(async (callback) => {
+        try {
+          await callback(event);
+        } catch (error) {
+          Logger.error(`Error in event listener for ${eventName}:`, error);
+        }
+      }),
+    );
   }
 
   /**

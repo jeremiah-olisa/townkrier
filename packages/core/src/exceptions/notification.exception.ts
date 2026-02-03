@@ -1,12 +1,39 @@
 import { NotificationErrorCode } from './notification-error-codes';
 
 /**
- * Base exception class for notification-related errors
+ * Base exception class for all notification-related errors in Townkrier.
+ * All custom exceptions in the system extend this class.
+ *
+ * @example
+ * ```typescript
+ * try {
+ *   // ... notification logic
+ * } catch (error) {
+ *   if (error instanceof NotificationException) {
+ *     console.error(`Townkrier Error [${error.code}]: ${error.message}`);
+ *   }
+ * }
+ * ```
  */
 export class NotificationException extends Error {
+  /**
+   * A unique error code identifying the type of error.
+   * @see NotificationErrorCode
+   */
   public readonly code: string;
+
+  /**
+   * Optional additional details about the error (e.g., inner errors, context).
+   */
   public readonly details?: unknown;
 
+  /**
+   * Creates a new NotificationException.
+   *
+   * @param message - Descriptive error message
+   * @param code - Error code from NotificationErrorCode (default: UNKNOWN_ERROR)
+   * @param details - Optional context or inner error
+   */
   constructor(
     message: string,
     code: string = NotificationErrorCode.UNKNOWN_ERROR,
@@ -21,76 +48,5 @@ export class NotificationException extends Error {
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, this.constructor);
     }
-  }
-}
-
-/**
- * Exception for configuration errors
- */
-export class NotificationConfigurationException extends NotificationException {
-  constructor(message: string, details?: unknown) {
-    super(message, NotificationErrorCode.CONFIGURATION_ERROR, details);
-    this.name = 'NotificationConfigurationException';
-  }
-}
-
-/**
- * Exception for channel errors
- */
-export class NotificationChannelException extends NotificationException {
-  constructor(
-    message: string,
-    code: string = NotificationErrorCode.CHANNEL_ERROR,
-    details?: unknown,
-  ) {
-    super(message, code, details);
-    this.name = 'NotificationChannelException';
-  }
-}
-
-/**
- * Exception for validation errors
- */
-export class NotificationValidationException extends NotificationException {
-  constructor(message: string, details?: unknown) {
-    super(message, NotificationErrorCode.INVALID_REQUEST, details);
-    this.name = 'NotificationValidationException';
-  }
-}
-
-/**
- * Exception for provider errors
- */
-export class NotificationProviderException extends NotificationException {
-  constructor(
-    message: string,
-    code: string = NotificationErrorCode.PROVIDER_ERROR,
-    details?: unknown,
-  ) {
-    super(message, code, details);
-    this.name = 'NotificationProviderException';
-  }
-}
-
-/**
- * Exception for invalid responses from providers
- */
-export class NotificationInvalidResponseError extends NotificationProviderException {
-  public readonly statusCode?: number;
-
-  constructor(message: string, statusCode?: number, details?: unknown) {
-    super(message, NotificationErrorCode.INVALID_RESPONSE, details);
-    this.name = 'NotificationInvalidResponseError';
-    this.statusCode = statusCode;
-  }
-}
-
-/**
- * Exception for send failures
- */
-export class NotificationSendException extends NotificationException {
-  constructor(message: string, details?: unknown) {
-    super(message, NotificationErrorCode.SEND_FAILED, details);
-    this.name = 'NotificationSendException';
   }
 }

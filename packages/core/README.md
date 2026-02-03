@@ -1,295 +1,218 @@
-# townkrier-core
+# townkrier-core 🚀
 
-Laravel-style notification system for Node.js with multiple channels and providers.
+A powerful, Laravel-inspired notification system for Node.js. Flexible, provider-agnostic, and built for building scalable notification engines.
 
-## Overview
+[![NPM Version](https://img.shields.io/npm/v/townkrier-core.svg)](https://www.npmjs.com/package/townkrier-core)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Townkrier is a flexible, provider-agnostic notification system inspired by Laravel's notification system. It provides a unified API for sending notifications through multiple channels (email, SMS, push notifications, in-app, etc.) with support for multiple providers per channel.
+---
 
-## Features
+## 🌟 Overview
 
-- 🔌 **Multiple Channels**: Email, SMS, Push Notifications, In-App, Slack, and more
-- 🔄 **Provider Agnostic**: Easily switch between providers (Resend, Termii, FCM, etc.)
-- ✅ **Type Safe**: Full TypeScript support with comprehensive type definitions
-- 🏗️ **Well Structured**: Clean architecture following SOLID principles
-- 🔧 **Factory Pattern**: Easy channel registration and management
-- 📦 **Standalone Packages**: Each adapter is a separate package
-- 🚦 **Fallback Support**: Automatic fallback to alternative channels on failure
-- 🎨 **Extensible**: Easy to create custom channels and adapters
+Townkrier provides a unified API for sending notifications through multiple channels (Email, SMS, Push, WhatsApp, etc.). It abstracts the complexity of managing multiple providers, allowing you to focus on your application logic rather than API integrations.
 
-## Installation
+Inspired by the elegant Laravel Notification system, Townkrier brings a familiar, developer-friendly experience to the TypeScript ecosystem.
+
+## ✨ Features
+
+- 🔌 **Channel-Based**: Organise notifications by channels (email, sms, push).
+- 🔄 **Strategy-Driven Delivery**: Built-in support for **Priority Fallback**, **Round Robin**, and **Weighted Random** strategies.
+- 🎯 **Notifiable Pattern**: Attach notification capabilities to any entity (User, Organization, etc.).
+- 🛡️ **Production Ready**: Robust error handling with `BestEffort` or `AllOrNothing` delivery strategies.
+- 🏗️ **Extensible**: Easily build and plug in custom drivers or your own unofficial channels.
+- 🦾 **Strictly Typed**: Native TypeScript support with deep generic integration for compile-time safety.
+
+## 📦 Installation
 
 ```bash
-npm install townkrier-core
-# or
 pnpm add townkrier-core
 ```
 
-## Quick Start
+---
+
+## 🚀 Basic Usage
+
+### 1. Initialize the Manager
+
+Use the `TownkrierFactory` to create your notification manager. You specify the drivers to use for each channel.
 
 ```typescript
-import {
-  NotificationManager,
-  Notification,
-  NotificationChannel,
-  NotificationPriority,
-} from 'townkrier-core';
-import { createResendChannel } from 'townkrier-resend';
-import { createTermiiChannel } from 'townkrier-termii';
+import { TownkrierFactory, DeliveryStrategy } from 'townkrier-core';
+import { ResendDriver } from 'townkrier-resend';
 
-// Initialize notification manager (supports multi-adapter channels)
-const manager = new NotificationManager({
-  defaultChannel: 'email',
-  enableFallback: true,
-  strategy: 'best-effort',
-  circuitBreaker: {
-    enabled: true,
-    failureThreshold: 3,
-    cooldownMs: 30_000,
+const manager = TownkrierFactory.create({
+  // strategy: DeliveryStrategy.BestEffort, // Default: AllOrNothing
+  channels: {
+    email: {
+      driver: ResendDriver,
+      config: { apiKey: 're_123...' },
+    },
   },
-  channels: [
-    {
-      name: 'email',
-      enabled: true,
-      adapters: [
-        {
-          name: 'resend',
-          priority: 10,
-          config: {
-            apiKey: process.env.RESEND_API_KEY,
-            from: 'noreply@yourdomain.com',
-          },
-        },
-      ],
-    },
-    {
-      name: 'sms',
-      enabled: true,
-      adapters: [
-        {
-          name: 'termii',
-          priority: 5,
-          config: {
-            apiKey: process.env.TERMII_API_KEY,
-            senderId: 'YourApp',
-          },
-        },
-      ],
-    },
-  ],
 });
-
-// Register adapter factories (use adapter name or "channel-adapter" key)
-manager.registerFactory('resend', createResendChannel);
-manager.registerFactory('termii', createTermiiChannel);
-
-class WelcomeNotification extends Notification {
-  override via() {
-    return [NotificationChannel.EMAIL, NotificationChannel.SMS];
-  }
-
-  override toEmail() {
-    return {
-      subject: 'Welcome!',
-      text: 'Welcome to our app!',
-      html: '<p>Welcome to our app!</p>',
-      from: { email: 'noreply@yourdomain.com' },
-    };
-  }
-
-  override toSms() {
-    return { text: 'Welcome to our app!' };
-  }
-}
-
-const notification = new WelcomeNotification().setPriority(NotificationPriority.NORMAL);
-
-const result = await manager.send(notification, {
-  [NotificationChannel.EMAIL]: { email: 'user@example.com', name: 'John Doe' },
-  [NotificationChannel.SMS]: { phone: '+15551234567' },
-});
-
-console.log(result.status);
 ```
 
-## Available Adapters
+### 2. Define a Notification
+
+Notifications are classes that define which channels they use and what the message looks like for each channel.
+
+```typescript
+import { Notification, Notifiable } from 'townkrier-core';
+
+class WelcomeNotification extends Notification<'email'> {
+  via(notifiable: Notifiable) {
+    return ['email'];
+  }
+
+  toEmail(notifiable: Notifiable) {
+    return {
+      subject: 'Welcome to Townkrier!',
+      html: `<p>Thanks for joining, ${notifiable.name}!</p>`,
+    };
+  }
+}
+```
+
+### 3. Send and Receive
+
+Implement the `Notifiable` interface on your domain entities (Users, Orders, etc.) so Townkrier knows where to send the messages.
+
+```typescript
+const user = {
+  id: 'user_1',
+  name: 'Jeremiah',
+  email: 'hello@townkrier.io',
+
+  // Required by Notifiable interface
+  routeNotificationFor(driver: string) {
+    if (driver === 'email') return this.email;
+    return undefined;
+  },
+};
+
+const result = await manager.send(user, new WelcomeNotification());
+console.log(result.status); // 'success'
+```
+
+---
+
+## 🔥 Complex Usage (Production Grade)
+
+Townkrier is built for high availability and load balancing across multiple providers.
+
+### Strategic Fallbacks
+
+Configure multiple drivers for a single channel with advanced delivery strategies.
+
+```typescript
+import { FallbackStrategy } from 'townkrier-core';
+import { ResendDriver } from 'townkrier-resend';
+import { MailtrapDriver } from 'townkrier-mailtrap';
+
+const manager = TownkrierFactory.create({
+  channels: {
+    email: {
+      strategy: FallbackStrategy.PriorityFallback, // Try Resend, then Mailtrap
+      drivers: [
+        { use: ResendDriver, config: { apiKey: '...' }, priority: 10 },
+        { use: MailtrapDriver, config: { token: '...' }, priority: 5 }
+      ]
+    },
+    sms: {
+      strategy: FallbackStrategy.RoundRobin, // Distribute load evenly
+      drivers: [
+        { use: ProviderADriver, config: { ... } },
+        { use: ProviderBDriver, config: { ... } }
+      ]
+    }
+  }
+});
+```
+
+### Event System
+
+Listen to the lifecycle of your notifications for logging, analytics, or debugging.
+
+```typescript
+// Hook into the event dispatcher
+manager.events().on('NotificationSending', (event) => {
+  console.log(`📤 Sending via: ${event.channels.join(', ')}`);
+});
+
+manager.events().on('NotificationSent', (event) => {
+  console.log(`✅ Sent! Results:`, event.responses);
+});
+
+manager.events().on('NotificationFailed', (event) => {
+  console.error(`❌ Failed:`, event.error.message);
+});
+```
+
+---
+
+## 🛠️ Custom Channels & Drivers
+
+Building a custom driver is straightforward. Simply implement the `NotificationDriver` interface.
+
+### 1. Create the Driver
+
+```typescript
+import { NotificationDriver, Notifiable, SendResult } from 'townkrier-core';
+
+export class TelegramDriver implements NotificationDriver {
+  constructor(private config: { botToken: string }) {}
+
+  async send(notifiable: Notifiable, message: any): Promise<SendResult> {
+    const chatId = notifiable.routeNotificationFor('telegram');
+
+    // logic to call Telegram Bot API...
+
+    return {
+      id: 'tg_msg_882',
+      status: 'success',
+      response: {
+        /* raw response */
+      },
+    };
+  }
+}
+```
+
+### 2. Register and Use
+
+```typescript
+const manager = TownkrierFactory.create({
+  channels: {
+    telegram: {
+      driver: TelegramDriver,
+      config: { botToken: '...' },
+    },
+  },
+});
+
+class AlertNotification extends Notification<'telegram'> {
+  via() {
+    return ['telegram'];
+  }
+
+  toTelegram(notifiable: Notifiable) {
+    return { text: '🚨 System Alert!' };
+  }
+}
+```
+
+---
+
+## 🏗️ Monorepo Adapters
+
+While `townkrier-core` handles the orchestration, you can install official adapters for popular services:
 
 - `townkrier-resend` - Email via Resend
 - `townkrier-termii` - SMS via Termii
-- `townkrier-fcm` - Push notifications via Firebase Cloud Messaging
-- `townkrier-in-app` - In-app notifications with storage interface
+- `townkrier-mailtrap` - Email via Mailtrap
+- `townkrier-fcm` - Push via Firebase
 
-## Architecture
+---
 
-The package follows a clean architecture pattern similar to the payment module:
+## 📜 License
 
-```
-townkrier-core
-├── interfaces/          # Channel interfaces and contracts
-├── types/              # Type definitions and enums
-├── core/               # Core classes (Manager, Base classes)
-├── channels/           # Base channel implementations
-├── exceptions/         # Custom exceptions
-└── utils/              # Utility functions
-
-townkrier-adapter-name
-├── core/               # Adapter implementation
-├── types/              # Adapter-specific types
-└── interfaces/         # Adapter-specific interfaces
-```
-
-## Creating Custom Channels
-
-```typescript
-import {
-  MailChannel,
-  SendEmailRequest,
-  SendEmailResponse,
-  NotificationStatus,
-} from 'townkrier-core';
-
-export class CustomEmailChannel extends MailChannel {
-  constructor(config: CustomConfig) {
-    super(config, 'CustomEmail');
-  }
-
-  async sendEmail(request: SendEmailRequest): Promise<SendEmailResponse> {
-    // Your implementation here
-    return {
-      messageId: 'unique-id',
-      status: NotificationStatus.SENT,
-      sentAt: new Date(),
-    };
-  }
-}
-```
-
-## Custom Unofficial Channels (core-only)
-
-If you only install `townkrier-core`, you can build your own unofficial channels (e.g. Telegram, WhatsApp, Mailbox) without extra packages.
-
-```typescript
-import {
-  BaseNotificationChannel,
-  NotificationChannelConfig,
-  NotificationManager,
-  Notification,
-  NotificationStatus,
-} from 'townkrier-core';
-
-type TelegramRequest = {
-  to: { chatId: string };
-  text: string;
-  reference?: string;
-};
-
-type TelegramResponse = {
-  messageId: string;
-  status: NotificationStatus;
-};
-
-class TelegramChannel extends BaseNotificationChannel<
-  NotificationChannelConfig,
-  TelegramRequest,
-  TelegramResponse
-> {
-  constructor(config: NotificationChannelConfig) {
-    super(config, 'telegram', 'telegram');
-  }
-
-  async send(request: TelegramRequest): Promise<TelegramResponse> {
-    // Call Telegram API here
-    return { messageId: 'tg-123', status: NotificationStatus.SENT };
-  }
-}
-
-type WhatsAppRequest = {
-  to: { phone: string };
-  text: string;
-  reference?: string;
-};
-
-type WhatsAppResponse = {
-  messageId: string;
-  status: NotificationStatus;
-};
-
-class WhatsAppChannel extends BaseNotificationChannel<
-  NotificationChannelConfig,
-  WhatsAppRequest,
-  WhatsAppResponse
-> {
-  constructor(config: NotificationChannelConfig) {
-    super(config, 'whatsapp', 'whatsapp');
-  }
-
-  async send(request: WhatsAppRequest): Promise<WhatsAppResponse> {
-    // Call WhatsApp API here
-    return { messageId: 'wa-123', status: NotificationStatus.SENT };
-  }
-}
-
-class CustomChatNotification extends Notification {
-  override via() {
-    return ['telegram', 'whatsapp'];
-  }
-
-  toTelegram() {
-    return { text: 'Hello from Telegram!' };
-  }
-
-  toWhatsapp() {
-    return { text: 'Hello from WhatsApp!' };
-  }
-}
-
-const manager = new NotificationManager({ channels: [] });
-manager.registerChannel('telegram', new TelegramChannel({ apiKey: 'token' }));
-manager.registerChannel('whatsapp', new WhatsAppChannel({ apiKey: 'token' }));
-
-await manager.send(new CustomChatNotification(), {
-  telegram: { chatId: '12345' },
-  whatsapp: { phone: '+15551234567' },
-});
-```
-
-## Manager Configuration
-
-- `channels[].config` is legacy single-adapter configuration.
-- Prefer `channels[].adapters` for multi-adapter setup and fallback within a channel.
-- Register factories using either the adapter name (e.g. `resend`) or the composite key (`email-resend`).
-- Circuit breaker defaults: `enabled=false`, `failureThreshold=3`, `cooldownMs=30000`.
-
-## Circuit Breaker
-
-When enabled, a failing channel won’t block sending to other channels. After a channel hits the failure threshold, its circuit opens for the cooldown window and future sends for that channel are skipped until the cooldown expires.
-
-## Template Rendering
-
-If your `toEmail()` returns a `template`, configure a renderer on the manager:
-
-```typescript
-import type { ITemplateRenderer } from 'townkrier-core';
-
-const renderer: ITemplateRenderer = {
-  render: async (template, context) => {
-    // Return rendered HTML string
-    return `<p>${context.name}</p>`;
-  },
-};
-
-const manager = new NotificationManager({
-  renderer,
-  channels: [
-    /* ... */
-  ],
-});
-```
-
-## Documentation
-
-For detailed documentation, examples, and API reference, visit the [documentation](../../docs).
-
-## License
-
-MIT
+MIT © [Jeremiah Olisa](https://github.com/jeremiah-olisa)

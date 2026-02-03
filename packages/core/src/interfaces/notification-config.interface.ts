@@ -1,5 +1,3 @@
-import { ITemplateRenderer } from './template-renderer.interface';
-
 /**
  * Base configuration for notification channels
  */
@@ -73,71 +71,10 @@ export interface AdapterConfig {
 /**
  * Configuration for a single notification channel in the manager
  */
-export interface ChannelConfig {
-  /**
-   * Name of the channel (e.g., 'email', 'sms')
-   */
-  name: string;
+// ChannelConfig removed to avoid conflict with townkrier-config.interface.ts
+// Use ChannelConfig from townkrier-config.interface.ts instead.
 
-  /**
-   * Whether this channel is enabled
-   */
-  enabled?: boolean;
-
-  /**
-   * Priority for fallback (higher = preferred)
-   */
-  priority?: number;
-
-  /**
-   * Channel-specific configuration (legacy support - single adapter)
-   * @deprecated Use 'adapters' array for multiple adapter support
-   */
-  config?: ChannelEnvConfig;
-
-  /**
-   * List of adapters for this channel (new multi-adapter support)
-   * When multiple adapters are configured, they will be tried in priority order
-   */
-  adapters?: AdapterConfig[];
-}
-
-/**
- * Notification manager configuration
- */
-export interface NotificationManagerConfig {
-  /**
-   * Default channel to use
-   */
-  defaultChannel?: string;
-
-  /**
-   * Delivery strategy to use
-   * - 'all-or-nothing': Fails immediately if any channel fails (default)
-   * - 'best-effort': Continues sending to other channels even if one fails
-   */
-  strategy?: 'all-or-nothing' | 'best-effort';
-
-  /**
-   * Enable fallback to other channels on failure
-   */
-  enableFallback?: boolean;
-
-  /**
-   * Template renderer for rendering notification content
-   */
-  renderer?: ITemplateRenderer;
-
-  /**
-   * List of channel configurations
-   */
-  channels: ChannelConfig[];
-
-  /**
-   * Circuit breaker configuration
-   */
-  circuitBreaker?: CircuitBreakerConfig;
-}
+// NotificationManagerConfig removed in favor of TownkrierConfig
 
 /**
  * Circuit breaker configuration

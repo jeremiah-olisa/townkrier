@@ -1,16 +1,18 @@
-import { Notification } from '../core/notification';
-import { NotificationChannelType } from '../types';
+import { Notification } from '../notification';
 import { NotificationEvent } from './notification-event';
 
 /**
- * Event fired after a notification has been sent successfully
+ * Event dispatched after a notification has been **successfully** (or partially) sent.
+ * Contains the responses from the individual drivers.
  */
 export class NotificationSent extends NotificationEvent {
-  constructor(
-    notification: Notification,
-    channels: NotificationChannelType[],
-    public readonly responses: Map<NotificationChannelType, unknown>,
-  ) {
+  /**
+   * Map of channel names to their successful send results/responses.
+   */
+  public responses: Map<string, unknown>;
+
+  constructor(notification: Notification, channels: string[], responses: Map<string, unknown>) {
     super(notification, channels);
+    this.responses = responses;
   }
 }

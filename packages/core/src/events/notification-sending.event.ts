@@ -1,9 +1,10 @@
-import { Notification } from '../core/notification';
+import { Notification } from '../notification';
 import { NotificationChannelType } from '../types';
 import { NotificationEvent } from './notification-event';
 
 /**
- * Event fired when a notification is about to be sent
+ * Event dispatched **before** the notification sending process begins.
+ * Useful for logging or intercepting the send request.
  */
 export class NotificationSending extends NotificationEvent {
   constructor(notification: Notification, channels: NotificationChannelType[]) {
