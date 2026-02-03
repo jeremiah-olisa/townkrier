@@ -1,5 +1,3 @@
-// Resend email adapter
+export * from './interfaces/resend-config.interface';
+export * from './interfaces/resend-message.interface';
 export * from './resend.driver';
-// export * from './core'; // Deleted
-// export * from './types'; // Likely redundant or deleted
-// export * from './interfaces'; // Deleted

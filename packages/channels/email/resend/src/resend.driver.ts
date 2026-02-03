@@ -1,25 +1,7 @@
 import { NotificationDriver, SendResult, Notifiable } from 'townkrier-core';
 import { Resend } from 'resend';
-
-export interface ResendConfig {
-  apiKey: string;
-  from?: string;
-  // Others as needed
-}
-
-export interface ResendMessage {
-  subject: string;
-  html?: string;
-  text?: string;
-  to?: string | string[];
-  from?: string;
-  cc?: string | string[];
-  bcc?: string | string[];
-  reply_to?: string | string[];
-  attachments?: any[];
-  headers?: Record<string, string>;
-  tags?: any[];
-}
+import { ResendConfig } from './interfaces/resend-config.interface';
+import { ResendMessage } from './interfaces/resend-message.interface';
 
 export class ResendDriver implements NotificationDriver<ResendConfig, ResendMessage> {
   private client: Resend;
@@ -31,11 +13,7 @@ export class ResendDriver implements NotificationDriver<ResendConfig, ResendMess
     this.client = new Resend(config.apiKey);
   }
 
-  async send(
-    notifiable: Notifiable,
-    message: ResendMessage,
-    config?: ResendConfig,
-  ): Promise<SendResult> {
+  async send(notifiable: Notifiable, message: ResendMessage, config?: ResendConfig): Promise<SendResult> {
     const recipient = message.to || notifiable.routeNotificationFor('email');
 
     if (!recipient) {
@@ -52,7 +30,8 @@ export class ResendDriver implements NotificationDriver<ResendConfig, ResendMess
       const response = await this.client.emails.send({
         ...message,
         from,
-        to: recipient,
+        to: recipient as string | string[],
+        text: message.text || '', // Ensure text is at least empty string if undefined, or handle properly
       });
 
       if (response.error) {
@@ -60,20 +39,20 @@ export class ResendDriver implements NotificationDriver<ResendConfig, ResendMess
           id: '',
           status: 'failed',
           error: response.error,
-          response: response,
+          response: response
         };
       }
 
       return {
         id: response.data?.id || '',
         status: 'success',
-        response: response.data,
+        response: response.data
       };
     } catch (error) {
       return {
         id: '',
         status: 'failed',
-        error: error,
+        error: error
       };
     }
   }

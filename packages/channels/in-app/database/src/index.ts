@@ -1,4 +1,3 @@
-// In-app/database notification adapter
-export * from './core';
-export * from './types';
-export * from './interfaces';
+export * from './interfaces/database-config.interface';
+export * from './interfaces/database-message.interface';
+export * from './database.driver';

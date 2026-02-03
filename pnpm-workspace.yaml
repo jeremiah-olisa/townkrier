@@ -7,3 +7,8 @@ packages:
   - 'packages/channels/social-media/whatsapp/*'
   - 'examples/playground'
   - 'examples/expo-townkrier'
+  # Exclude unstable packages
+  - '!packages/queue'
+  - '!packages/dashboard'
+  - '!packages/storage'
+  - '!packages/channels/social-media/whatsapp/common'

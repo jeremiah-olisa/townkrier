@@ -1,4 +1,3 @@
-export * from './core/smtp-channel';
-export * from './core/smtp.mapper';
-export * from './types';
-export * from './interfaces';
+export * from './interfaces/smtp-config.interface';
+export * from './interfaces/smtp-message.interface';
+export * from './smtp.driver';

@@ -28,7 +28,8 @@
     "access": "public"
   },
   "dependencies": {
-    "townkrier-core": "workspace:*"
+    "townkrier-core": "workspace:*",
+    "better-sse": "^0.13.0"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
