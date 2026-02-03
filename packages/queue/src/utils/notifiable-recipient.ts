@@ -1,4 +1,12 @@
-import { Notifiable, NotificationRecipient } from 'townkrier-core';
+import { Notifiable } from 'townkrier-core';
+
+export interface NotificationRecipient {
+    id?: string;
+    email?: string;
+    phone?: string;
+    pushToken?: string;
+    metadata?: Record<string, unknown>;
+}
 
 /**
  * Converts a NotificationRecipient to a Notifiable

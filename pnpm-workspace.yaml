@@ -8,7 +8,7 @@ packages:
   - 'examples/playground'
   - 'examples/expo-townkrier'
   # Exclude unstable packages
+  - '!packages/cli'
   - '!packages/queue'
   - '!packages/dashboard'
   - '!packages/storage'
-  - '!packages/channels/social-media/whatsapp/common'

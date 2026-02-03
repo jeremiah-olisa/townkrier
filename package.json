@@ -23,7 +23,7 @@
   ],
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "build": "lerna run build --stream",
+    "build": "pnpm -r run build",
     "build:core": "lerna run build --scope=townkrier-core --stream",
     "build:resend": "lerna run build --scope=townkrier-resend --stream",
     "build:fcm": "lerna run build --scope=townkrier-fcm --stream",
@@ -33,7 +33,6 @@
     "build:storage": "lerna run build --scope=townkrier-storage --stream",
     "build:dashboard": "lerna run build --scope=townkrier-dashboard --stream",
     "build:cli": "lerna run build --scope=townkrier-cli --stream",
-    "build:whatsapp-common": "lerna run build --scope=townkrier-whatsapp-common --stream",
     "build:wasender": "lerna run build --scope=townkrier-wasender --stream",
     "build:whapi": "lerna run build --scope=townkrier-whapi --stream",
     "dev": "lerna run watch --parallel",

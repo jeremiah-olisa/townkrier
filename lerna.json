@@ -12,16 +12,5 @@
       "conventionalCommits": true,
       "message": "chore(release): version"
     }
-  },
-  "packages": [
-    "packages/core",
-    "packages/cli",
-    "packages/channels/email/*",
-    "packages/channels/push/*",
-    "packages/channels/sms/*",
-    "packages/channels/in-app/database",
-    "packages/channels/in-app/sse",
-    "packages/channels/social-media/whatsapp/wasender",
-    "packages/channels/social-media/whatsapp/whapi"
-  ]
+  }
 }

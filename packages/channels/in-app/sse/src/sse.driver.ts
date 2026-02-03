@@ -5,7 +5,8 @@ import { SseMessage, SseNotificationEvent } from './interfaces/sse-message.inter
 import { IncomingMessage, ServerResponse } from 'http';
 
 export class SseDriver implements NotificationDriver<SseConfig, SseMessage> {
-    private userSessions: Map<string, Set<Session>>;
+    // @ts-ignore - Usage of generic type depends on library version
+    private userSessions: Map<string, Set<Session<unknown>>>;
     private sseConfig: SseConfig;
 
     constructor(config: SseConfig) {
@@ -140,7 +141,7 @@ export class SseDriver implements NotificationDriver<SseConfig, SseMessage> {
     /**
      * Get sessions for a specific user
      */
-    getUserSessions(userId: string): Set<Session> | undefined {
+    getUserSessions(userId: string): Set<any> | undefined {
         return this.userSessions.get(userId);
     }
 
