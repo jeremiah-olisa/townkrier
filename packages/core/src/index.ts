@@ -6,3 +6,4 @@ export * from './events';
 export * from './logger';
 export * from './drivers/composite-fallback.driver';
 export * from './exceptions';
+export * from './types/fallback-strategy.enum';

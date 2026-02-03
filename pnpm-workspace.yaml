@@ -5,7 +5,7 @@ packages:
   - 'packages/channels/push/*'
   - 'packages/channels/sms/*'
   - 'packages/channels/social-media/whatsapp/*'
-  - 'examples/playground'
+  - 'examples'
   - 'examples/expo-townkrier'
   # Exclude unstable packages
   - '!packages/cli'

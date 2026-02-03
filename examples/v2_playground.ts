@@ -1,122 +1,57 @@
-import {
-  TownkrierFactory,
-  Notification,
-  Notifiable,
-  DeliveryStrategy,
-  FallbackStrategy,
-} from 'townkrier-core';
-import { ResendDriver, ResendMessage } from 'townkrier-resend';
-import { MailtrapDriver, MailtrapMessage } from 'townkrier-mailtrap';
+import { notificationManager } from './config';
+import { User } from './models/user.model';
+import { WelcomeNotification } from './notifications/welcome.notification';
 
-// 1. Setup Configuration with Multiple Strategies
-const notificationManager = TownkrierFactory.create<'email' | 'sms' | 'push'>({
-  strategy: DeliveryStrategy.BestEffort,
-  channels: {
-    // Priority Fallback: Try Resend first, fallback to Mailtrap
-    email: {
-      strategy: FallbackStrategy.PriorityFallback,
-      drivers: [
-        {
-          use: ResendDriver,
-          config: { apiKey: process.env.RESEND_API_KEY || 're_123' },
-          priority: 10, // Higher priority
-        },
-        {
-          use: MailtrapDriver,
-          config: { token: process.env.MAILTRAP_TOKEN || 'mt_123' },
-          priority: 5, // Lower priority (fallback)
-        },
-      ],
-    },
-    // Round-robin: Distribute load across multiple providers
-    sms: {
-      strategy: 'round-robin',
-      drivers: [
-        {
-          use: ResendDriver, // Simulating SMS driver 1
-          config: { apiKey: 'sms_provider_1' },
-        },
-        {
-          use: MailtrapDriver, // Simulating SMS driver 2
-          config: { token: 'sms_provider_2' },
-        },
-      ],
-    },
-    // Random (weighted): 70% Resend, 30% Mailtrap
-    push: {
-      strategy: FallbackStrategy.Random,
-      drivers: [
-        {
-          use: ResendDriver,
-          config: { apiKey: 'push_provider_1' },
-          weight: 7,
-        },
-        {
-          use: MailtrapDriver,
-          config: { token: 'push_provider_2' },
-          weight: 3,
-        },
-      ],
-    },
-  },
-});
+// 1. Define a Notifiable Entity
+// In a real app, this would come from your database
+const user = new User(
+  'user_123',
+  'Jeremiah',
+  'jeremiah@example.com',
+  '+1234567890', // Phone for SMS
+  'expo_push_token_123', // Push Token
+  '1234567890' // WhatsApp Number
+);
 
-// 2. Define a Notification
-class WelcomeNotification extends Notification<'email'> {
-  constructor(private userName: string) {
-    super();
-  }
-
-  via(notifiable: Notifiable): 'email'[] {
-    return ['email'];
-  }
-
-  toEmail(notifiable: Notifiable): ResendMessage | MailtrapMessage {
-    return {
-      subject: `Welcome ${this.userName}!`,
-      html: `<p>Welcome to Townkrier V2 with Production-Grade Strategies</p>`,
-      to: notifiable.routeNotificationFor('email') as string,
-    };
-  }
-}
-
-// 3. Define a Notifiable Entity
-const user: Notifiable = {
-  id: 'user_1',
-  email: 'jeremiah@example.com',
-  routeNotificationFor<T = string>(driver: string): T | undefined {
-    if (driver === 'email') return this.email as T;
-    return undefined;
-  },
-};
-
-// 4. Send Notification with Event Listeners
+// 2. Run the Notification Logic
 async function run() {
   console.log('🚀 Sending notification with production strategies...\n');
 
   // Register event logging
-  notificationManager.events().on('NotificationSending', (event) => {
+  notificationManager.events().on('NotificationSending', (event: any) => {
     console.log(`📤 [EVENT] Sending notification via: ${event.channels.join(', ')}`);
   });
 
-  notificationManager.events().on('NotificationSent', (event) => {
-    console.log(`✅ [EVENT] Notification Sent! Results:`, event.responses);
+  notificationManager.events().on('NotificationSent', (event: any) => {
+    console.log(`✅ [EVENT] Notification Sent!`);
+    console.log(JSON.stringify(event.responses, null, 2));
   });
 
-  notificationManager.events().on('NotificationFailed', (event) => {
+  notificationManager.events().on('NotificationFailed', (event: any) => {
     console.error(`❌ [EVENT] Notification Failed:`, event.error.message);
   });
 
   try {
-    const results = await notificationManager.send(user, new WelcomeNotification('Jeremiah'));
-    console.log('\n📊 Final Results:', {
+    console.log(`Sending WelcomeNotification to ${user.name}...`);
+    const results = await notificationManager.send(user, new WelcomeNotification(user.name));
+
+    console.log('\n📊 Final Results Summary:', {
       status: results.status,
       successCount: results.results.size,
       errorCount: results.errors.size,
     });
+
+    if (results.errors.size > 0) {
+      console.log('\nErrors encountered:');
+      results.errors.forEach((error: Error, key: string) => {
+        console.log(`- ${key}: ${error.message}`);
+      });
+    }
+
   } catch (error) {
     console.error('💥 Fatal error:', error);
   }
 }
 
+// Execute
 run().catch(console.error);

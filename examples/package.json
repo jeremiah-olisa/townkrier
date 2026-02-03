@@ -1,0 +1,31 @@
+{
+  "name": "examples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "townkrier-core": "workspace:*",
+    "townkrier-resend": "workspace:*",
+    "townkrier-mailtrap": "workspace:*",
+    "townkrier-postmark": "workspace:*",
+    "townkrier-smtp": "workspace:*",
+    "townkrier-termii": "workspace:*",
+    "townkrier-expo": "workspace:*",
+    "townkrier-fcm": "workspace:*",
+    "townkrier-in-app": "workspace:*",
+    "townkrier-sse": "workspace:*",
+    "townkrier-wasender": "workspace:*",
+    "townkrier-whapi": "workspace:*",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "typescript": "^5.3.3"
+  }
+}
