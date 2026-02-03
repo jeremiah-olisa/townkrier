@@ -1,6 +1,6 @@
 {
   "name": "townkrier-sse",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-alpha.2",
   "description": "Server-Sent Events (SSE) adapter for Townkrier in-app notification system",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

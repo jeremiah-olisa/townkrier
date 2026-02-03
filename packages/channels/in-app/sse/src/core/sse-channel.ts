@@ -9,11 +9,12 @@ import {
 } from 'townkrier-core';
 
 import { SseConfig, SseConnection, SseResponse, SseNotificationEvent } from '../types';
+import { ISseChannel } from '../interfaces';
 
 /**
  * Server-Sent Events (SSE) channel for real-time in-app notifications
  */
-export class SseChannel extends InAppChannel {
+export class SseChannel extends InAppChannel implements ISseChannel {
   private readonly sseConfig: SseConfig;
   private connections: Map<string, Set<SseConnection>>;
   private heartbeatInterval: NodeJS.Timeout | null = null;
