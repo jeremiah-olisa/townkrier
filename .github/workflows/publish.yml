@@ -99,6 +99,8 @@ jobs:
           check_package "packages/channels/email/smtp" "smtp_changed" "townkrier-smtp"
           check_package "packages/channels/sms/termii" "termii_changed" "townkrier-termii"
           check_package "packages/channels/push/fcm" "fcm_changed" "townkrier-fcm"
+          check_package "packages/channels/push/expo" "expo_changed" "townkrier-expo"
+          check_package "packages/channels/in-app/sse" "sse_changed" "townkrier-sse"
           check_package "packages/channels/social-media/whatsapp/common" "whatsapp_common_changed" "townkrier-whatsapp-common"
           check_package "packages/channels/social-media/whatsapp/wasender" "wasender_changed" "townkrier-wasender"
           check_package "packages/channels/social-media/whatsapp/whapi" "whapi_changed" "townkrier-whapi"
@@ -217,6 +219,24 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
+      - name: Publish to npm (Push - Expo)
+        if: steps.version-check.outputs.expo_changed == 'true'
+        continue-on-error: true
+        run: |
+          echo "Publishing @townkrier/channel-push-expo..."
+          pnpm --filter townkrier-expo publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to npm (In-App - SSE)
+        if: steps.version-check.outputs.sse_changed == 'true'
+        continue-on-error: true
+        run: |
+          echo "Publishing @townkrier/channel-in-app-sse..."
+          pnpm --filter townkrier-sse publish --access public --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish to npm (WhatsApp - Common)
         if: steps.version-check.outputs.whatsapp_common_changed == 'true'
         continue-on-error: true
@@ -258,6 +278,8 @@ jobs:
           steps.version-check.outputs.smtp_changed == 'true' ||
           steps.version-check.outputs.termii_changed == 'true' ||
           steps.version-check.outputs.fcm_changed == 'true' ||
+          steps.version-check.outputs.expo_changed == 'true' ||
+          steps.version-check.outputs.sse_changed == 'true' ||
           steps.version-check.outputs.whatsapp_common_changed == 'true' ||
           steps.version-check.outputs.wasender_changed == 'true' ||
           steps.version-check.outputs.whapi_changed == 'true'
