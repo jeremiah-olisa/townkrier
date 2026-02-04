@@ -38,7 +38,7 @@ export class ResendDriver implements NotificationDriver<ResendConfig, ResendMess
         return {
           id: '',
           status: 'failed',
-          error: response.error,
+          error: new Error((response.error as any).message || JSON.stringify(response.error)),
           response: response
         };
       }

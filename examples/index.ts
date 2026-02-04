@@ -9,7 +9,7 @@ const user = new User(
   'Jeremiah',
   'jeremiah@example.com',
   '+1234567890', // Phone for SMS
-  'expo_push_token_123', // Push Token
+  'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]', // Push Token
   '1234567890' // WhatsApp Number
 );
 
@@ -24,7 +24,10 @@ async function run() {
 
   notificationManager.events().on('NotificationSent', (event: any) => {
     console.log(`✅ [EVENT] Notification Sent!`);
-    console.log(JSON.stringify(event.responses, null, 2));
+    const responseObj = event.responses instanceof Map
+      ? Object.fromEntries(event.responses)
+      : event.responses;
+    console.log(JSON.stringify(responseObj, null, 2));
   });
 
   notificationManager.events().on('NotificationFailed', (event: any) => {
@@ -44,7 +47,7 @@ async function run() {
     if (results.errors.size > 0) {
       console.log('\nErrors encountered:');
       results.errors.forEach((error: Error, key: string) => {
-        console.log(`- ${key}: ${error.message}`);
+        console.log(`- ${key}: ${typeof error === 'object' ? JSON.stringify(error) : error}`);
       });
     }
 

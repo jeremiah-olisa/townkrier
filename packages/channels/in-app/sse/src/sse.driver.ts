@@ -80,6 +80,7 @@ export class SseDriver implements NotificationDriver<SseConfig, SseMessage> {
         return {
             id: notificationId,
             status: sentCount > 0 ? 'success' : 'failed',
+            error: sentCount === 0 ? new Error(`No active sessions found for recipients: ${recipients.join(', ')}`) : undefined,
             response: {
                 sentCount,
                 failedRecipients,

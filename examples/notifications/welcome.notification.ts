@@ -25,6 +25,7 @@ export class WelcomeNotification extends Notification<
             subject: `Welcome ${this.userName}!`,
             html: `<h1>Welcome to Townkrier!</h1><p>We are excited to have you on board.</p>`,
             to: notifiable.routeNotificationFor('email') as string,
+            from: 'Townkrier <onboarding@resend.dev>', // Add valid sender
         };
         return common;
     }
@@ -34,6 +35,7 @@ export class WelcomeNotification extends Notification<
     toSms(notifiable: Notifiable): TermiiMessage {
         return {
             to: notifiable.routeNotificationFor('sms') as string,
+            from: 'Townkrier', // Add Sender ID
             text: `Hello ${this.userName}, welcome to Townkrier!`,
         };
     }
