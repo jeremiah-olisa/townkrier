@@ -32,7 +32,8 @@ export class MailtrapDriver implements NotificationDriver<MailtrapConfig, Mailtr
     const route = notifiable.routeNotificationFor('email');
 
     // Consolidate recipient logic
-    let recipients = message.to;
+    let recipients: any = message.to;
+
     if (!recipients) {
       if (!route) {
         throw new NotificationSendException('RecipientMissing: No recipient found for email');
@@ -63,8 +64,7 @@ export class MailtrapDriver implements NotificationDriver<MailtrapConfig, Mailtr
         try {
           const inboxes = await this.client.testing.inboxes.getList();
           if (inboxes && inboxes.length > 0) {
-            inboxId = inboxes[0].id; // Use the first available inbox
-            // console.debug(`[MailtrapDriver] Auto-detected Sandbox Inbox ID: ${inboxId}`);
+            inboxId = inboxes[0].id;
           }
         } catch (e) {
           // Ignore error, assume Production usage if listing fails
@@ -73,14 +73,6 @@ export class MailtrapDriver implements NotificationDriver<MailtrapConfig, Mailtr
 
       if (inboxId) {
         // Use Sandbox API with detected or provided ID
-        // Note: We normally need to re-init client with ID, but testing.send doesn't seem to use it from constructor based on docs?
-        // Wait, TestingAPI constructor took testInboxId.
-        // If we didn't pass it to constructor, `client.testing` might not have it.
-        // We might need to manually call the specific endpoint or re-init?
-        // Looking at Testing.d.ts, send(mail) uses the stored ID.
-        // We cannot inject it late easily without digging into internals or re-instantiating.
-
-        // Actually, we can use a temporary client for this send if we found an ID.
         const tempClient = new MailtrapClient({
           token: this.mailtrapConfig.token,
           testInboxId: inboxId,
@@ -109,9 +101,6 @@ export class MailtrapDriver implements NotificationDriver<MailtrapConfig, Mailtr
       };
 
     } catch (error: any) {
-      // DEBUGGING: Log raw error
-      console.error('[MailtrapDriver] Raw Error:', error);
-
       // Return structured error
       return {
         id: '',

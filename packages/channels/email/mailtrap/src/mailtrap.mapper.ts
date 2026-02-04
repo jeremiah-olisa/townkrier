@@ -15,8 +15,8 @@ export class MailtrapMapper {
             subject: message.subject,
             text: message.text,
             html: message.html,
-            to: (message.to || []) as Address[],
-            from: (message.from || config.from) as Address,
+            to: this.normalizeAddress(message.to),
+            from: this.normalizeAddress(message.from || config.from)[0] || config.from,
             headers: message.headers,
             custom_variables: message.custom_variables,
             category: message.category,
@@ -28,8 +28,8 @@ export class MailtrapMapper {
         }
 
         // Add CC/BCC if present
-        if (message.cc) mailtrapData.cc = message.cc as Address[];
-        if (message.bcc) mailtrapData.bcc = message.bcc as Address[];
+        if (message.cc) mailtrapData.cc = this.normalizeAddress(message.cc);
+        if (message.bcc) mailtrapData.bcc = this.normalizeAddress(message.bcc);
 
         // Clean up undefined properties
         const data = mailtrapData as any;
@@ -38,6 +38,14 @@ export class MailtrapMapper {
         );
 
         return mailtrapData;
+    }
+
+    private static normalizeAddress(address: string | Address | (string | Address)[] | undefined): Address[] {
+        if (!address) return [];
+        if (Array.isArray(address)) {
+            return address.map(addr => typeof addr === 'string' ? { email: addr } : addr);
+        }
+        return typeof address === 'string' ? [{ email: address }] : [address];
     }
 
     /**

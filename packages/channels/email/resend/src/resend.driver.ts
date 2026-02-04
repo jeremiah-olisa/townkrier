@@ -56,17 +56,10 @@ export class ResendDriver implements NotificationDriver<ResendConfig, ResendMess
         from: from
       };
 
-      Logger.debug('SENDING RESEND MAIL', payload);
       const emailData = ResendMapper.toResendData(payload, this.resendConfig);
 
       // 5. Send
       const response = await this.client.emails.send(emailData);
-
-      Logger.debug('Resend Raw Response', {
-        hasData: !!response.data,
-        hasError: !!response.error,
-        error: response.error,
-      });
 
       if (response.error) {
         throw new NotificationSendException(
@@ -89,9 +82,6 @@ export class ResendDriver implements NotificationDriver<ResendConfig, ResendMess
       };
 
     } catch (error: any) {
-      // DEBUGGING: Log raw error
-      console.error('[ResendDriver] Raw Error:', JSON.stringify(error, Object.getOwnPropertyNames(error), 2));
-
       // Handle From address error specifically if it comes from API
       if (error.message && error.message.includes('From email address is required')) {
         return {
@@ -101,10 +91,15 @@ export class ResendDriver implements NotificationDriver<ResendConfig, ResendMess
         };
       }
 
+      // Wrap other errors
+      const notificationException = error instanceof NotificationSendException
+        ? error
+        : new NotificationSendException(error.message || 'Failed to send email with Resend', error);
+
       return {
         id: '',
         status: 'failed',
-        error: new Error(error.message || 'Failed to send email with Resend'),
+        error: notificationException,
         response: error
       };
     }
