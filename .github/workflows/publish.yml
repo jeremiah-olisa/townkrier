@@ -88,20 +88,21 @@ jobs:
           }
 
           check_package "packages/core" "core_changed" "townkrier-core"
-          check_package "packages/cli" "cli_changed" "townkrier-cli"
-          check_package "packages/dashboard" "dashboard_changed" "townkrier-dashboard"
-          check_package "packages/queue" "queue_changed" "townkrier-queue"
-          check_package "packages/storage" "storage_changed" "townkrier-storage"
-          check_package "packages/channels/in-app" "in_app_changed" "townkrier-in-app"
+          # Skipping untested packages: cli, dashboard, queue, storage, postmark, in-app/database, expo, fcm, sse, whatsapp-common
+          # check_package "packages/cli" "cli_changed" "townkrier-cli"
+          # check_package "packages/dashboard" "dashboard_changed" "townkrier-dashboard"
+          # check_package "packages/queue" "queue_changed" "townkrier-queue"
+          # check_package "packages/storage" "storage_changed" "townkrier-storage"
+          # check_package "packages/channels/in-app" "in_app_changed" "townkrier-in-app"
           check_package "packages/channels/email/mailtrap" "mailtrap_changed" "townkrier-mailtrap"
-          check_package "packages/channels/email/postmark" "postmark_changed" "townkrier-postmark"
+          # check_package "packages/channels/email/postmark" "postmark_changed" "townkrier-postmark"
           check_package "packages/channels/email/resend" "resend_changed" "townkrier-resend"
           check_package "packages/channels/email/smtp" "smtp_changed" "townkrier-smtp"
           check_package "packages/channels/sms/termii" "termii_changed" "townkrier-termii"
-          check_package "packages/channels/push/fcm" "fcm_changed" "townkrier-fcm"
-          check_package "packages/channels/push/expo" "expo_changed" "townkrier-expo"
-          check_package "packages/channels/in-app/sse" "sse_changed" "townkrier-sse"
-          check_package "packages/channels/social-media/whatsapp/common" "whatsapp_common_changed" "townkrier-whatsapp-common"
+          # check_package "packages/channels/push/fcm" "fcm_changed" "townkrier-fcm"
+          # check_package "packages/channels/push/expo" "expo_changed" "townkrier-expo"
+          # check_package "packages/channels/in-app/sse" "sse_changed" "townkrier-sse"
+          # check_package "packages/channels/social-media/whatsapp/common" "whatsapp_common_changed" "townkrier-whatsapp-common"
           check_package "packages/channels/social-media/whatsapp/wasender" "wasender_changed" "townkrier-wasender"
           check_package "packages/channels/social-media/whatsapp/whapi" "whapi_changed" "townkrier-whapi"
           
@@ -120,50 +121,51 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (CLI)
-        if: steps.version-check.outputs.cli_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/cli..."
-          pnpm --filter townkrier-cli publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (CLI)
+      #   if: steps.version-check.outputs.cli_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/cli..."
+      #     pnpm --filter townkrier-cli publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (Dashboard)
-        if: steps.version-check.outputs.dashboard_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/dashboard..."
-          pnpm --filter townkrier-dashboard publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # Skipping untested packages - will be enabled after testing
+      # - name: Publish to npm (Dashboard)
+      #   if: steps.version-check.outputs.dashboard_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/dashboard..."
+      #     pnpm --filter townkrier-dashboard publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (Queue)
-        if: steps.version-check.outputs.queue_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/queue..."
-          pnpm --filter townkrier-queue publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (Queue)
+      #   if: steps.version-check.outputs.queue_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/queue..."
+      #     pnpm --filter townkrier-queue publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (Storage)
-        if: steps.version-check.outputs.storage_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/storage..."
-          pnpm --filter townkrier-storage publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (Storage)
+      #   if: steps.version-check.outputs.storage_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/storage..."
+      #     pnpm --filter townkrier-storage publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (In-App Channel)
-        if: steps.version-check.outputs.in_app_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/channel-in-app..."
-          pnpm --filter townkrier-in-app publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (In-App Channel - Database)
+      #   if: steps.version-check.outputs.in_app_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/channel-in-app..."
+      #     pnpm --filter townkrier-in-app publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Email - Mailtrap)
         if: steps.version-check.outputs.mailtrap_changed == 'true'
@@ -174,14 +176,14 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (Email - Postmark)
-        if: steps.version-check.outputs.postmark_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/channel-email-postmark..."
-          pnpm --filter townkrier-postmark publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (Email - Postmark)
+      #   if: steps.version-check.outputs.postmark_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/channel-email-postmark..."
+      #     pnpm --filter townkrier-postmark publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (Email - Resend)
         if: steps.version-check.outputs.resend_changed == 'true'
@@ -210,41 +212,41 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (Push - FCM)
-        if: steps.version-check.outputs.fcm_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/channel-push-fcm..."
-          pnpm --filter townkrier-fcm publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (Push - FCM)
+      #   if: steps.version-check.outputs.fcm_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/channel-push-fcm..."
+      #     pnpm --filter townkrier-fcm publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (Push - Expo)
-        if: steps.version-check.outputs.expo_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/channel-push-expo..."
-          pnpm --filter townkrier-expo publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (Push - Expo)
+      #   if: steps.version-check.outputs.expo_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/channel-push-expo..."
+      #     pnpm --filter townkrier-expo publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (In-App - SSE)
-        if: steps.version-check.outputs.sse_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/channel-in-app-sse..."
-          pnpm --filter townkrier-sse publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (In-App - SSE)
+      #   if: steps.version-check.outputs.sse_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/channel-in-app-sse..."
+      #     pnpm --filter townkrier-sse publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - name: Publish to npm (WhatsApp - Common)
-        if: steps.version-check.outputs.whatsapp_common_changed == 'true'
-        continue-on-error: true
-        run: |
-          echo "Publishing @townkrier/whatsapp-common..."
-          pnpm --filter townkrier-whatsapp-common publish --access public --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      # - name: Publish to npm (WhatsApp - Common)
+      #   if: steps.version-check.outputs.whatsapp_common_changed == 'true'
+      #   continue-on-error: true
+      #   run: |
+      #     echo "Publishing @townkrier/whatsapp-common..."
+      #     pnpm --filter townkrier-whatsapp-common publish --access public --no-git-checks
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish to npm (WhatsApp - Wasender)
         if: steps.version-check.outputs.wasender_changed == 'true'
@@ -267,20 +269,10 @@ jobs:
       - name: Create Git Tag
         if: |
           steps.version-check.outputs.core_changed == 'true' ||
-          steps.version-check.outputs.cli_changed == 'true' ||
-          steps.version-check.outputs.dashboard_changed == 'true' ||
-          steps.version-check.outputs.queue_changed == 'true' ||
-          steps.version-check.outputs.storage_changed == 'true' ||
-          steps.version-check.outputs.in_app_changed == 'true' ||
           steps.version-check.outputs.mailtrap_changed == 'true' ||
-          steps.version-check.outputs.postmark_changed == 'true' ||
           steps.version-check.outputs.resend_changed == 'true' ||
           steps.version-check.outputs.smtp_changed == 'true' ||
           steps.version-check.outputs.termii_changed == 'true' ||
-          steps.version-check.outputs.fcm_changed == 'true' ||
-          steps.version-check.outputs.expo_changed == 'true' ||
-          steps.version-check.outputs.sse_changed == 'true' ||
-          steps.version-check.outputs.whatsapp_common_changed == 'true' ||
           steps.version-check.outputs.wasender_changed == 'true' ||
           steps.version-check.outputs.whapi_changed == 'true'
         run: |
