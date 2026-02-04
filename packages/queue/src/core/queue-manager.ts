@@ -8,6 +8,7 @@ import {
 import { IQueueAdapter, QueueJobConfig, QueueJob } from '../interfaces';
 import { JobStatus } from '../types';
 import { JobExecutionException } from '../exceptions';
+import { NotifiableRecipient } from '../utils/notifiable-recipient';
 
 /**
  * Queue Manager for background notification processing
@@ -59,7 +60,7 @@ export class QueueManager {
       );
     }
 
-    return this.notificationManager.send(notification, recipient);
+    return this.notificationManager.send(new NotifiableRecipient(recipient), notification);
   }
 
   /**
@@ -140,7 +141,10 @@ export class QueueManager {
       ) {
         this.adapter.setProcessingCallback(async (job: QueueJob) => {
           try {
-            const result = await this.notificationManager!.send(job.notification, job.recipient);
+            const result = await this.notificationManager!.send(
+              new NotifiableRecipient(job.recipient),
+              job.notification,
+            );
             await this.adapter.markCompleted(job.id, result);
           } catch (error) {
             await this.adapter.markFailed(
@@ -204,7 +208,10 @@ export class QueueManager {
 
       try {
         // Send the notification
-        const result = await this.notificationManager.send(job.notification, job.recipient);
+        const result = await this.notificationManager.send(
+          new NotifiableRecipient(job.recipient),
+          job.notification,
+        );
 
         // Mark as completed
         await this.adapter.markCompleted(job.id, result);

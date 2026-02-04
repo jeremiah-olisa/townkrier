@@ -1,10 +1,10 @@
-// Core exports
-export * from './core';
 export * from './interfaces';
-export * from './logger';
-
-export * from './types';
-export * from './utils';
-export * from './exceptions';
-export * from './channels';
+export * from './interfaces/retry-config.interface';
+export * from './notification';
+export * from './notification-manager';
+export * from './townkrier-factory';
 export * from './events';
+export * from './logger';
+export * from './drivers/composite-fallback.driver';
+export * from './exceptions';
+export * from './types/fallback-strategy.enum';

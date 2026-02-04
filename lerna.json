@@ -12,12 +12,5 @@
       "conventionalCommits": true,
       "message": "chore(release): version"
     }
-  },
-  "packages": [
-    "packages/*",
-    "packages/channels/email/*",
-    "packages/channels/push/*",
-    "packages/channels/sms/*",
-    "packages/channels/social-media/whatsapp/*"
-  ]
+  }
 }

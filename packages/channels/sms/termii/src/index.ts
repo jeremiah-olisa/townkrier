@@ -1,4 +1,3 @@
-// Termii SMS adapter
-export * from './core';
-export * from './types';
-export * from './interfaces';
+export * from './interfaces/termii-config.interface';
+export * from './interfaces/termii-message.interface';
+export * from './termii.driver';

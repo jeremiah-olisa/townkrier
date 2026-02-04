@@ -1,4 +1,3 @@
-export * from './core/mailtrap-channel';
-export * from './core/mailtrap.mapper';
-export * from './types';
-export * from './interfaces';
+export * from './interfaces/mailtrap-config.interface';
+export * from './interfaces/mailtrap-message.interface';
+export * from './mailtrap.driver';

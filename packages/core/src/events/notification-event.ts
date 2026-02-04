@@ -1,12 +1,22 @@
-import { Notification } from '../core/notification';
-import { NotificationChannelType } from '../types';
-
+import { Notification } from '../notification';
 /**
- * Base notification event
+ * Abstract base class for all notification lifecycle events.
+ *
+ * @template T - Type of the Notification object
  */
-export abstract class NotificationEvent {
-  constructor(
-    public readonly notification: Notification,
-    public readonly channels: NotificationChannelType[],
-  ) {}
+export abstract class NotificationEvent<T = Notification> {
+  /**
+   * The notification instance associated with this event.
+   */
+  public notification: T;
+
+  /**
+   * The list of channels this notification is targeting or has targeted.
+   */
+  public channels: string[];
+
+  constructor(notification: T, channels: string[]) {
+    this.notification = notification;
+    this.channels = channels;
+  }
 }

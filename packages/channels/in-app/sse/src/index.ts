@@ -1,4 +1,3 @@
-// Server-Sent Events adapter
-export * from './core';
-export * from './types';
-export * from './interfaces';
+export * from './interfaces/sse-config.interface';
+export * from './interfaces/sse-message.interface';
+export * from './sse.driver';

@@ -1,8 +1,10 @@
+import { LogLevel } from '../types/log-options';
+
 /**
  * Interface definition for a Logger.
  * Compatible with NestJS LoggerService.
  */
-export interface ILogger {
+export interface LoggerInterface {
   /**
    * Write a 'log' level log.
    */
@@ -31,5 +33,5 @@ export interface ILogger {
   /**
    * Set log levels.
    */
-  setLogLevels?(levels: ('log' | 'error' | 'warn' | 'debug' | 'verbose')[]): any;
+  setLogLevels?(levels: LogLevel[]): any;
 }
