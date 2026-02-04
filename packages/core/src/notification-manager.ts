@@ -86,6 +86,8 @@ export class NotificationManager<ChannelNames extends string = string> {
             driver: instance,
             priority: driverConfig.priority ?? config.drivers.length - index, // Default priority by order
             weight: driverConfig.weight,
+            retryConfig: driverConfig.retryConfig,
+            enabled: driverConfig.enabled,
           };
         } catch (error) {
           Logger.error(`Failed to instantiate driver ${index} for channel ${name}`, error);

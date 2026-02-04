@@ -2,6 +2,7 @@
 import { TownkrierFactory, DeliveryStrategy, FallbackStrategy } from 'townkrier-core';
 import { ResendDriver } from 'townkrier-resend';
 import { MailtrapDriver } from 'townkrier-mailtrap';
+import { SmtpDriver } from 'townkrier-smtp';
 import { EmailOnlyNotification } from './notifications/email-only.notification';
 import { User } from './models/user.model';
 import * as dotenv from 'dotenv';
@@ -17,19 +18,38 @@ const notificationManager = TownkrierFactory.create({
         email: {
             strategy: FallbackStrategy.PriorityFallback,
             drivers: [
-                // {
-                //     use: ResendDriver,
-                //     config: { apiKey: process.env.RESEND_API_KEY || '' },
-                //     priority: 10,
-                // },
+                {
+                    use: ResendDriver,
+                    config: { apiKey: process.env.RESEND_API_KEY || '' },
+                    priority: 10,
+                    enabled: false,
+                },
                 {
                     use: MailtrapDriver,
                     config: {
                         token: process.env.MAILTRAP_TOKEN || '',
+                        testInboxId: process.env.MAILTRAP_TEST_INBOX_ID
+                            ? parseInt(process.env.MAILTRAP_TEST_INBOX_ID)
+                            : undefined,
                         endpoint: process.env.MAILTRAP_ENDPOINT,
-                        // testInboxId: process.env.MAILTRAP_TEST_INBOX_ID ? parseInt(process.env.MAILTRAP_TEST_INBOX_ID!) : undefined,
                     },
                     priority: 8,
+                    enabled: true,
+                },
+                {
+                    use: SmtpDriver,
+                    config: {
+                        host: process.env.SMTP_HOST || '',
+                        port: parseInt(process.env.SMTP_PORT || '587'),
+                        secure: process.env.SMTP_SECURE === 'true',
+                        auth: {
+                            user: process.env.SMTP_USER || '',
+                            pass: process.env.SMTP_PASS || '',
+                        },
+                        from: 'Townkrier <townkrier@monievault.com>',
+                    },
+                    priority: 6,
+                    enabled: false,
                 },
             ],
         },

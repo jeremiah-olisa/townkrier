@@ -56,9 +56,38 @@ export class MailtrapDriver implements NotificationDriver<MailtrapConfig, Mailtr
       const emailData = MailtrapMapper.toMailtrapData(messagePayload, this.mailtrapConfig);
 
       let response;
-      if (this.mailtrapConfig.testInboxId) {
-        // Use Sandbox API
-        response = await this.client.testing.send(emailData);
+      let inboxId = this.mailtrapConfig.testInboxId;
+
+      // Auto-detect inbox if not provided
+      if (!inboxId) {
+        try {
+          const inboxes = await this.client.testing.inboxes.getList();
+          if (inboxes && inboxes.length > 0) {
+            inboxId = inboxes[0].id; // Use the first available inbox
+            // console.debug(`[MailtrapDriver] Auto-detected Sandbox Inbox ID: ${inboxId}`);
+          }
+        } catch (e) {
+          // Ignore error, assume Production usage if listing fails
+        }
+      }
+
+      if (inboxId) {
+        // Use Sandbox API with detected or provided ID
+        // Note: We normally need to re-init client with ID, but testing.send doesn't seem to use it from constructor based on docs?
+        // Wait, TestingAPI constructor took testInboxId.
+        // If we didn't pass it to constructor, `client.testing` might not have it.
+        // We might need to manually call the specific endpoint or re-init?
+        // Looking at Testing.d.ts, send(mail) uses the stored ID.
+        // We cannot inject it late easily without digging into internals or re-instantiating.
+
+        // Actually, we can use a temporary client for this send if we found an ID.
+        const tempClient = new MailtrapClient({
+          token: this.mailtrapConfig.token,
+          testInboxId: inboxId,
+          accountId: this.mailtrapConfig.accountId
+        });
+        response = await tempClient.testing.send(emailData);
+
       } else {
         // Use Production Sending API
         response = await this.client.send(emailData);

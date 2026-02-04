@@ -1,4 +1,5 @@
 export * from './interfaces';
+export * from './interfaces/retry-config.interface';
 export * from './notification';
 export * from './notification-manager';
 export * from './townkrier-factory';

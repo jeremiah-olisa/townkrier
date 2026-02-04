@@ -14,8 +14,8 @@ export class EmailOnlyNotification extends Notification<'email'> {
 
     toEmail(notifiable: Notifiable): ResendMessage | MailtrapMessage {
         const common: ResendMessage | MailtrapMessage = {
-            subject: `Welcome ${this.userName}!`,
-            html: `<h1>Welcome to Townkrier!</h1><p>We are excited to have you on board.</p>`,
+            subject: `Welcome 2 ${this.userName}!`,
+            html: `<h1>Welcome to Townkrier updated!</h1><p>We are excited to have you on board.</p>`,
             to: notifiable.routeNotificationFor('email') as string,
             from: 'Townkrier <townkrier@monievault.com>',
         };

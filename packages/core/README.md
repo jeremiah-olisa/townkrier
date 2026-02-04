@@ -147,6 +147,145 @@ manager.events().on('NotificationFailed', (event) => {
 });
 ```
 
+### Retry Configuration
+
+Townkrier automatically retries failed notifications when network errors occur. This helps handle transient failures like DNS timeouts, connection errors, and temporary API unavailability.
+
+#### Default Retry Behavior
+
+By default, each driver will:
+- **Retry up to 3 times** before falling back to the next driver
+- Use **exponential backoff**: 1s → 2s → 4s (capped at 5s)
+- Only retry on **network errors** (ETIMEDOUT, ECONNREFUSED, ENOTFOUND, etc.)
+- **Not retry** on API errors (invalid credentials, rate limits, etc.)
+
+```typescript
+// No configuration needed - retry logic is enabled by default
+const manager = TownkrierFactory.create({
+  channels: {
+    email: {
+      strategy: FallbackStrategy.PriorityFallback,
+      drivers: [
+        { use: ResendDriver, config: { apiKey: '...' }, priority: 10 },
+        { use: MailtrapDriver, config: { token: '...' }, priority: 5 }
+      ]
+    }
+  }
+});
+```
+
+#### Custom Retry Configuration
+
+Override retry settings per driver:
+
+```typescript
+import { RetryConfig } from 'townkrier-core';
+
+const manager = TownkrierFactory.create({
+  channels: {
+    email: {
+      strategy: FallbackStrategy.PriorityFallback,
+      drivers: [
+        {
+          use: ResendDriver,
+          config: { apiKey: '...' },
+          priority: 10,
+          retryConfig: {
+            maxRetries: 5,              // Try 5 times instead of 3
+            retryDelay: 2000,            // Start with 2s delay
+            exponentialBackoff: true,    // Enable exponential backoff
+            maxRetryDelay: 10000,        // Cap delay at 10s
+            retryableErrors: ['ETIMEDOUT', 'ECONNREFUSED'] // Custom error codes
+          }
+        },
+        {
+          use: MailtrapDriver,
+          config: { token: '...' },
+          priority: 5,
+          retryConfig: {
+            maxRetries: 2,               // Only retry twice
+            exponentialBackoff: false,   // Use fixed delay
+            retryDelay: 1500,            // Always wait 1.5s
+          }
+        }
+      ]
+    }
+  }
+});
+```
+
+#### Disable Retries
+
+Set `maxRetries` to 1 to disable retry logic:
+
+```typescript
+{
+  use: ResendDriver,
+  config: { apiKey: '...' },
+  priority: 10,
+  retryConfig: {
+    maxRetries: 1  // No retries, fail immediately
+  }
+}
+```
+
+#### Retry Logging
+
+Retry attempts are automatically logged:
+
+```
+2026-02-04T08:50:30.036Z ResendDriver failed (attempt 1/3), retrying in 1000ms
+2026-02-04T08:50:31.554Z ResendDriver failed (attempt 2/3), retrying in 2000ms
+2026-02-04T08:50:33.789Z ResendDriver succeeded on attempt 3/3
+
+```
+
+### Disabling Drivers
+
+You can disable drivers without removing them from configuration using the `enabled` flag (default: `true`):
+
+```typescript
+const manager = TownkrierFactory.create({
+  channels: {
+    email: {
+      strategy: FallbackStrategy.PriorityFallback,
+      drivers: [
+        {
+          use: ResendDriver,
+          config: { apiKey: '...' },
+          priority: 10,
+          enabled: true,  // Active
+        },
+        {
+          use: MailtrapDriver,
+          config: { token: '...' },
+          priority: 8,
+          enabled: false,  // Disabled - will be skipped
+        },
+        {
+          use: SmtpDriver,
+          config: { host: '...', port: 587 },
+          priority: 6,
+          enabled: true,  // Active
+        }
+      ]
+    }
+  }
+});
+```
+
+**Use Cases:**
+- Temporarily disable a driver for testing
+- Toggle drivers based on environment (e.g., disable production drivers in dev)
+- A/B testing different providers
+- Feature flags for gradual rollouts
+
+**Behavior:**
+- Disabled drivers are filtered out during initialization
+- Only enabled drivers are considered for fallback strategy
+- At least one driver must be enabled (throws error otherwise)
+
+
 ---
 
 ## 🛠️ Custom Channels & Drivers
