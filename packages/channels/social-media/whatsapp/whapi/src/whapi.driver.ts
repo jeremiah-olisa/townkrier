@@ -11,13 +11,17 @@ export class WhapiDriver implements NotificationDriver<WhapiConfig, WhapiMessage
         if (!this.config.apiKey) {
             throw new Error('WhapiApiKeyMissing: API Key is required');
         }
-        this.baseUrl = this.config.baseUrl || 'https://gate.whapi.cloud/messages';
+        // Base URL should be the gate, endpoints are appended
+        this.baseUrl = this.config.baseUrl || 'https://gate.whapi.cloud';
+
         this.client = axios.create({
             baseURL: this.baseUrl,
             headers: {
                 'Authorization': `Bearer ${this.config.apiKey}`,
                 'Content-Type': 'application/json',
-            }
+                'Accept': 'application/json',
+            },
+            timeout: 30000
         });
     }
 
@@ -27,7 +31,7 @@ export class WhapiDriver implements NotificationDriver<WhapiConfig, WhapiMessage
         if (!to) {
             const route = notifiable.routeNotificationFor('whatsapp') || notifiable.routeNotificationFor('whapi');
             if (Array.isArray(route)) {
-                to = route[0] as string; // Whapi typically one by one, loop in manager if needed or bulk endpoint if available
+                to = route[0] as string;
             } else {
                 to = route as string;
             }
@@ -35,6 +39,11 @@ export class WhapiDriver implements NotificationDriver<WhapiConfig, WhapiMessage
 
         if (!to) {
             throw new Error('RecipientMissing: No WhatsApp recipient found');
+        }
+
+        // Clean up common issues: remove + 
+        if (!to.includes('@')) {
+            to = to.replace(/[\+\s\(\)]/g, '');
         }
 
         // Whapi format often requires suffix if not present
@@ -49,36 +58,53 @@ export class WhapiDriver implements NotificationDriver<WhapiConfig, WhapiMessage
 
         const type = message.type || (message.media ? 'image' : 'text');
 
-        const payload: any = {
-            to,
-            ...message
-        };
+        // Map message content to 'body' as expected by Whapi
+        const body = message.body || message.msg || message.text || '';
 
-        // endpoint structure depends on type in Whapi, or generic /messages
-        // Using generic /messages/text or /messages/image often
+        // Determine endpoint based on type
+        let endpoint = '/messages/text';
+        let payload: any = { to, body };
 
-        let endpoint = '/text';
-        if (type === 'image') endpoint = '/image';
-        if (type === 'document') endpoint = '/document';
-        if (type === 'audio') endpoint = '/audio';
-        if (type === 'video') endpoint = '/video';
-        if (type === 'voice') endpoint = '/voice';
-
-        // NOTE: If using base URL https://gate.whapi.cloud/messages, then append endpoint
+        if (type === 'image') {
+            endpoint = '/messages/image';
+            payload = { to, media: message.media, caption: body };
+        } else if (type === 'document') {
+            endpoint = '/messages/document';
+            payload = { to, media: message.media, caption: body, filename: message.filename };
+        } else if (type === 'audio') {
+            endpoint = '/messages/audio';
+            payload = { to, media: message.media };
+        } else if (type === 'video') {
+            endpoint = '/messages/video';
+            payload = { to, media: message.media, caption: body };
+        } else if (type === 'voice') {
+            endpoint = '/messages/voice';
+            payload = { to, media: message.media };
+        }
 
         try {
-            Logger.debug(`[Whapi] Sending ${type} to ${to}`);
+            Logger.debug(`[Whapi] Sending ${type} to ${to} via ${endpoint}`);
             const response = await this.client.post(endpoint, payload);
 
-            // Success response usually contains { sent: true, message: { id: ... } }
+            // Response handling matching the provided example
+            const messageId =
+                response.data?.message?.id ||
+                response.data?.message?.message_id ||
+                response.data?.id ||
+                response.data?.message_id ||
+                '';
+
+            const status = (response.data?.sent !== false) ? 'success' : 'failed';
 
             return {
-                id: response.data?.message?.id || response.data?.id || '',
-                status: 'success',
+                id: messageId,
+                status: status,
                 response: response.data
             };
         } catch (error: any) {
-            Logger.error('[Whapi] Send Error', error);
+            const errorMessage = error.response?.data?.error?.message || error.message || 'Unknown error';
+            Logger.error(`[Whapi] Send Error: ${errorMessage}`, error.response?.data);
+
             return {
                 id: '',
                 status: 'failed',

@@ -40,7 +40,7 @@ export const notificationManager = TownkrierFactory.create({
                     use: TermiiDriver,
                     config: {
                         apiKey: process.env.TERMII_API_KEY || '',
-                        senderId: process.env.TERMII_SENDER_ID || 'Townkrier',
+                        from: process.env.TERMII_SENDER_ID || '',
                     },
                 },
             ],
@@ -69,15 +69,16 @@ export const notificationManager = TownkrierFactory.create({
                 {
                     use: WaSendApiDriver,
                     config: {
-                        apiUrl: process.env.WASENDER_API_URL || '',
+                        baseUrl: process.env.WASENDER_API_URL || '',
                         apiKey: process.env.WASENDER_API_KEY || '',
+                        device: process.env.WASENDER_DEVICE || 'default',
                     },
                     priority: 1,
                 },
                 {
                     use: WhapiDriver,
                     config: {
-                        apiUrl: process.env.WHAPI_API_URL || '',
+                        baseUrl: process.env.WHAPI_API_URL || '',
                         apiKey: process.env.WHAPI_TOKEN || '',
                     },
                     priority: 2,

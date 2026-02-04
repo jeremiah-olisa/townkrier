@@ -14,7 +14,7 @@ export class TermiiDriver implements NotificationDriver<TermiiConfig, TermiiMess
         this.baseUrl = config.baseUrl || 'https://api.ng.termii.com';
         this.client = axios.create({
             baseURL: this.baseUrl,
-            timeout: config.timeout || 15000,
+            timeout: config.timeout || 30000,
             headers: {
                 'Content-Type': 'application/json',
             }
@@ -48,12 +48,14 @@ export class TermiiDriver implements NotificationDriver<TermiiConfig, TermiiMess
         const endpoint = Array.isArray(recipients) ? '/api/sms/send/bulk' : '/api/sms/send';
 
         try {
-            Logger.debug('[Termii] Sending request', { endpoint, payload });
+            Logger.debug('[Termii] Sending request', { endpoint, to: recipients });
             const response = await this.client.post(endpoint, payload);
 
-            if (response.data && !response.data.message_id && response.data.message) {
-                // Sometimes Termii returns 200 with error message
-                throw new Error(response.data.message);
+            if (!response.data || !response.data.message_id) {
+                // Handle cases where Termii returns 200 but with error message
+                if (response.data && response.data.message && !response.data.message_id) {
+                    throw new Error(response.data.message);
+                }
             }
 
             return {
@@ -62,8 +64,24 @@ export class TermiiDriver implements NotificationDriver<TermiiConfig, TermiiMess
                 response: response.data
             };
         } catch (error: any) {
-            Logger.error('[Termii] Error', error);
-            const errorMessage = error.response?.data?.message || error.message;
+            // Enhanced error handling
+            let errorMessage = 'Failed to send SMS';
+
+            if (axios.isAxiosError(error) && error.response) {
+                const errorData = error.response.data;
+                let message = errorData?.message || errorData?.error || error.message;
+
+                // If message is an object, stringify it
+                if (typeof message === 'object') {
+                    message = JSON.stringify(message);
+                }
+                errorMessage = message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
+            Logger.error('[Termii] Error', { message: errorMessage, response: error.response?.data });
+
             return {
                 id: '',
                 status: 'failed',

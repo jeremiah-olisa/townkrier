@@ -1,17 +1,6 @@
 import { notificationManager } from './config';
-import { User } from './models/user.model';
+import { user } from './constants/user';
 import { WelcomeNotification } from './notifications/welcome.notification';
-
-// 1. Define a Notifiable Entity
-// In a real app, this would come from your database
-const user = new User(
-  'user_123',
-  'Jeremiah',
-  'jeremiah@example.com',
-  '+1234567890', // Phone for SMS
-  'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]', // Push Token
-  '1234567890' // WhatsApp Number
-);
 
 // 2. Run the Notification Logic
 async function run() {
@@ -36,7 +25,7 @@ async function run() {
 
   try {
     console.log(`Sending WelcomeNotification to ${user.name}...`);
-    const results = await notificationManager.send(user, new WelcomeNotification(user.name));
+    const results = await notificationManager.send(user, new WelcomeNotification(user.name || 'Jeremiah'));
 
     console.log('\n📊 Final Results Summary:', {
       status: results.status,

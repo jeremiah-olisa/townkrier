@@ -1,36 +1,54 @@
 import { Notifiable } from 'townkrier-core';
 
-export class User implements Notifiable {
-    constructor(
-        public id: string,
-        public name: string,
-        public email: string,
-        public phone: string,
-        public pushToken: string,
-        public whatsappNumber: string
-    ) { }
-    [key: string]: unknown;
+export interface UserProps {
+    id: string;
+    email?: string;
+    phone?: string;
+    name?: string;
+    pushToken?: string;
+}
 
-    routeNotificationFor(driver: string): string | string[] | undefined {
-        switch (driver) {
+export class User implements Notifiable {
+    public id: string;
+    public email?: string;
+    public phone?: string;
+    public name?: string;
+    public pushToken?: string;
+    [key: string]: any; // Index signature required by Notifiable
+
+    constructor(props: UserProps) {
+        this.id = props.id;
+        this.email = props.email;
+        this.phone = props.phone;
+        this.name = props.name;
+        this.pushToken = props.pushToken;
+    }
+
+    /**
+     * Route notifications for specific channels
+     */
+    routeNotificationFor(channel: string): string | (string | object)[] | object | undefined {
+        switch (channel) {
             case 'email':
+            case 'mail':
                 return this.email;
+
             case 'sms':
                 return this.phone;
-            case 'push':
-                return this.pushToken;
-            case 'in-app':
-                return this.id;
-            case 'whatsapp':
-                // Assuming social media drivers like Wasender/Whapi use phone numbers formatted accordingly
-                return this.whatsappNumber;
-            default:
-                // Generic fallback or specific logic per driver key if needed
-                if (driver === 'termii') return this.phone;
-                if (driver === 'resend') return this.email;
-                if (driver === 'mailtrap') return this.email;
-                if (driver === 'smtp') return this.email;
 
+            case 'whatsapp':
+                return this.phone;
+
+            case 'push':
+            case 'fcm':
+            case 'expo':
+                return this.pushToken;
+
+            default:
+                // Allow dynamic property access for other channels if they match property names
+                if (this[channel]) {
+                    return this[channel];
+                }
                 return undefined;
         }
     }

@@ -11,12 +11,14 @@ export class WaSendApiDriver implements NotificationDriver<WaSendApiConfig, WaSe
         if (!this.config.apiKey) {
             throw new Error('WaSenderApiKeyMissing: API Key is required');
         }
-        this.baseUrl = this.config.baseUrl || 'https://wasendapi.io/api';
+        this.baseUrl = this.config.baseUrl || 'https://wasenderapi.com/api';
         this.client = axios.create({
             baseURL: this.baseUrl,
             headers: {
+                'Authorization': `Bearer ${this.config.apiKey}`,
                 'Content-Type': 'application/json',
-            }
+            },
+            timeout: 30000
         });
     }
 
@@ -37,33 +39,29 @@ export class WaSendApiDriver implements NotificationDriver<WaSendApiConfig, WaSe
         }
 
         const payload = {
-            api_key: this.config.apiKey,
-            device: this.config.device,
-            gateway: this.config.gateway || '1',
-            nonce: Date.now().toString(),
             to,
-            msg: message.msg,
-            type: message.type || 'text',
-            url: message.url,
-            schedule: message.schedule,
+            text: message.msg || message.message || message.text || '', // Map to 'text'
+            // sender_id: this.config.senderId 
         };
 
-        const endpoint = '/send-message';
-        // Some APIs have specific endpoints for media
+        const endpoint = 'send-message';
 
         try {
             Logger.debug(`[WaSender] Sending to ${to}`);
             const response = await this.client.post(endpoint, payload);
 
-            // Response format check needed, assuming standard JSON success
+            const messageId = response.data?.message_id || response.data?.id || '';
+            const status = (response.data && !response.data.error) ? 'success' : 'failed';
 
             return {
-                id: response.data?.id || '',
-                status: 'success',
+                id: messageId,
+                status: status,
                 response: response.data
             };
         } catch (error: any) {
-            Logger.error('[WaSender] Send Error', error);
+            const errorMessage = error.response?.data?.message || error.message || 'Unknown error';
+            Logger.error(`[WaSender] Send Error: ${errorMessage}`, error.response?.data);
+
             return {
                 id: '',
                 status: 'failed',

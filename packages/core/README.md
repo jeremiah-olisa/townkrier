@@ -1,6 +1,6 @@
 # townkrier-core 🚀
 
-A powerful, Laravel-inspired notification system for Node.js. Flexible, provider-agnostic, and built for building scalable notification engines.
+A powerful, Laravel-inspired notification system for Node.js. Flexible, provider-agnostic, and built for scalable notification engines.
 
 [![NPM Version](https://img.shields.io/npm/v/townkrier-core.svg)](https://www.npmjs.com/package/townkrier-core)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -9,43 +9,49 @@ A powerful, Laravel-inspired notification system for Node.js. Flexible, provider
 
 ## 🌟 Overview
 
-Townkrier provides a unified API for sending notifications through multiple channels (Email, SMS, Push, WhatsApp, etc.). It abstracts the complexity of managing multiple providers, allowing you to focus on your application logic rather than API integrations.
+Townkrier provides a unified API for sending notifications through multiple channels (Email, SMS, Push, WhatsApp, In-App, etc.). It abstracts the complexity of managing multiple providers, allowing you to focus on your application logic rather than API integrations.
 
 Inspired by the elegant Laravel Notification system, Townkrier brings a familiar, developer-friendly experience to the TypeScript ecosystem.
 
 ## ✨ Features
 
-- 🔌 **Channel-Based**: Organise notifications by channels (email, sms, push).
-- 🔄 **Strategy-Driven Delivery**: Built-in support for **Priority Fallback**, **Round Robin**, and **Weighted Random** strategies.
-- 🎯 **Notifiable Pattern**: Attach notification capabilities to any entity (User, Organization, etc.).
-- 🛡️ **Production Ready**: Robust error handling with `BestEffort` or `AllOrNothing` delivery strategies.
-- 🏗️ **Extensible**: Easily build and plug in custom drivers or your own unofficial channels.
-- 🦾 **Strictly Typed**: Native TypeScript support with deep generic integration for compile-time safety.
+- 🔌 **Multi-Channel**: Email, SMS, Push, WhatsApp, In-App (SSE), and custom channels
+- 🔄 **Strategy-Driven Delivery**: Built-in support for **Priority Fallback**, **Round Robin**, and **Weighted Random** strategies
+- 🎯 **Notifiable Pattern**: Attach notification capabilities to any entity (User, Organization, etc.)
+- 🛡️ **Production Ready**: Robust error handling with `BestEffort` or `AllOrNothing` delivery strategies
+- 🔁 **Auto-Retry**: Automatic retry with exponential backoff for transient failures
+- 📊 **Event System**: Hook into notification lifecycle for logging, analytics, and monitoring
+- 🏗️ **Extensible**: Easily build and plug in custom drivers or channels
+- 🦾 **Strictly Typed**: Native TypeScript support with deep generic integration for compile-time safety
+- 🚀 **Framework Agnostic**: Works with Express, NestJS, Fastify, or standalone
 
 ## 📦 Installation
 
 ```bash
 pnpm add townkrier-core
+
+# Install channel drivers you need
+pnpm add townkrier-resend townkrier-termii townkrier-expo
 ```
 
 ---
 
-## 🚀 Basic Usage
+## 🚀 Quick Start
 
 ### 1. Initialize the Manager
 
-Use the `TownkrierFactory` to create your notification manager. You specify the drivers to use for each channel.
+Use the `TownkrierFactory` to create your notification manager:
 
 ```typescript
 import { TownkrierFactory, DeliveryStrategy } from 'townkrier-core';
 import { ResendDriver } from 'townkrier-resend';
 
 const manager = TownkrierFactory.create({
-  // strategy: DeliveryStrategy.BestEffort, // Default: AllOrNothing
+  strategy: DeliveryStrategy.BestEffort, // or AllOrNothing
   channels: {
     email: {
       driver: ResendDriver,
-      config: { apiKey: 're_123...' },
+      config: { apiKey: process.env.RESEND_API_KEY },
     },
   },
 });
@@ -53,196 +59,185 @@ const manager = TownkrierFactory.create({
 
 ### 2. Define a Notification
 
-Notifications are classes that define which channels they use and what the message looks like for each channel.
+Notifications are classes that define which channels they use and what the message looks like:
 
 ```typescript
 import { Notification, Notifiable } from 'townkrier-core';
+import { ResendMessage } from 'townkrier-resend';
 
 class WelcomeNotification extends Notification<'email'> {
+  constructor(private userName: string) {
+    super();
+  }
+
   via(notifiable: Notifiable) {
     return ['email'];
   }
 
-  toEmail(notifiable: Notifiable) {
+  toEmail(notifiable: Notifiable): ResendMessage {
     return {
-      subject: 'Welcome to Townkrier!',
-      html: `<p>Thanks for joining, ${notifiable.name}!</p>`,
+      subject: 'Welcome to Our Platform!',
+      html: `<h1>Welcome ${this.userName}!</h1><p>We're excited to have you on board.</p>`,
+      to: notifiable.routeNotificationFor('email') as string,
+      from: 'noreply@yourapp.com',
     };
   }
 }
 ```
 
-### 3. Send and Receive
+### 3. Send Notifications
 
-Implement the `Notifiable` interface on your domain entities (Users, Orders, etc.) so Townkrier knows where to send the messages.
+Implement the `Notifiable` interface on your entities:
 
 ```typescript
 const user = {
-  id: 'user_1',
+  id: 'user_123',
   name: 'Jeremiah',
-  email: 'hello@townkrier.io',
+  email: 'jeremiah@example.com',
 
   // Required by Notifiable interface
-  routeNotificationFor(driver: string) {
-    if (driver === 'email') return this.email;
+  routeNotificationFor(channel: string) {
+    if (channel === 'email') return this.email;
     return undefined;
   },
 };
 
-const result = await manager.send(user, new WelcomeNotification());
-console.log(result.status); // 'success'
+// Send the notification
+const result = await manager.send(user, new WelcomeNotification(user.name));
+console.log(result.status); // 'success' or 'failed'
 ```
 
 ---
 
-## 🔥 Complex Usage (Production Grade)
+## 🔥 Advanced Usage
 
-Townkrier is built for high availability and load balancing across multiple providers.
+### Multi-Channel Notifications
 
-### Strategic Fallbacks
-
-Configure multiple drivers for a single channel with advanced delivery strategies.
+Send notifications across multiple channels simultaneously:
 
 ```typescript
-import { FallbackStrategy } from 'townkrier-core';
+import { Notification, Notifiable } from 'townkrier-core';
+import { ResendMessage } from 'townkrier-resend';
+import { TermiiMessage } from 'townkrier-termii';
+import { ExpoMessage } from 'townkrier-expo';
+
+class OrderConfirmation extends Notification<'email' | 'sms' | 'push'> {
+  constructor(private orderId: string, private amount: number) {
+    super();
+  }
+
+  via(notifiable: Notifiable) {
+    return ['email', 'sms', 'push'];
+  }
+
+  toEmail(notifiable: Notifiable): ResendMessage {
+    return {
+      subject: `Order #${this.orderId} Confirmed`,
+      html: `<p>Your order of $${this.amount} has been confirmed!</p>`,
+      to: notifiable.routeNotificationFor('email') as string,
+      from: 'orders@yourapp.com',
+    };
+  }
+
+  toSms(notifiable: Notifiable): TermiiMessage {
+    return {
+      to: notifiable.routeNotificationFor('sms') as string,
+      sms: `Order #${this.orderId} confirmed! Total: $${this.amount}`,
+      type: 'plain',
+      channel: 'dnd', // Transactional SMS
+    };
+  }
+
+  toPush(notifiable: Notifiable): ExpoMessage {
+    return {
+      to: notifiable.routeNotificationFor('push') as string,
+      title: 'Order Confirmed',
+      body: `Your order #${this.orderId} has been confirmed!`,
+      data: { orderId: this.orderId },
+    };
+  }
+}
+```
+
+### Strategic Fallbacks & Load Balancing
+
+Configure multiple drivers per channel with advanced strategies:
+
+```typescript
+import { TownkrierFactory, FallbackStrategy, DeliveryStrategy } from 'townkrier-core';
 import { ResendDriver } from 'townkrier-resend';
 import { MailtrapDriver } from 'townkrier-mailtrap';
+import { SmtpDriver } from 'townkrier-smtp';
+import { TermiiDriver } from 'townkrier-termii';
 
 const manager = TownkrierFactory.create({
+  strategy: DeliveryStrategy.BestEffort,
   channels: {
     email: {
-      strategy: FallbackStrategy.PriorityFallback, // Try Resend, then Mailtrap
+      strategy: FallbackStrategy.PriorityFallback, // Try highest priority first
       drivers: [
-        { use: ResendDriver, config: { apiKey: '...' }, priority: 10 },
-        { use: MailtrapDriver, config: { token: '...' }, priority: 5 }
-      ]
+        {
+          use: ResendDriver,
+          config: { apiKey: process.env.RESEND_API_KEY },
+          priority: 10, // Highest priority
+        },
+        {
+          use: MailtrapDriver,
+          config: { token: process.env.MAILTRAP_TOKEN },
+          priority: 8,
+        },
+        {
+          use: SmtpDriver,
+          config: {
+            host: process.env.SMTP_HOST,
+            port: 587,
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+          },
+          priority: 5, // Fallback
+        },
+      ],
     },
     sms: {
       strategy: FallbackStrategy.RoundRobin, // Distribute load evenly
       drivers: [
-        { use: ProviderADriver, config: { ... } },
-        { use: ProviderBDriver, config: { ... } }
-      ]
-    }
-  }
+        {
+          use: TermiiDriver,
+          config: {
+            apiKey: process.env.TERMII_API_KEY,
+            from: process.env.TERMII_SENDER_ID,
+          },
+        },
+      ],
+    },
+  },
 });
 ```
 
 ### Event System
 
-Listen to the lifecycle of your notifications for logging, analytics, or debugging.
+Hook into the notification lifecycle:
 
 ```typescript
-// Hook into the event dispatcher
+// Listen to events
 manager.events().on('NotificationSending', (event) => {
   console.log(`📤 Sending via: ${event.channels.join(', ')}`);
 });
 
 manager.events().on('NotificationSent', (event) => {
-  console.log(`✅ Sent! Results:`, event.responses);
+  console.log('✅ Notification sent successfully!');
+  console.log('Responses:', Object.fromEntries(event.responses));
 });
 
 manager.events().on('NotificationFailed', (event) => {
-  console.error(`❌ Failed:`, event.error.message);
+  console.error('❌ Notification failed:', event.error.message);
+  // Log to monitoring service
 });
 ```
 
 ### Retry Configuration
 
-Townkrier automatically retries failed notifications when network errors occur. This helps handle transient failures like DNS timeouts, connection errors, and temporary API unavailability.
-
-#### Default Retry Behavior
-
-By default, each driver will:
-- **Retry up to 3 times** before falling back to the next driver
-- Use **exponential backoff**: 1s → 2s → 4s (capped at 5s)
-- Only retry on **network errors** (ETIMEDOUT, ECONNREFUSED, ENOTFOUND, etc.)
-- **Not retry** on API errors (invalid credentials, rate limits, etc.)
-
-```typescript
-// No configuration needed - retry logic is enabled by default
-const manager = TownkrierFactory.create({
-  channels: {
-    email: {
-      strategy: FallbackStrategy.PriorityFallback,
-      drivers: [
-        { use: ResendDriver, config: { apiKey: '...' }, priority: 10 },
-        { use: MailtrapDriver, config: { token: '...' }, priority: 5 }
-      ]
-    }
-  }
-});
-```
-
-#### Custom Retry Configuration
-
-Override retry settings per driver:
-
-```typescript
-import { RetryConfig } from 'townkrier-core';
-
-const manager = TownkrierFactory.create({
-  channels: {
-    email: {
-      strategy: FallbackStrategy.PriorityFallback,
-      drivers: [
-        {
-          use: ResendDriver,
-          config: { apiKey: '...' },
-          priority: 10,
-          retryConfig: {
-            maxRetries: 5,              // Try 5 times instead of 3
-            retryDelay: 2000,            // Start with 2s delay
-            exponentialBackoff: true,    // Enable exponential backoff
-            maxRetryDelay: 10000,        // Cap delay at 10s
-            retryableErrors: ['ETIMEDOUT', 'ECONNREFUSED'] // Custom error codes
-          }
-        },
-        {
-          use: MailtrapDriver,
-          config: { token: '...' },
-          priority: 5,
-          retryConfig: {
-            maxRetries: 2,               // Only retry twice
-            exponentialBackoff: false,   // Use fixed delay
-            retryDelay: 1500,            // Always wait 1.5s
-          }
-        }
-      ]
-    }
-  }
-});
-```
-
-#### Disable Retries
-
-Set `maxRetries` to 1 to disable retry logic:
-
-```typescript
-{
-  use: ResendDriver,
-  config: { apiKey: '...' },
-  priority: 10,
-  retryConfig: {
-    maxRetries: 1  // No retries, fail immediately
-  }
-}
-```
-
-#### Retry Logging
-
-Retry attempts are automatically logged:
-
-```
-2026-02-04T08:50:30.036Z ResendDriver failed (attempt 1/3), retrying in 1000ms
-2026-02-04T08:50:31.554Z ResendDriver failed (attempt 2/3), retrying in 2000ms
-2026-02-04T08:50:33.789Z ResendDriver succeeded on attempt 3/3
-
-```
-
-### Disabling Drivers
-
-You can disable drivers without removing them from configuration using the `enabled` flag (default: `true`):
+Customize retry behavior per driver:
 
 ```typescript
 const manager = TownkrierFactory.create({
@@ -254,101 +249,424 @@ const manager = TownkrierFactory.create({
           use: ResendDriver,
           config: { apiKey: '...' },
           priority: 10,
-          enabled: true,  // Active
+          retryConfig: {
+            maxRetries: 5, // Try 5 times
+            retryDelay: 2000, // Start with 2s delay
+            exponentialBackoff: true, // Double delay each retry
+            maxRetryDelay: 10000, // Cap at 10s
+          },
         },
         {
           use: MailtrapDriver,
           config: { token: '...' },
           priority: 8,
-          enabled: false,  // Disabled - will be skipped
+          retryConfig: {
+            maxRetries: 1, // No retries, fail immediately
+          },
         },
-        {
-          use: SmtpDriver,
-          config: { host: '...', port: 587 },
-          priority: 6,
-          enabled: true,  // Active
-        }
-      ]
-    }
-  }
+      ],
+    },
+  },
 });
 ```
 
-**Use Cases:**
-- Temporarily disable a driver for testing
-- Toggle drivers based on environment (e.g., disable production drivers in dev)
-- A/B testing different providers
-- Feature flags for gradual rollouts
+**Default Retry Behavior:**
+- Retries up to 3 times before falling back
+- Exponential backoff: 1s → 2s → 4s (capped at 5s)
+- Only retries network errors (ETIMEDOUT, ECONNREFUSED, etc.)
+- Does not retry API errors (auth failures, rate limits, etc.)
 
-**Behavior:**
-- Disabled drivers are filtered out during initialization
-- Only enabled drivers are considered for fallback strategy
-- At least one driver must be enabled (throws error otherwise)
+### Disabling Drivers
 
+Temporarily disable drivers without removing them:
+
+```typescript
+const manager = TownkrierFactory.create({
+  channels: {
+    email: {
+      strategy: FallbackStrategy.PriorityFallback,
+      drivers: [
+        {
+          use: ResendDriver,
+          config: { apiKey: '...' },
+          priority: 10,
+          enabled: true, // Active
+        },
+        {
+          use: MailtrapDriver,
+          config: { token: '...' },
+          priority: 8,
+          enabled: false, // Disabled for testing
+        },
+      ],
+    },
+  },
+});
+```
+
+---
+
+## 🌐 Framework Integrations
+
+### Express.js
+
+```typescript
+import express from 'express';
+import { TownkrierFactory } from 'townkrier-core';
+import { ResendDriver } from 'townkrier-resend';
+
+const app = express();
+app.use(express.json());
+
+// Initialize notification manager
+const notificationManager = TownkrierFactory.create({
+  channels: {
+    email: {
+      driver: ResendDriver,
+      config: { apiKey: process.env.RESEND_API_KEY },
+    },
+  },
+});
+
+// Make it available in requests
+app.use((req, res, next) => {
+  req.notifications = notificationManager;
+  next();
+});
+
+// Use in routes
+app.post('/api/users/register', async (req, res) => {
+  const user = await createUser(req.body);
+
+  // Send welcome email
+  await req.notifications.send(user, new WelcomeNotification(user.name));
+
+  res.json({ success: true, user });
+});
+
+app.listen(3000);
+```
+
+### NestJS
+
+Create a notification module:
+
+```typescript
+// notification.module.ts
+import { Module, Global } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { TownkrierFactory } from 'townkrier-core';
+import { ResendDriver } from 'townkrier-resend';
+import { TermiiDriver } from 'townkrier-termii';
+
+@Global()
+@Module({
+  imports: [ConfigModule],
+  providers: [
+    {
+      provide: 'NOTIFICATION_MANAGER',
+      useFactory: (configService: ConfigService) => {
+        return TownkrierFactory.create({
+          channels: {
+            email: {
+              driver: ResendDriver,
+              config: { apiKey: configService.get('RESEND_API_KEY') },
+            },
+            sms: {
+              driver: TermiiDriver,
+              config: {
+                apiKey: configService.get('TERMII_API_KEY'),
+                from: configService.get('TERMII_SENDER_ID'),
+              },
+            },
+          },
+        });
+      },
+      inject: [ConfigService],
+    },
+  ],
+  exports: ['NOTIFICATION_MANAGER'],
+})
+export class NotificationModule {}
+
+// Use in services
+import { Injectable, Inject } from '@nestjs/common';
+import { NotificationManager } from 'townkrier-core';
+
+@Injectable()
+export class UserService {
+  constructor(
+    @Inject('NOTIFICATION_MANAGER')
+    private notifications: NotificationManager,
+  ) {}
+
+  async register(data: CreateUserDto) {
+    const user = await this.userRepository.create(data);
+
+    // Send welcome notification
+    await this.notifications.send(user, new WelcomeNotification(user.name));
+
+    return user;
+  }
+}
+```
+
+### Fastify
+
+```typescript
+import Fastify from 'fastify';
+import { TownkrierFactory } from 'townkrier-core';
+import { ResendDriver } from 'townkrier-resend';
+
+const fastify = Fastify();
+
+// Create notification manager
+const notificationManager = TownkrierFactory.create({
+  channels: {
+    email: {
+      driver: ResendDriver,
+      config: { apiKey: process.env.RESEND_API_KEY },
+    },
+  },
+});
+
+// Register as decorator
+fastify.decorate('notifications', notificationManager);
+
+// Use in routes
+fastify.post('/api/users/register', async (request, reply) => {
+  const user = await createUser(request.body);
+
+  await fastify.notifications.send(user, new WelcomeNotification(user.name));
+
+  return { success: true, user };
+});
+
+fastify.listen({ port: 3000 });
+```
 
 ---
 
 ## 🛠️ Custom Channels & Drivers
 
-Building a custom driver is straightforward. Simply implement the `NotificationDriver` interface.
-
-### 1. Create the Driver
+Build custom drivers by implementing the `NotificationDriver` interface:
 
 ```typescript
 import { NotificationDriver, Notifiable, SendResult } from 'townkrier-core';
+import axios from 'axios';
 
-export class TelegramDriver implements NotificationDriver {
-  constructor(private config: { botToken: string }) {}
+interface SlackConfig {
+  webhookUrl: string;
+}
 
-  async send(notifiable: Notifiable, message: any): Promise<SendResult> {
-    const chatId = notifiable.routeNotificationFor('telegram');
+interface SlackMessage {
+  text: string;
+  channel?: string;
+  username?: string;
+}
 
-    // logic to call Telegram Bot API...
+export class SlackDriver implements NotificationDriver<SlackConfig, SlackMessage> {
+  constructor(private config: SlackConfig) {}
 
-    return {
-      id: 'tg_msg_882',
-      status: 'success',
-      response: {
-        /* raw response */
-      },
-    };
+  async send(notifiable: Notifiable, message: SlackMessage): Promise<SendResult> {
+    try {
+      const response = await axios.post(this.config.webhookUrl, {
+        text: message.text,
+        channel: message.channel,
+        username: message.username || 'Notification Bot',
+      });
+
+      return {
+        id: `slack_${Date.now()}`,
+        status: 'success',
+        response: response.data,
+      };
+    } catch (error: any) {
+      return {
+        id: '',
+        status: 'failed',
+        error: {
+          message: error.message,
+          raw: error.response?.data || error,
+        },
+      };
+    }
   }
 }
-```
 
-### 2. Register and Use
-
-```typescript
+// Register and use
 const manager = TownkrierFactory.create({
   channels: {
-    telegram: {
-      driver: TelegramDriver,
-      config: { botToken: '...' },
+    slack: {
+      driver: SlackDriver,
+      config: { webhookUrl: process.env.SLACK_WEBHOOK_URL },
     },
   },
 });
 
-class AlertNotification extends Notification<'telegram'> {
+class AlertNotification extends Notification<'slack'> {
   via() {
-    return ['telegram'];
+    return ['slack'];
   }
 
-  toTelegram(notifiable: Notifiable) {
-    return { text: '🚨 System Alert!' };
+  toSlack(notifiable: Notifiable) {
+    return {
+      text: '🚨 System Alert: High CPU usage detected!',
+      channel: '#alerts',
+    };
   }
 }
 ```
 
 ---
 
-## 🏗️ Monorepo Adapters
+## 📦 Official Drivers
 
-While `townkrier-core` handles the orchestration, you can install official adapters for popular services:
+### Email
+- **`townkrier-resend`** - Resend email service
+- **`townkrier-mailtrap`** - Mailtrap email testing
+- **`townkrier-smtp`** - Generic SMTP driver
+- **`townkrier-postmark`** - Postmark email service
 
-- `townkrier-resend` - Email via Resend
-- `townkrier-termii` - SMS via Termii
-- `townkrier-mailtrap` - Email via Mailtrap
-- `townkrier-fcm` - Push via Firebase
+### SMS
+- **`townkrier-termii`** - Termii SMS service (Nigeria, Africa)
+
+### Push Notifications
+- **`townkrier-expo`** - Expo Push Notifications
+- **`townkrier-fcm`** - Firebase Cloud Messaging
+
+### WhatsApp
+- **`townkrier-whapi`** - Whapi.cloud WhatsApp API
+- **`townkrier-wasender`** - WaSender WhatsApp API
+
+### In-App
+- **`townkrier-sse`** - Server-Sent Events for real-time notifications
+
+---
+
+## 🎯 Real-World Examples
+
+### OTP Verification
+
+```typescript
+class OtpNotification extends Notification<'sms' | 'email'> {
+  constructor(private otp: string, private expiresInMinutes: number) {
+    super();
+  }
+
+  via(notifiable: Notifiable) {
+    // Send via SMS if phone exists, otherwise email
+    return notifiable.routeNotificationFor('sms') ? ['sms'] : ['email'];
+  }
+
+  toSms(notifiable: Notifiable): TermiiMessage {
+    return {
+      to: notifiable.routeNotificationFor('sms') as string,
+      sms: `Your verification code is ${this.otp}. Valid for ${this.expiresInMinutes} minutes.`,
+      type: 'plain',
+      channel: 'dnd', // Bypass DND for transactional messages
+    };
+  }
+
+  toEmail(notifiable: Notifiable): ResendMessage {
+    return {
+      subject: 'Your Verification Code',
+      html: `<p>Your verification code is <strong>${this.otp}</strong>. Valid for ${this.expiresInMinutes} minutes.</p>`,
+      to: notifiable.routeNotificationFor('email') as string,
+      from: 'security@yourapp.com',
+    };
+  }
+}
+```
+
+### Payment Confirmation
+
+```typescript
+class PaymentConfirmation extends Notification<'email' | 'sms' | 'whatsapp'> {
+  constructor(
+    private amount: number,
+    private currency: string,
+    private reference: string,
+  ) {
+    super();
+  }
+
+  via(notifiable: Notifiable) {
+    return ['email', 'sms', 'whatsapp'];
+  }
+
+  toEmail(notifiable: Notifiable): ResendMessage {
+    return {
+      subject: 'Payment Received',
+      html: `
+        <h2>Payment Confirmation</h2>
+        <p>We've received your payment of ${this.currency} ${this.amount}</p>
+        <p>Reference: ${this.reference}</p>
+      `,
+      to: notifiable.routeNotificationFor('email') as string,
+      from: 'payments@yourapp.com',
+    };
+  }
+
+  toSms(notifiable: Notifiable): TermiiMessage {
+    return {
+      to: notifiable.routeNotificationFor('sms') as string,
+      sms: `Payment of ${this.currency}${this.amount} received. Ref: ${this.reference}`,
+      channel: 'dnd',
+    };
+  }
+
+  toWhatsapp(notifiable: Notifiable): WhapiMessage {
+    return {
+      to: notifiable.routeNotificationFor('whatsapp') as string,
+      body: `✅ Payment Confirmed!\n\nAmount: ${this.currency} ${this.amount}\nReference: ${this.reference}`,
+    };
+  }
+}
+```
+
+---
+
+## 🧪 Testing
+
+Mock the notification manager in tests:
+
+```typescript
+import { jest } from '@jest/globals';
+
+const mockNotificationManager = {
+  send: jest.fn().mockResolvedValue({
+    status: 'success',
+    results: new Map([['email', { id: 'test_123', status: 'success' }]]),
+    errors: new Map(),
+  }),
+  events: jest.fn().mockReturnValue({
+    on: jest.fn(),
+  }),
+};
+
+// Use in tests
+test('should send welcome notification on user registration', async () => {
+  const user = await registerUser({ email: 'test@example.com' });
+
+  expect(mockNotificationManager.send).toHaveBeenCalledWith(
+    user,
+    expect.any(WelcomeNotification),
+  );
+});
+```
+
+---
+
+## 📊 Best Practices
+
+1. **Use Environment Variables**: Never hardcode API keys
+2. **Implement Retry Logic**: Use retry configs for production resilience
+3. **Monitor Events**: Hook into events for logging and analytics
+4. **Graceful Degradation**: Use `BestEffort` strategy for non-critical notifications
+5. **Type Safety**: Always type your notification messages with driver-specific interfaces
+6. **Fallback Strategies**: Configure multiple drivers per channel for high availability
+7. **Test Notifications**: Use test/sandbox modes in development
 
 ---
 

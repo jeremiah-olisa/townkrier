@@ -23,7 +23,7 @@ export class WelcomeNotification extends Notification<
     toEmail(notifiable: Notifiable): ResendMessage | MailtrapMessage {
         const common = {
             subject: `Welcome ${this.userName}!`,
-            html: `<h1>Welcome to Townkrier!</h1><p>We are excited to have you on board.</p>`,
+            html: `<h1>Welcome to Townkrier Updated!</h1><p>We are excited to have you on board.</p>`,
             to: notifiable.routeNotificationFor('email') as string,
             from: 'Townkrier <onboarding@resend.dev>', // Add valid sender
         };
@@ -35,8 +35,8 @@ export class WelcomeNotification extends Notification<
     toSms(notifiable: Notifiable): TermiiMessage {
         return {
             to: notifiable.routeNotificationFor('sms') as string,
-            from: 'Townkrier', // Add Sender ID
-            text: `Hello ${this.userName}, welcome to Townkrier!`,
+            sms: `Hello ${this.userName}, welcome to Townkrier updated!`,
+            // from is optional - will use the sender ID from driver config (TERMII_SENDER_ID env var)
         };
     }
 
@@ -46,7 +46,7 @@ export class WelcomeNotification extends Notification<
         return {
             to: notifiable.routeNotificationFor('push') as string,
             title: 'Welcome!',
-            body: `Hello ${this.userName}, thanks for joining us.`,
+            body: `Hello ${this.userName}, thanks for joining us updated!`,
             data: { userId: notifiable.id },
         };
     }
@@ -57,7 +57,7 @@ export class WelcomeNotification extends Notification<
         return {
             channelId: notifiable.id,
             title: 'Welcome!',
-            message: `Welcome ${this.userName}!`,
+            message: `Welcome ${this.userName}! updated`,
             event: 'welcome',
             data: {
                 timestamp: new Date().toISOString(),
@@ -71,7 +71,7 @@ export class WelcomeNotification extends Notification<
         const phone = notifiable.routeNotificationFor('whatsapp') as string;
         return {
             to: phone, // Whapi/Wasender usage might vary, usually expects phone number
-            body: `Hi ${this.userName}, welcome to Townkrier via WhatsApp!`,
+            body: `Hi ${this.userName}, welcome to Townkrier via WhatsApp updated!`,
         };
     }
 }

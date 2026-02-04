@@ -1,15 +1,10 @@
-
-import { TownkrierFactory, DeliveryStrategy, FallbackStrategy } from 'townkrier-core';
+import { TownkrierFactory, Logger, NotificationSent, NotificationFailed } from 'townkrier-core';
 import { ResendDriver } from 'townkrier-resend';
 import { MailtrapDriver } from 'townkrier-mailtrap';
 import { SmtpDriver } from 'townkrier-smtp';
 import { EmailOnlyNotification } from './notifications/email-only.notification';
-import { User } from './models/user.model';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
-
-// Load environment variables
-dotenv.config({ path: path.join(__dirname, '.env') });
+import { FallbackStrategy, DeliveryStrategy } from 'townkrier-core';
+import { user } from './constants/user';
 
 // Setup Notification Manager for Email Only
 const notificationManager = TownkrierFactory.create({
@@ -56,16 +51,6 @@ const notificationManager = TownkrierFactory.create({
     },
 });
 
-// Define User
-const user = new User(
-    'user_123',
-    'Jeremiah',
-    'jeremiaholisa453@gmail.com',
-    '+2347045646767',
-    'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]',
-    '1234567890'
-);
-
 async function run() {
     console.log('📧 Sending Email Notification...');
 
@@ -98,7 +83,7 @@ async function run() {
     });
 
     try {
-        const result = await notificationManager.send(user, new EmailOnlyNotification(user.name));
+        const result = await notificationManager.send(user, new EmailOnlyNotification(user.name || 'Jeremiah'));
 
         console.log('\n📊 Result:', result.status);
         //  if (result.errors.size > 0) {
