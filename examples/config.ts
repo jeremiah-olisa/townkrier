@@ -78,7 +78,7 @@ export const notificationManager = TownkrierFactory.create({
                     use: WhapiDriver,
                     config: {
                         apiUrl: process.env.WHAPI_API_URL || '',
-                        token: process.env.WHAPI_TOKEN || '',
+                        apiKey: process.env.WHAPI_TOKEN || '',
                     },
                     priority: 2,
                 },

@@ -208,7 +208,11 @@ export class NotificationManager<ChannelNames extends string = string> {
     notification: Notification<ChannelNames>,
     notifiable: Notifiable,
   ): any {
-    const methodName = `to${channelName.charAt(0).toUpperCase() + channelName.slice(1)}`;
+    const normalizedName = channelName
+      .split(/[-_]/)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join('');
+    const methodName = `to${normalizedName}`;
     const messageBuilder = (notification as any)[methodName];
 
     if (typeof messageBuilder !== 'function') {
