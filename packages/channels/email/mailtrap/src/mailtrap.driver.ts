@@ -2,57 +2,93 @@ import { NotificationDriver, SendResult, Notifiable } from 'townkrier-core';
 import { MailtrapClient } from 'mailtrap';
 import { MailtrapConfig } from './interfaces/mailtrap-config.interface';
 import { MailtrapMessage } from './interfaces/mailtrap-message.interface';
+import { MailtrapMapper } from './mailtrap.mapper';
+import { NotificationConfigurationException, NotificationSendException } from 'townkrier-core';
 
 export class MailtrapDriver implements NotificationDriver<MailtrapConfig, MailtrapMessage> {
   private client: MailtrapClient;
+  private mailtrapConfig: MailtrapConfig;
 
-  constructor(private config: MailtrapConfig) {
+  constructor(config: MailtrapConfig) {
+    this.mailtrapConfig = config;
+    this.validateConfig(config);
+    this.client = new MailtrapClient({
+      token: config.token,
+      ...(config.endpoint && { endpoint: config.endpoint }),
+      ...(config.testInboxId && { testInboxId: config.testInboxId }),
+      ...(config.accountId && { accountId: config.accountId }),
+    });
+  }
+
+  private validateConfig(config: MailtrapConfig) {
     if (!config.token) {
-      throw new Error('MailtrapTokenMissing: Token is required');
+      throw new NotificationConfigurationException('API token is required for Mailtrap', {
+        channel: 'Mailtrap',
+      });
     }
-    this.client = new MailtrapClient({ token: config.token });
   }
 
   async send(notifiable: Notifiable, message: MailtrapMessage, config?: MailtrapConfig): Promise<SendResult> {
     const route = notifiable.routeNotificationFor('email');
 
-    if (!message.to && !route) {
-      throw new Error('RecipientMissing: No recipient found');
+    // Consolidate recipient logic
+    let recipients = message.to;
+    if (!recipients) {
+      if (!route) {
+        throw new NotificationSendException('RecipientMissing: No recipient found for email');
+      }
+      recipients = [{ email: route as string }];
     }
 
-    const recipients = message.to || [{ email: route as string }];
-    const from = message.from || this.config.from || config?.from;
+    // Ensure message has "to"
+    const messagePayload = { ...message, to: recipients };
 
+    const from = message.from || this.mailtrapConfig.from || config?.from;
     if (!from) {
-      throw new Error('SenderMissing: From address is required');
+      throw new NotificationConfigurationException('SenderMissing: From address is required');
     }
+
+    // Update payload with from
+    messagePayload.from = from;
 
     try {
-      const response = await this.client.send({
-        ...message,
-        from,
-        to: recipients
-      });
+      // Prepare email data using Mapper
+      const emailData = MailtrapMapper.toMailtrapData(messagePayload, this.mailtrapConfig);
 
-      if (!response.success) {
-        return {
-          id: '',
-          status: 'failed',
-          error: response,
-          response: response
-        };
+      let response;
+      if (this.mailtrapConfig.testInboxId) {
+        // Use Sandbox API
+        response = await this.client.testing.send(emailData);
+      } else {
+        // Use Production Sending API
+        response = await this.client.send(emailData);
       }
 
+      if (!response.success) {
+        throw new NotificationSendException(
+          'Mailtrap API reported failure',
+          response,
+        );
+      }
+
+      const successResponse = MailtrapMapper.toSuccessResponse(response, messagePayload);
+
       return {
-        id: response.message_ids[0],
+        id: successResponse.id,
         status: 'success',
-        response: response
+        response: successResponse.response
       };
-    } catch (error) {
+
+    } catch (error: any) {
+      // DEBUGGING: Log raw error
+      console.error('[MailtrapDriver] Raw Error:', error);
+
+      // Return structured error
       return {
         id: '',
         status: 'failed',
-        error: error
+        error: new NotificationSendException(error.message || 'Failed to send email with Mailtrap', error),
+        response: error
       };
     }
   }

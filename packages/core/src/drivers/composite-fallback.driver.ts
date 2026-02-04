@@ -54,7 +54,7 @@ export class CompositeFallbackDriver implements NotificationDriver {
 
   async send(notifiable: Notifiable, message: any, config?: any): Promise<SendResult> {
     const driver = this.selectDriver();
-    const errors: Error[] = [];
+    const failures: { driver: string; error: string }[] = [];
 
     // Try the selected driver first
     try {
@@ -62,13 +62,15 @@ export class CompositeFallbackDriver implements NotificationDriver {
       if (result.status === 'success') {
         return result;
       }
-      errors.push(
-        new NotificationSendException(
-          result.error?.toString() || 'Driver returned non-success status',
-        ),
-      );
+      failures.push({
+        driver: driver.constructor.name,
+        error: result.error?.toString() || 'Driver returned non-success status',
+      });
     } catch (error: any) {
-      errors.push(error);
+      failures.push({
+        driver: driver.constructor.name,
+        error: error.message || String(error),
+      });
       Logger.warn(`Primary driver failed, attempting fallback`, { error: error.message });
     }
 
@@ -85,13 +87,15 @@ export class CompositeFallbackDriver implements NotificationDriver {
             Logger.log(`Fallback driver ${i + 1} succeeded`);
             return result;
           }
-          errors.push(
-            new NotificationSendException(
-              result.error?.toString() || 'Fallback driver returned non-success',
-            ),
-          );
+          failures.push({
+            driver: this.drivers[i].driver.constructor.name,
+            error: result.error?.toString() || 'Fallback driver returned non-success',
+          });
         } catch (error: any) {
-          errors.push(error);
+          failures.push({
+            driver: this.drivers[i].driver.constructor.name,
+            error: error.message || String(error),
+          });
           Logger.warn(`Fallback driver ${i + 1} failed`, { error: error.message });
         }
       }
@@ -102,7 +106,8 @@ export class CompositeFallbackDriver implements NotificationDriver {
       id: '',
       status: 'failed',
       error: new NotificationSendException(
-        `All drivers failed. Errors: ${errors.map((e) => e.message).join('; ')}`,
+        `All drivers failed`,
+        { failures },
       ),
     };
   }
