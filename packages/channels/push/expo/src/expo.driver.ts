@@ -111,4 +111,8 @@ export class ExpoDriver implements NotificationDriver<ExpoConfig, ExpoMessage> {
             response: { tickets, errors }
         };
     }
+
+    static configure(config: ExpoConfig): ExpoConfig {
+        return config;
+    }
 }

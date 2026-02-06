@@ -60,4 +60,8 @@ export class SmtpDriver implements NotificationDriver<SmtpConfig, SmtpMessage> {
             };
         }
     }
+
+    static configure(config: SmtpConfig): SmtpConfig {
+        return config;
+    }
 }

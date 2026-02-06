@@ -27,9 +27,33 @@ export interface Notifiable<TDriver = string> {
 }
 
 /**
+ * Maps one message type to another.
+ * Users can implement this to convert unified messages to driver-specific formats
+ * when using multiple drivers with different message interfaces.
+ *
+ * @template TInput - The input message type (e.g., your unified message)
+ * @template TOutput - The output message type (e.g., driver-specific message)
+ *
+ * @example
+ * ```typescript
+ * class MyWhatsappMapper implements MessageMapper<MyUnifiedMsg, WhapiMessage> {
+ *   map(message: MyUnifiedMsg): WhapiMessage {
+ *     return { to: message.to, body: message.text };
+ *   }
+ * }
+ * ```
+ */
+export interface MessageMapper<TInput = unknown, TOutput = unknown> {
+  /**
+   * Transform the input message to the output format.
+   */
+  map(message: TInput): TOutput;
+}
+
+/**
  * Represents a result returned by a driver after attempting to send a notification.
  */
-export interface SendResult {
+export interface SendResult<TResponse = unknown> {
   /**
    * Unique ID or reference for the sent message (provider specific).
    */
@@ -43,7 +67,7 @@ export interface SendResult {
   /**
    * The raw response from the provider (e.g., API return body).
    */
-  response?: any;
+  response?: TResponse;
 
   /**
    * Error object if the status is 'failed'.

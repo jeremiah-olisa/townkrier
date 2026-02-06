@@ -2,6 +2,27 @@ import { Notification, Notifiable } from 'townkrier-core';
 import { WaSendApiMessage } from 'townkrier-wasender';
 import { WhapiMessage } from 'townkrier-whapi';
 
+/**
+ * Multi-Driver Example WITHOUT Mappers
+ * 
+ * This example demonstrates a WhatsApp channel with MULTIPLE drivers (WaSender and Whapi)
+ * that have different message interfaces, without using mappers.
+ * 
+ * To support both drivers, the handler returns an object containing ALL driver-specific properties:
+ * - `msg`: Required by WaSender
+ * - `body`: Required by Whapi
+ * 
+ * This approach works but has drawbacks:
+ * 1. The return type is a union (WaSendApiMessage | WhapiMessage) with overlapping properties
+ * 2. Extra properties must be added to satisfy both drivers
+ * 3. Requires `as any` cast to suppress type errors
+ * 4. Not type-safe—you might forget to add a property for a new driver
+ * 
+ * BETTER APPROACH: Use mappers (see whatsapp-with-mapper.notification.ts)
+ * With mappers, you define your own unified message interface and each driver
+ * has a mapper to transform it to the driver-specific format. This is cleaner,
+ * type-safe, and scales better as you add more drivers.
+ */
 export class WhatsappOnlyNotification extends Notification<'whatsapp'> {
     constructor(private userName: string, private orderId: string) {
         super();
@@ -15,18 +36,12 @@ export class WhatsappOnlyNotification extends Notification<'whatsapp'> {
         const phone = notifiable.routeNotificationFor('whatsapp') as string;
         const messageText = `Hello *${this.userName}*! 👋\nYour order *#${this.orderId}* has been confirmed. We will notify you when it ships! 🚀`;
 
-        // We return an object compatible with the primary driver (WaSender)
-        // or potentially a structure that works for both if unified.
-        // For now, adhering to WaSendApiMessage structure:
+        // ⚠️ Without mappers: You need union type and 'as any' hack
         return {
             to: phone,
-            msg: messageText,
-            // For Whapi, it might expect 'body'. Using 'any' cast or union strategy 
-            // depends on how strict the shared interface is. 
-            // In a real generic scenario, we might return a unified object that 
-            // the driver maps, but here we explicitly return what fits.
-            // Adding 'body' as well to satisfy Whapi if it checks:
-            body: messageText,
+            msg: messageText,     // For WaSender
+            body: messageText,    // For Whapi
         } as any;
     }
 }
+

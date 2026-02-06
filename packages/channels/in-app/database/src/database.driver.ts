@@ -73,4 +73,8 @@ export class DatabaseDriver implements NotificationDriver<DatabaseConfig, Databa
     getStorageAdapter() {
         return this.config.storageAdapter;
     }
+
+    static configure(config: DatabaseConfig): DatabaseConfig {
+        return config;
+    }
 }

@@ -304,6 +304,173 @@ const manager = TownkrierFactory.create({
 });
 ```
 
+### Message Mappers (Multiple Drivers with Different Interfaces)
+
+When using multiple drivers with different message interfaces, you can define **message mappers** to transform your unified messages into driver-specific formats. This eliminates type conflicts and keeps your notifications clean.
+
+**Why Mappers?**
+- Different drivers expect different field names (`msg` vs `body`, `To` vs `to`, etc.)
+- Without mappers, you'd need to use `as any` or union types
+- Mappers register once during configuration, keeping notifications simple
+
+**How to Use:**
+
+1. **Define your unified message interface** (in your app code):
+
+```typescript
+// messages/unified-whatsapp.interface.ts
+export interface UnifiedWhatsappMessage {
+  to: string;
+  text: string;
+  media?: string;
+  caption?: string;
+  type?: 'text' | 'image' | 'video' | 'audio' | 'document';
+}
+```
+
+2. **Create mappers for each driver** (in your app code):
+
+```typescript
+// mappers/whatsapp.mappers.ts
+import { MessageMapper } from 'townkrier-core';
+import { WhapiMessage } from 'townkrier-whapi';
+import { WaSendApiMessage } from 'townkrier-wasender';
+import { UnifiedWhatsappMessage } from '../messages/unified-whatsapp.interface';
+
+// Map unified message to Whapi format
+export class WhapiMessageMapper implements MessageMapper<UnifiedWhatsappMessage, WhapiMessage> {
+  map(message: UnifiedWhatsappMessage): WhapiMessage {
+    return {
+      to: message.to,
+      body: message.text,        // Whapi uses 'body'
+      media: message.media,
+      caption: message.caption,
+      type: message.type,
+    };
+  }
+}
+
+// Map unified message to WaSender format
+export class WaSendApiMessageMapper implements MessageMapper<UnifiedWhatsappMessage, WaSendApiMessage> {
+  map(message: UnifiedWhatsappMessage): WaSendApiMessage {
+    return {
+      to: message.to,
+      msg: message.text,         // WaSender uses 'msg'
+      url: message.media,        // WaSender uses 'url' for media
+      type: message.type || 'text',
+    };
+  }
+}
+```
+
+3. **Register mappers when configuring drivers**:
+
+```typescript
+import { WhapiDriver } from 'townkrier-whapi';
+import { WaSendApiDriver } from 'townkrier-wasender';
+import { WhapiMessageMapper, WaSendApiMessageMapper } from './mappers/whatsapp.mappers';
+
+const manager = TownkrierFactory.create({
+  channels: {
+    whatsapp: {
+      strategy: FallbackStrategy.PriorityFallback,
+      drivers: [
+        {
+          use: WhapiDriver,
+          config: WhapiDriver.configure({ apiKey: process.env.WHAPI_TOKEN }),
+          mapper: WhapiMessageMapper,        // ← Register class (framework instantiates)
+          priority: 10,
+          enabled: true,
+        },
+        {
+          use: WaSendApiDriver,
+          config: WaSendApiDriver.configure({ apiKey: process.env.WASENDER_API_KEY }),
+          mapper: WaSendApiMessageMapper,    // ← Register class
+          priority: 8,
+          enabled: true,
+        },
+      ],
+    },
+  },
+});
+```
+
+4. **Use unified type in notifications** (no `as any` needed!):
+
+```typescript
+import { Notification, Notifiable } from 'townkrier-core';
+import { UnifiedWhatsappMessage } from './messages/unified-whatsapp.interface';
+
+export class WhatsappNotification extends Notification<'whatsapp'> {
+  constructor(private userName: string, private orderId: string) {
+    super();
+  }
+
+  via(notifiable: Notifiable) {
+    return ['whatsapp'];
+  }
+
+  // Return unified type - mappers handle driver-specific transformation
+  toWhatsapp(notifiable: Notifiable): UnifiedWhatsappMessage {
+    return {
+      to: notifiable.routeNotificationFor('whatsapp') as string,
+      text: `Hello *${this.userName}*! Your order *#${this.orderId}* confirmed! 🎉`,
+    };
+  }
+}
+```
+
+**Key Benefits:**
+- ✅ **Type-safe**: No `as any` hacks
+- ✅ **Flexible**: Users define their own unified formats
+- ✅ **Decoupled**: Notifications don't know about driver-specific interfaces
+- ✅ **Reusable**: One mapper per driver, configured once
+- ✅ **Optional**: Only needed when using multiple drivers
+- ✅ **Framework handles instantiation**: Register classes, not instances
+
+### Toggling Channels and Drivers
+
+Easily enable or disable channels and drivers without removing configuration:
+
+```typescript
+const manager = TownkrierFactory.create({
+  channels: {
+    // Disable entire channel temporarily
+    email: {
+      driver: ResendDriver,
+      config: ResendDriver.configure({ apiKey: '...' }),
+      enabled: false,  // ← Channel disabled
+    },
+    
+    // Disable specific drivers in fallback strategy
+    sms: {
+      strategy: FallbackStrategy.PriorityFallback,
+      drivers: [
+        {
+          use: TermiiDriver,
+          config: TermiiDriver.configure({ apiKey: '...' }),
+          priority: 10,
+          enabled: true,   // ← Active
+        },
+        {
+          use: TwilioDriver,
+          config: TwilioDriver.configure({ accountSid: '...', authToken: '...' }),
+          priority: 8,
+          enabled: false,  // ← Temporarily disabled
+        },
+      ],
+    },
+  },
+});
+```
+
+**Use Cases:**
+- 🎛️ Toggle channels/drivers on/off without code changes
+- 🔧 Perfect for maintenance windows
+- 🧪 A/B testing different providers
+- 🚀 Gradual rollouts
+- 💰 Disable expensive channels in development: `enabled: process.env.NODE_ENV === 'production'`
+
 ---
 
 ## 🌐 Framework Integrations

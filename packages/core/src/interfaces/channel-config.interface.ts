@@ -15,4 +15,11 @@ export interface ChannelConfig<ConfigType = any> {
    * Configuration object passed to the driver's constructor.
    */
   config: ConfigType;
+  
+  /**
+   * Whether this channel is enabled.
+   * Set to false to temporarily disable a channel without removing it.
+   * @default true
+   */
+  enabled?: boolean;
 }

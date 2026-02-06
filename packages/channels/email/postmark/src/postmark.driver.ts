@@ -64,4 +64,8 @@ export class PostmarkDriver implements NotificationDriver<PostmarkConfig, Postma
             };
         }
     }
+
+    static configure(config: PostmarkConfig): PostmarkConfig {
+        return config;
+    }
 }

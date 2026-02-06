@@ -14,8 +14,16 @@ import { RetryConfig } from '../interfaces/retry-config.interface';
  * - `round-robin`: Rotates sequentially through drivers for each send call.
  * - `random`: Selects a driver randomly (optionally weighted).
  */
+/**
+ * Internal driver entry with guaranteed instantiated driver and mapper.
+ */
+interface InstantiatedDriverEntry extends Omit<DriverEntry, 'driver' | 'mapper' | 'use' | 'config'> {
+  driver: NotificationDriver;
+  mapper?: unknown; // Already instantiated mapper instance
+}
+
 export class CompositeFallbackDriver implements NotificationDriver {
-  private drivers: DriverEntry[];
+  private drivers: InstantiatedDriverEntry[];
   private strategy: FallbackStrategy;
   private currentIndex = 0;
   private defaultRetryConfig: Required<RetryConfig> = {
@@ -52,11 +60,107 @@ export class CompositeFallbackDriver implements NotificationDriver {
       );
     }
 
-    this.drivers = this.sortDrivers(enabledDrivers, strategy);
+    // Instantiate drivers and mappers if classes are provided
+    const instantiatedDrivers = this.instantiateDrivers(enabledDrivers);
+
+    this.drivers = this.sortDrivers(instantiatedDrivers, strategy);
     this.strategy = strategy;
   }
 
-  private sortDrivers(drivers: DriverEntry[], strategy: FallbackStrategy): DriverEntry[] {
+  /**
+   * Determines if a value is a class (constructor function).
+   * Checks if the function's toString includes the "class" keyword,
+   * which is the most reliable way to distinguish classes from regular functions.
+   *
+   * @param func - The value to test
+   * @returns true if the value is a class
+   */
+  private isClass(func: unknown): func is new () => unknown {
+    if (typeof func !== 'function') {
+      return false;
+    }
+    // Check if toString representation includes 'class' keyword (ES6+ syntax)
+    const funcStr = Function.prototype.toString.call(func);
+    return /^\s*class\s+/.test(funcStr) && 'prototype' in func;
+  }
+
+  /**
+   * Instantiates drivers and mappers from class references if needed.
+   * Supports both declarative (use + config) and imperative (driver instance) patterns.
+   *
+   * Validation rules:
+   * - Exactly one of entry.driver or entry.use must be provided (not both)
+   * - If entry.use is provided, entry.config is required
+   * - If entry.mapper is a class, it must have a zero-argument constructor
+   *
+   * References for callers: DriverEntry, entry.mapper, entry.driver, entry.use
+   *
+   * @param drivers - Array of driver entries to instantiate
+   * @returns Array of instantiated drivers with resolved mappers
+   * @throws NotificationConfigurationException if configuration is invalid
+   */
+  private instantiateDrivers(drivers: DriverEntry[]): InstantiatedDriverEntry[] {
+    return drivers.map((entry, index) => {
+      // (1) Validate that only one of driver or use is provided
+      if (entry.driver && entry.use) {
+        throw new NotificationConfigurationException(
+          `Driver entry [${index}] has ambiguous configuration: both 'driver' and 'use' are provided. ` +
+          `Please provide either a driver instance via 'entry.driver' (imperative pattern) or ` +
+          `a driver class via 'entry.use' with 'entry.config' (declarative pattern), but not both.`,
+        );
+      }
+
+      let driver: NotificationDriver | undefined = entry.driver;
+
+      // If 'use' is provided, instantiate the driver class with config
+      if (entry.use && !entry.driver) {
+        if (!entry.config) {
+          throw new NotificationConfigurationException(
+            `Driver entry [${index}] with 'use' property requires 'config' property. ` +
+            `Referenced in instantiateDrivers() -> DriverEntry, entry.use, entry.config.`,
+          );
+        }
+        driver = new entry.use(entry.config);
+      }
+
+      if (!driver) {
+        throw new NotificationConfigurationException(
+          `Driver entry [${index}] must have either 'driver' (instance) or 'use' + 'config' (class + config). ` +
+          `See instantiateDrivers() for details on DriverEntry, entry.driver, entry.use.`,
+        );
+      }
+
+      let mapper: unknown = entry.mapper;
+
+      // (2) Tighten mapper class detection: use reliable is-class test
+      if (mapper && this.isClass(mapper)) {
+        // (3) Guard mapper instantiation with try/catch
+        try {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          mapper = new (mapper as any)();
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          throw new NotificationConfigurationException(
+            `Failed to instantiate mapper for driver entry [${index}]: ${errorMsg}. ` +
+            `Mappers provided via 'entry.mapper' as a class must have a zero-argument constructor. ` +
+            `If your mapper requires constructor arguments, provide it as an instance instead. ` +
+            `See instantiateDrivers() in CompositeFallbackDriver for DriverEntry, entry.mapper, entry.driver, entry.use.`,
+          );
+        }
+      }
+
+      return {
+        driver,
+        mapper,
+        priority: entry.priority,
+        weight: entry.weight,
+        retryConfig: entry.retryConfig,
+        enabled: entry.enabled,
+      };
+    });
+  }
+
+  private sortDrivers(drivers: InstantiatedDriverEntry[], strategy: FallbackStrategy): InstantiatedDriverEntry[] {
     switch (strategy) {
       case FallbackStrategy.PriorityFallback:
         // Sort by priority (higher first), then by order
@@ -70,10 +174,28 @@ export class CompositeFallbackDriver implements NotificationDriver {
     }
   }
 
+  /**
+   * Type guard to check if object has a map method
+   */
+  private hasMapMethod(obj: unknown): obj is { map: (message: unknown) => unknown } {
+    return (
+      typeof obj === 'object' &&
+      obj !== null &&
+      'map' in obj &&
+      typeof (obj as { map?: unknown }).map === 'function'
+    );
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async send(notifiable: Notifiable, message: any, config?: any): Promise<SendResult> {
     const driver = this.selectDriver();
     const driverEntry = this.drivers.find((d) => d.driver === driver);
     const failures: { driver: string; error: string }[] = [];
+
+    // Apply mapper if available for the selected driver
+    const mappedMessage = driverEntry?.mapper && this.hasMapMethod(driverEntry.mapper)
+      ? driverEntry.mapper.map(message)
+      : message;
 
     // Try the selected driver first with retry logic
     try {
@@ -81,7 +203,7 @@ export class CompositeFallbackDriver implements NotificationDriver {
         driver,
         driverEntry,
         notifiable,
-        message,
+        mappedMessage,
         config,
       );
       if (result.status === 'success') {
@@ -91,13 +213,14 @@ export class CompositeFallbackDriver implements NotificationDriver {
         driver: driver.constructor.name,
         error: result.error?.toString() || 'Driver returned non-success status',
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error as Error;
       failures.push({
         driver: driver.constructor.name,
-        error: error.message || String(error),
+        error: err.message || String(error),
       });
       Logger.warn(`Primary driver failed after retries, attempting fallback`, {
-        error: error.message,
+        error: err.message || String(error),
       });
     }
 
@@ -108,11 +231,18 @@ export class CompositeFallbackDriver implements NotificationDriver {
 
         try {
           Logger.debug(`Attempting fallback driver ${i + 1}/${this.drivers.length}`);
+          
+          // Apply mapper for this fallback driver if available
+          const currentMapper = this.drivers[i].mapper;
+          const fallbackMessage = currentMapper && this.hasMapMethod(currentMapper)
+            ? currentMapper.map(message)
+            : message;
+
           const result = await this.sendWithRetry(
             this.drivers[i].driver,
             this.drivers[i],
             notifiable,
-            message,
+            fallbackMessage,
             config,
           );
 
@@ -124,13 +254,14 @@ export class CompositeFallbackDriver implements NotificationDriver {
             driver: this.drivers[i].driver.constructor.name,
             error: result.error?.toString() || 'Fallback driver returned non-success',
           });
-        } catch (error: any) {
+        } catch (error: unknown) {
+          const err = error as Error;
           failures.push({
             driver: this.drivers[i].driver.constructor.name,
-            error: error.message || String(error),
+            error: err.message || String(error),
           });
           Logger.warn(`Fallback driver ${i + 1} failed after retries`, {
-            error: error.message,
+            error: err.message || String(error),
           });
         }
       }
@@ -144,14 +275,13 @@ export class CompositeFallbackDriver implements NotificationDriver {
     };
   }
 
-  /**
-   * Attempts to send using a driver with retry logic for transient network failures.
-   */
   private async sendWithRetry(
     driver: NotificationDriver,
-    driverEntry: DriverEntry | undefined,
+    driverEntry: InstantiatedDriverEntry | undefined,
     notifiable: Notifiable,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message: any,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     config?: any,
   ): Promise<SendResult> {
     const retryConfig = this.mergeRetryConfig(driverEntry?.retryConfig);
@@ -186,15 +316,16 @@ export class CompositeFallbackDriver implements NotificationDriver {
 
         // No more retries or error is not retryable
         return result;
-      } catch (error: any) {
-        lastError = error instanceof Error ? error : new Error(String(error));
+      } catch (error: unknown) {
+        const err = error as Error;
+        lastError = err;
 
         // Only retry on network errors
         if (this.shouldRetry(error, retryConfig) && attempt < maxRetries) {
           const delay = this.calculateDelay(attempt, retryConfig);
           Logger.warn(
             `${driver.constructor.name} threw error (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms`,
-            { error: error.message || String(error) },
+            { error: err.message || String(error) },
           );
           await this.sleep(delay);
           continue;
@@ -212,11 +343,12 @@ export class CompositeFallbackDriver implements NotificationDriver {
   /**
    * Determines if an error should trigger a retry.
    */
-  private shouldRetry(error: any, retryConfig: Required<RetryConfig>): boolean {
+  private shouldRetry(error: unknown, retryConfig: Required<RetryConfig>): boolean {
     if (!error) return false;
 
-    const errorCode = error.code;
-    const errorMessage = error.message || '';
+    const err = error as { code?: string; message?: string };
+    const errorCode = err.code;
+    const errorMessage = err.message || '';
 
     // Check if error code matches retryable errors
     if (errorCode && retryConfig.retryableErrors.includes(errorCode)) {

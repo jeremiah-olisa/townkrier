@@ -69,4 +69,8 @@ export class WaSendApiDriver implements NotificationDriver<WaSendApiConfig, WaSe
             };
         }
     }
+
+    static configure(config: WaSendApiConfig): WaSendApiConfig {
+        return config;
+    }
 }

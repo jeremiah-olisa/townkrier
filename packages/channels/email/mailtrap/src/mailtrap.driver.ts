@@ -110,4 +110,8 @@ export class MailtrapDriver implements NotificationDriver<MailtrapConfig, Mailtr
       };
     }
   }
+
+  static configure(config: MailtrapConfig): MailtrapConfig {
+    return config;
+  }
 }

@@ -112,4 +112,8 @@ export class WhapiDriver implements NotificationDriver<WhapiConfig, WhapiMessage
             };
         }
     }
+
+    static configure(config: WhapiConfig): WhapiConfig {
+        return config;
+    }
 }

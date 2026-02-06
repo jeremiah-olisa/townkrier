@@ -202,6 +202,63 @@ dispatcher.on(NotificationFailed, (event) => {
 });
 ```
 
+### 4. Message Mappers (Multi-Driver Support)
+
+For scenarios where different drivers expect different message formats, mappers provide a clean, type-safe solution:
+
+```
+Unified Message Interface (User-defined)
+    ↓
+Notification.to${Channel}() → UnifiedMessage
+    ↓
+CompositeFallbackDriver
+    ├─ Driver 1 + Mapper 1 → maps UnifiedMessage → Driver1Message
+    └─ Driver 2 + Mapper 2 → maps UnifiedMessage → Driver2Message
+```
+
+**Problem:** Different drivers expect different field names and types
+
+```typescript
+// Whapi expects { to: string, body: string }
+// WaSender expects { to: string, msg: string }
+// How to support both without 'as any' casts?
+```
+
+**Solution:** Register mappers with drivers
+
+```typescript
+const fallbackConfig: FallbackStrategyConfig = {
+  strategy: 'priority-fallback',
+  drivers: [
+    {
+      driver: new WhapiDriver(config),
+      mapper: new WhapiMessageMapper(),      // UnifiedMessage → WhapiMessage
+    },
+    {
+      driver: new WaSendApiDriver(config),
+      mapper: new WaSendApiMessageMapper(),  // UnifiedMessage → WaSendApiMessage
+    },
+  ],
+};
+
+// Notification returns unified format
+export class MyNotification extends Notification<'whatsapp'> {
+  toWhatsapp(notifiable: Notifiable): UnifiedWhatsappMessage {
+    return {
+      to: phone,
+      text: message,  // Mappers handle transformation automatically
+    };
+  }
+}
+```
+
+**Key Benefits:**
+- ✅ Type-safe (no 'as any' needed)
+- ✅ Single source of truth (mappers registered once)
+- ✅ Decoupled (notifications don't know driver details)
+- ✅ Backward compatible (optional, single-driver users don't need mappers)
+- ✅ User-controlled (you define your unified message format)
+
 ## MVP Channels Implemented
 
 ### Email: Resend

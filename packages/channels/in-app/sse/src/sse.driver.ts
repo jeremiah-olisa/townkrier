@@ -154,4 +154,8 @@ export class SseDriver implements NotificationDriver<SseConfig, SseMessage> {
         this.userSessions.clear();
         Logger.log('[SSE] All sessions destroyed');
     }
+
+    static configure(config: SseConfig): SseConfig {
+        return config;
+    }
 }

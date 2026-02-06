@@ -192,6 +192,54 @@ class ImportantAlert extends Notification {
 }
 ```
 
+## Step 7: Using Multiple Drivers with Mappers
+
+When using multiple drivers with different message formats (e.g., multiple WhatsApp providers), use **message mappers** to keep your notifications clean and type-safe:
+
+```typescript
+// 1. Define your unified message format
+interface UnifiedWhatsappMessage {
+  to: string;
+  text: string;
+  media?: string;
+}
+
+// 2. Create mappers for each driver
+class WhapiMessageMapper implements MessageMapper<UnifiedWhatsappMessage, WhapiMessage> {
+  map(msg: UnifiedWhatsappMessage): WhapiMessage {
+    return { to: msg.to, body: msg.text, media: msg.media };
+  }
+}
+
+// 3. Register drivers with mappers
+const fallbackConfig: FallbackStrategyConfig = {
+  strategy: 'priority-fallback',
+  drivers: [
+    {
+      driver: new WhapiDriver(config),
+      mapper: new WhapiMessageMapper(),  // ← Register mapper once
+    },
+  ],
+};
+
+// 4. Notification uses unified format (mappers handle transformation)
+class OrderNotification extends Notification<'whatsapp'> {
+  toWhatsapp(notifiable: Notifiable): UnifiedWhatsappMessage {
+    return {
+      to: notifiable.routeNotificationFor('whatsapp') as string,
+      text: 'Order confirmed! ✅',
+      // ✅ Type-safe, no 'as any' needed!
+    };
+  }
+}
+```
+
+**Key Points:**
+- 📌 Mappers are optional - you only need them with multiple drivers
+- 🔄 Configured once during setup, used across all notifications
+- 🛡️ Type-safe - no casting needed in notifications
+- 📚 See [whatsapp-with-mapper-config.ts](./examples/whatsapp-with-mapper-config.ts) for a complete example
+
 ## Next Steps
 
 ### 🎯 Generate Notification Classes

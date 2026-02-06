@@ -92,4 +92,8 @@ export class TermiiDriver implements NotificationDriver<TermiiConfig, TermiiMess
             };
         }
     }
+
+    static configure(config: TermiiConfig): TermiiConfig {
+        return config;
+    }
 }

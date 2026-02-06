@@ -100,4 +100,8 @@ export class FcmDriver implements NotificationDriver<FcmConfig, FcmMessage> {
             };
         }
     }
+
+    static configure(config: FcmConfig): FcmConfig {
+        return config;
+    }
 }

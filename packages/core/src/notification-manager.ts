@@ -48,6 +48,12 @@ export class NotificationManager<ChannelNames extends string = string> {
   }
 
   private registerChannel(name: ChannelNames, config: ChannelConfig | FallbackStrategyConfig) {
+    // Check if channel is disabled
+    if ('enabled' in config && config.enabled === false) {
+      Logger.debug(`Channel ${name} is disabled, skipping registration`);
+      return;
+    }
+    
     if ('driver' in config) {
       this.registerSingleDriver(name, config as ChannelConfig);
     } else if ('strategy' in config && Object.values(FallbackStrategy).includes(config.strategy)) {
@@ -78,30 +84,23 @@ export class NotificationManager<ChannelNames extends string = string> {
     }
 
     try {
-      const driverEntries: DriverEntry[] = config.drivers.map((driverConfig, index) => {
-        try {
-          const DriverClass = driverConfig.use;
-          const instance = new DriverClass(driverConfig.config);
-          return {
-            driver: instance,
-            priority: driverConfig.priority ?? config.drivers.length - index, // Default priority by order
-            weight: driverConfig.weight,
-            retryConfig: driverConfig.retryConfig,
-            enabled: driverConfig.enabled,
-          };
-        } catch (error) {
-          Logger.error(`Failed to instantiate driver ${index} for channel ${name}`, error);
-          throw new NotificationConfigurationException(
-            `Failed to instantiate driver ${index} for channel ${name}`,
-            error,
-          );
-        }
-      });
+      // Pass driver configs directly to CompositeFallbackDriver
+      // It will handle instantiation of drivers and mappers
+      const driverEntries: DriverEntry[] = config.drivers.map((driverConfig) => ({
+        ...driverConfig,
+        use: driverConfig.use,
+        config: driverConfig.config,
+        priority: driverConfig.priority,
+        weight: driverConfig.weight,
+        retryConfig: driverConfig.retryConfig,
+        mapper: driverConfig.mapper,
+        enabled: driverConfig.enabled,
+      }));
 
       const compositeDriver = new CompositeFallbackDriver(driverEntries, config.strategy);
       this.drivers.set(name, compositeDriver);
       Logger.debug(
-        `Registered ${config.strategy} strategy for channel: ${name} with ${driverEntries.length} drivers`,
+        `Registered ${config.strategy} strategy for channel: ${name} with ${config.drivers.length} configured drivers`,
       );
     } catch (error) {
       Logger.error(`Failed to register fallback strategy for channel ${name}`, error);

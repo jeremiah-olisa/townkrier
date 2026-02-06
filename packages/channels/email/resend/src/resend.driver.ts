@@ -1,4 +1,4 @@
-import { NotificationDriver, SendResult, Notifiable, Logger } from 'townkrier-core';
+import { NotificationDriver, SendResult, Notifiable } from 'townkrier-core';
 import { Resend } from 'resend';
 import { ResendConfig } from './interfaces/resend-config.interface';
 import { ResendMessage } from './interfaces/resend-message.interface';
@@ -103,5 +103,9 @@ export class ResendDriver implements NotificationDriver<ResendConfig, ResendMess
         response: error
       };
     }
+  }
+
+  static configure(config: ResendConfig): ResendConfig {
+    return config;
   }
 }

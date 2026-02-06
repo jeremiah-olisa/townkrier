@@ -390,6 +390,111 @@ Ensure your `tsconfig.json` includes:
 - Read/unread tracking
 - In-app notification UI
 
+## Message Mappers (Multi-Driver Scenarios)
+
+When using multiple drivers with different message interfaces, use **message mappers** to keep your notifications clean and type-safe.
+
+### Problem: Type Conflicts
+
+Different drivers expect different message formats:
+
+```typescript
+// Driver 1 expects: { to: string, body: string }
+interface WhapiMessage { to: string; body: string; }
+
+// Driver 2 expects: { to: string, msg: string }
+interface WaSendApiMessage { to: string; msg: string; }
+
+// How do you write ONE notification for both?
+// ❌ Without mappers, you'd need union types and 'as any' casts
+toWhatsapp(): WhapiMessage | WaSendApiMessage {  
+  return { to: '+123...', body: 'text' } as any; // ❌ Not type-safe!
+}
+```
+
+### Solution: Define Your Own Unified Format
+
+```typescript
+// 1. Define your unified message format
+export interface UnifiedWhatsappMessage {
+  to: string;
+  text: string;
+  media?: string;
+  type?: 'text' | 'image' | 'video';
+}
+
+// 2. Create mappers to transform your format to driver-specific formats
+export class WhapiMessageMapper implements MessageMapper<UnifiedWhatsappMessage, WhapiMessage> {
+  map(message: UnifiedWhatsappMessage): WhapiMessage {
+    return {
+      to: message.to,
+      body: message.text,  // Transform 'text' → 'body'
+      media: message.media,
+      type: message.type,
+    };
+  }
+}
+
+export class WaSendApiMessageMapper implements MessageMapper<UnifiedWhatsappMessage, WaSendApiMessage> {
+  map(message: UnifiedWhatsappMessage): WaSendApiMessage {
+    return {
+      to: message.to,
+      msg: message.text,   // Transform 'text' → 'msg'
+      url: message.media,  // Transform 'media' → 'url'
+      type: message.type as any,
+    };
+  }
+}
+
+// 3. Register mappers with drivers during configuration
+const fallbackConfig: FallbackStrategyConfig = {
+  strategy: 'priority-fallback',
+  drivers: [
+    {
+      driver: new WhapiDriver(config1),
+      mapper: new WhapiMessageMapper(),      // ✅ Registered once!
+    },
+    {
+      driver: new WaSendApiDriver(config2),
+      mapper: new WaSendApiMessageMapper(),  // ✅ Registered once!
+    },
+  ],
+};
+
+// 4. Notifications use the unified format - mappers handle transformation
+export class OrderNotification extends Notification<'whatsapp'> {
+  toWhatsapp(notifiable: Notifiable): UnifiedWhatsappMessage {
+    return {
+      to: notifiable.routeNotificationFor('whatsapp') as string,
+      text: 'Your order has been confirmed!',
+      // ✅ Type-safe! No 'as any' needed!
+    };
+  }
+}
+```
+
+### Benefits
+
+- ✅ **Type-Safe**: No 'as any' casts needed
+- ✅ **Single Source of Truth**: Mappers configured once at setup
+- ✅ **Decoupled**: Notifications don't know about driver implementations
+- ✅ **Flexible**: You define your unified message format
+- ✅ **Reusable**: One mapper per driver, used across all notifications
+- ✅ **Backward Compatible**: Mappers are optional - single-driver users don't need them
+
+### When to Use Mappers
+
+| Scenario | Use Mappers? | Example |
+|----------|-------------|---------|
+| Single driver | ❌ No | Just use driver's native message format |
+| Multiple drivers, same interface | ❌ No | All drivers expect same message shape |
+| Multiple drivers, different interfaces | ✅ Yes | Different `to` (string vs array), different field names |
+
+For complete working examples, see:
+- [whatsapp-with-mapper.notification.ts](./examples/mappers/whatsapp-with-mapper.notification.ts) - Notification using mappers
+- [whatsapp.mappers.ts](./examples/mappers/whatsapp.mappers.ts) - Mapper implementations
+- [whatsapp-with-mapper-config.ts](./examples/whatsapp-with-mapper-config.ts) - Setup example
+
 ## Creating Custom Channels
 
 Extend the base channel classes to create your own providers:
