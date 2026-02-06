@@ -95,6 +95,6 @@ npm publish
 - **Current Version**: `1.0.0-beta.1`
 - **License**: MIT
 - **Node.js**: >=16.0.0
-- **Repository**: https://github.com/townkrier/townkrier
+- **Repository**: https://github.com/jeremiah-olisa/townkrier
 
 See [PUBLISHING.md](./PUBLISHING.md) for detailed publication workflow and troubleshooting.

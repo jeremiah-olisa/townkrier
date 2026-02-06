@@ -1,6 +1,6 @@
 {
   "name": "townkrier-core",
-  "version": "1.0.1-alpha.1",
+  "version": "1.0.1-alpha.2",
   "description": "Laravel-style notification system for Node.js with multiple channels and providers",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -18,12 +18,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/townkrier/townkrier.git",
+    "url": "https://github.com/jeremiah-olisa/townkrier.git",
     "directory": "packages/core"
   },
-  "homepage": "https://github.com/townkrier/townkrier#readme",
+  "homepage": "https://github.com/jeremiah-olisa/townkrier?tab=readme-ov-file#readme",
   "bugs": {
-    "url": "https://github.com/townkrier/townkrier/issues"
+    "url": "https://github.com/jeremiah-olisa/townkrier/issues"
   },
   "engines": {
     "node": ">=16.0.0"
