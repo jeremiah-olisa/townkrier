@@ -1,6 +1,6 @@
 {
   "name": "townkrier-whapi",
-  "version": "1.0.1-alpha.0",
+  "version": "1.0.1-alpha.1",
   "description": "Whapi (WhatsApp) driver for Townkrier",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
