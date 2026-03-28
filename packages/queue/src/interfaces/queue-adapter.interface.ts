@@ -2,6 +2,12 @@ import { Notification, NotificationRecipient } from 'townkrier-core';
 import { JobStatus, JobPriority } from '../types';
 
 /**
+ * Send options passed through queue jobs.
+ * Typed as a plain object to remain compatible with multiple core versions.
+ */
+export type QueueSendOptions = Record<string, unknown>;
+
+/**
  * Queue job configuration
  */
 export interface QueueJobConfig {
@@ -11,6 +17,11 @@ export interface QueueJobConfig {
   priority?: JobPriority;
   scheduledFor?: Date;
   metadata?: Record<string, unknown>;
+  /**
+   * Optional send options forwarded to NotificationManager.send()
+   * when the job is executed.
+   */
+  sendOptions?: QueueSendOptions;
 }
 
 /**
@@ -33,6 +44,7 @@ export interface QueueJob<T = unknown> {
   error?: string;
   result?: T;
   metadata?: Record<string, unknown>;
+  sendOptions?: QueueSendOptions;
   logs: JobLog[];
 }
 

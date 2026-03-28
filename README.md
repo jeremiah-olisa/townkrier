@@ -109,6 +109,34 @@ const recipient = {
 await manager.send(notification, recipient);
 ```
 
+### Send Hooks and Targeted Channel Retries (Outbox-Friendly)
+
+You can pass per-send hooks for telemetry and custom retry orchestration:
+
+```typescript
+const failedChannels = new Set<string>();
+
+await manager.send(recipient, notification, {
+  metadata: { outboxMessageId: 'msg_123' },
+  hooks: {
+    onProviderFailure: ({ channel, provider, attempt, error }) => {
+      console.error('Provider attempt failed', { channel, provider, attempt, error });
+    },
+    onChannelFailure: ({ channel }) => {
+      if (channel) failedChannels.add(channel);
+    },
+  },
+});
+
+// Retry only the channels that failed previously
+if (failedChannels.size > 0) {
+  await manager.send(recipient, notification, {
+    channels: Array.from(failedChannels) as any[],
+    metadata: { outboxMessageId: 'msg_123', retry: true },
+  });
+}
+```
+
 ### Queue and Background Processing
 
 ```typescript
@@ -136,8 +164,11 @@ const dashboard = new DashboardServer({
 });
 dashboard.start();
 
-// Send immediately (like Laravel's sendNow)
-await queueManager.sendNow(notification, recipient);
+// Send immediately (like Laravel's sendNow) with optional per-send options
+await queueManager.sendNow(notification, recipient, {
+  channels: ['email'],
+  metadata: { source: 'manual-retry' },
+});
 
 // Queue for background processing (like Laravel's send)
 await queueManager.enqueue(notification, recipient);
@@ -145,6 +176,10 @@ await queueManager.enqueue(notification, recipient);
 // Schedule for future delivery
 await queueManager.enqueue(notification, recipient, {
   scheduledFor: new Date(Date.now() + 60000), // 1 minute from now
+  sendOptions: {
+    channels: ['email', 'sms'],
+    metadata: { source: 'outbox-retry' },
+  },
 });
 
 // Start background processing

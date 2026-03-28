@@ -57,6 +57,12 @@ queueManager.startProcessing({ pollInterval: 2000 });
 ```typescript
 // Send immediately without queuing
 const result = await queueManager.sendNow(notification, recipient);
+
+// Send immediately with channel targeting / metadata
+const retryResult = await queueManager.sendNow(notification, recipient, {
+  channels: ['email'],
+  metadata: { source: 'outbox-retry' },
+});
 ```
 
 #### Queue for Background Processing (like Laravel's `send`)
@@ -70,6 +76,10 @@ const job = await queueManager.enqueue(notification, recipient, {
   priority: JobPriority.HIGH,
   maxRetries: 5,
   metadata: { source: 'user-action' },
+  sendOptions: {
+    channels: ['email', 'sms'],
+    metadata: { source: 'outbox-retry' },
+  },
 });
 ```
 
@@ -460,7 +470,8 @@ class QueueManager {
   sendNow(
     notification: Notification,
     recipient: NotificationRecipient,
-  ): Promise<Map<NotificationChannel, unknown>>;
+    options?: NotificationSendOptions,
+  ): Promise<NotificationResult>;
 
   // Queue for background
   enqueue(
