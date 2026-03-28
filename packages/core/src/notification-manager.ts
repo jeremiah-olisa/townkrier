@@ -14,6 +14,8 @@ import { NotificationConfigurationException, NotificationSendException } from '.
 import { FallbackStrategy } from './types/fallback-strategy.enum'; // Import the enum
 import { ChannelConfig, FallbackStrategyConfig } from './interfaces';
 import { DriverEntry } from './drivers/driver-entry.interface';
+import { NotificationSendOptions } from './interfaces/notification-send-options.interface';
+import { NotificationSendHookContext } from './interfaces/notification-send-hooks.interface';
 
 /**
  * The core orchestrator for sending notifications.
@@ -138,30 +140,61 @@ export class NotificationManager<ChannelNames extends string = string> {
   public async send(
     notifiable: Notifiable,
     notification: Notification<ChannelNames>,
+    options?: NotificationSendOptions<ChannelNames>,
   ): Promise<NotificationResult> {
-    const channels = notification.via(notifiable);
+    const channels = this.getEffectiveChannels(notification, notifiable, options);
     const results: Map<string, unknown> = new Map();
     const errors: Map<string, Error> = new Map();
     const strategy = this.config.strategy || DeliveryStrategy.AllOrNothing;
+    const baseContext: NotificationSendHookContext<ChannelNames> = {
+      notification,
+      notifiable,
+      metadata: options?.metadata,
+    };
 
     await this.eventDispatcher.dispatch(new NotificationSending(notification, channels as any[]));
+    await this.invokeHook(options, 'onSendStart', baseContext);
 
     for (const channelName of channels) {
+      await this.invokeHook(options, 'onChannelStart', {
+        ...baseContext,
+        channel: channelName,
+      });
+
       try {
-        const result = await this.processChannel(channelName, notifiable, notification);
+        const result = await this.processChannel(channelName, notifiable, notification, options);
         results.set(channelName, result);
+        await this.invokeHook(options, 'onChannelSuccess', {
+          ...baseContext,
+          channel: channelName,
+          result,
+        });
       } catch (error: any) {
         errors.set(channelName, error);
         Logger.error(`Failed to send via ${channelName}:`, error);
+        await this.invokeHook(options, 'onChannelFailure', {
+          ...baseContext,
+          channel: channelName,
+          error: error instanceof Error ? error : new Error(String(error)),
+        });
 
         if (this.shouldAbortOnFailure(strategy)) {
           await this.dispatchFailure(notification, channels, error, channelName);
+          await this.invokeHook(options, 'onSendComplete', {
+            ...baseContext,
+            error: error instanceof Error ? error : new Error(String(error)),
+            result: { status: 'failed', results, errors },
+          });
           return { status: 'failed', results, errors };
         }
       }
     }
-
-    return this.finalizeResult(notification, channels, results, errors);
+    const finalResult = await this.finalizeResult(notification, channels, results, errors);
+    await this.invokeHook(options, 'onSendComplete', {
+      ...baseContext,
+      result: finalResult,
+    });
+    return finalResult;
   }
 
   /**
@@ -171,13 +204,23 @@ export class NotificationManager<ChannelNames extends string = string> {
     channelName: ChannelNames,
     notifiable: Notifiable,
     notification: Notification<ChannelNames>,
+    options?: NotificationSendOptions<ChannelNames>,
   ): Promise<unknown> {
     const driver = this.resolveDriver(channelName);
     const message = this.buildMessage(channelName, notification, notifiable);
+    const driverConfig = {
+      __townkrierHooks: options?.hooks,
+      __townkrierContext: {
+        channel: channelName,
+        notification,
+        notifiable,
+        metadata: options?.metadata,
+      },
+    };
 
     // The CompositeFallbackDriver handles its own retry logic
     // For single drivers, we could add circuit breaker here if needed
-    const result = await driver.send(notifiable, message);
+    const result = await driver.send(notifiable, message, driverConfig);
 
     if (result.status !== 'success') {
       throw (
@@ -270,5 +313,37 @@ export class NotificationManager<ChannelNames extends string = string> {
     await this.eventDispatcher.dispatch(
       new NotificationFailed(notification, channels as any[], error, failedChannel as any),
     );
+  }
+
+  private getEffectiveChannels(
+    notification: Notification<ChannelNames>,
+    notifiable: Notifiable,
+    options?: NotificationSendOptions<ChannelNames>,
+  ): ChannelNames[] {
+    const declaredChannels = notification.via(notifiable);
+    const selectedChannels = options?.channels
+      ? declaredChannels.filter((channel) => options.channels?.includes(channel))
+      : declaredChannels;
+
+    if (options?.channelFilter) {
+      return selectedChannels.filter((channel) => options.channelFilter?.(channel));
+    }
+
+    return selectedChannels;
+  }
+
+  private async invokeHook(
+    options: NotificationSendOptions<ChannelNames> | undefined,
+    hookName: keyof NonNullable<NotificationSendOptions<ChannelNames>['hooks']>,
+    context: NotificationSendHookContext<ChannelNames>,
+  ): Promise<void> {
+    const hook = options?.hooks?.[hookName];
+    if (!hook) return;
+
+    try {
+      await hook(context);
+    } catch (error) {
+      Logger.warn(`Send hook '${String(hookName)}' failed`, error);
+    }
   }
 }

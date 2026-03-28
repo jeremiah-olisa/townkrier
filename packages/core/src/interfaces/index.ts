@@ -4,4 +4,6 @@ export * from './townkrier-config.interface';
 export * from './channel-config.interface';
 export * from './fallback-driver-config.interface';
 export * from './fallback-strategy-config.interface';
+export * from './notification-send-hooks.interface';
+export * from './notification-send-options.interface';
 export * from '../types';

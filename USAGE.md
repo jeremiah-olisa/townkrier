@@ -216,6 +216,39 @@ dispatcher.on(NotificationFailed, async (event) => {
 });
 ```
 
+## Per-send Hooks and Channel Overrides (Outbox-friendly)
+
+You can optionally provide send-time hooks for observability and pass specific channels for targeted retries.
+This is useful when you run your own outbox service and want to retry only failed channels.
+
+```typescript
+const failedChannels: string[] = [];
+
+const result = await manager.send(recipient, notification, {
+  channels: ['email', 'sms'], // Optional: send only a subset for this call
+  metadata: { outboxId: 'outbox_123' },
+  hooks: {
+    onProviderFailure: ({ channel, provider, error, metadata }) => {
+      console.error('Provider failure', { channel, provider, error, metadata });
+    },
+    onChannelFailure: ({ channel }) => {
+      if (channel) failedChannels.push(channel);
+    },
+    onChannelSuccess: ({ channel, provider }) => {
+      console.log('Channel sent', { channel, provider });
+    },
+  },
+});
+
+// Retry only failed channels in a follow-up send
+if (failedChannels.length > 0) {
+  await manager.send(recipient, notification, {
+    channels: failedChannels as any[],
+    metadata: { outboxId: 'outbox_123', retry: true },
+  });
+}
+```
+
 ## Fallback Strategy
 
 Enable fallback to automatically try alternative channels when one fails:

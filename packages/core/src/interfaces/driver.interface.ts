@@ -73,6 +73,12 @@ export interface SendResult<TResponse = unknown> {
    * Error object if the status is 'failed'.
    */
   error?: unknown;
+
+  /**
+   * Optional delivery metadata for advanced workflows (e.g. outbox telemetry).
+   * Additive field for backward compatibility.
+   */
+  meta?: Record<string, unknown>;
 }
 
 /**

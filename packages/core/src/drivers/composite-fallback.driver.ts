@@ -4,6 +4,7 @@ import { FallbackStrategy } from '../types/fallback-strategy.enum';
 import { NotificationConfigurationException, NotificationSendException } from '../exceptions';
 import { DriverEntry } from './driver-entry.interface';
 import { RetryConfig } from '../interfaces/retry-config.interface';
+import { NotificationSendHooks, ProviderAttemptMeta } from '../interfaces/notification-send-hooks.interface';
 
 /**
  * A meta-driver that manages a collection of sub-drivers and orchestrates sending based on a chosen strategy.
@@ -20,6 +21,16 @@ import { RetryConfig } from '../interfaces/retry-config.interface';
 interface InstantiatedDriverEntry extends Omit<DriverEntry, 'driver' | 'mapper' | 'use' | 'config'> {
   driver: NotificationDriver;
   mapper?: unknown; // Already instantiated mapper instance
+}
+
+interface DriverSendConfig {
+  __townkrierHooks?: NotificationSendHooks<any>;
+  __townkrierContext?: {
+    channel?: string;
+    notification?: unknown;
+    notifiable?: Notifiable;
+    metadata?: Record<string, unknown>;
+  };
 }
 
 export class CompositeFallbackDriver implements NotificationDriver {
@@ -188,9 +199,11 @@ export class CompositeFallbackDriver implements NotificationDriver {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async send(notifiable: Notifiable, message: any, config?: any): Promise<SendResult> {
+    const driverConfig = (config ?? {}) as DriverSendConfig;
     const driver = this.selectDriver();
     const driverEntry = this.drivers.find((d) => d.driver === driver);
     const failures: { driver: string; error: string }[] = [];
+    const providerAttempts: ProviderAttemptMeta[] = [];
 
     // Apply mapper if available for the selected driver
     const mappedMessage = driverEntry?.mapper && this.hasMapMethod(driverEntry.mapper)
@@ -204,10 +217,17 @@ export class CompositeFallbackDriver implements NotificationDriver {
         driverEntry,
         notifiable,
         mappedMessage,
-        config,
+        driverConfig,
+        providerAttempts,
       );
       if (result.status === 'success') {
-        return result;
+        return {
+          ...result,
+          meta: {
+            ...(result.meta || {}),
+            providerAttempts,
+          },
+        };
       }
       failures.push({
         driver: driver.constructor.name,
@@ -243,12 +263,19 @@ export class CompositeFallbackDriver implements NotificationDriver {
             this.drivers[i],
             notifiable,
             fallbackMessage,
-            config,
+            driverConfig,
+            providerAttempts,
           );
 
           if (result.status === 'success') {
             Logger.log(`Fallback driver ${i + 1} succeeded`);
-            return result;
+            return {
+              ...result,
+              meta: {
+                ...(result.meta || {}),
+                providerAttempts,
+              },
+            };
           }
           failures.push({
             driver: this.drivers[i].driver.constructor.name,
@@ -272,6 +299,9 @@ export class CompositeFallbackDriver implements NotificationDriver {
       id: '',
       status: 'failed',
       error: new NotificationSendException(`All drivers failed`, { failures }),
+      meta: {
+        providerAttempts,
+      },
     };
   }
 
@@ -282,16 +312,39 @@ export class CompositeFallbackDriver implements NotificationDriver {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     message: any,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    config?: any,
+    config?: DriverSendConfig,
+    providerAttempts: ProviderAttemptMeta[] = [],
   ): Promise<SendResult> {
     const retryConfig = this.mergeRetryConfig(driverEntry?.retryConfig);
     const maxRetries = retryConfig.maxRetries;
     let lastError: Error | undefined;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      const providerName = driver.constructor.name;
+      const channel = config?.__townkrierContext?.channel;
+      const baseHookContext = {
+        notification: config?.__townkrierContext?.notification as any,
+        notifiable,
+        channel,
+        provider: providerName,
+        attempt,
+        metadata: config?.__townkrierContext?.metadata,
+      };
+      await this.invokeProviderHook(config, 'onProviderAttempt', baseHookContext);
+
       try {
         const result = await driver.send(notifiable, message, config);
         if (result.status === 'success') {
+          providerAttempts.push({
+            provider: providerName,
+            attempt,
+            status: 'success',
+            timestamp: new Date(),
+          });
+          await this.invokeProviderHook(config, 'onProviderSuccess', {
+            ...baseHookContext,
+            result: result.response,
+          });
           if (attempt > 1) {
             Logger.log(
               `${driver.constructor.name} succeeded on attempt ${attempt}/${maxRetries}`,
@@ -302,6 +355,17 @@ export class CompositeFallbackDriver implements NotificationDriver {
 
         // Driver returned failed status
         lastError = result.error instanceof Error ? result.error : new Error(String(result.error));
+        providerAttempts.push({
+          provider: providerName,
+          attempt,
+          status: 'failed',
+          error: lastError.message,
+          timestamp: new Date(),
+        });
+        await this.invokeProviderHook(config, 'onProviderFailure', {
+          ...baseHookContext,
+          error: lastError,
+        });
 
         // Check if we should retry based on the error
         if (this.shouldRetry(result.error, retryConfig) && attempt < maxRetries) {
@@ -319,6 +383,17 @@ export class CompositeFallbackDriver implements NotificationDriver {
       } catch (error: unknown) {
         const err = error as Error;
         lastError = err;
+        providerAttempts.push({
+          provider: providerName,
+          attempt,
+          status: 'failed',
+          error: err.message || String(error),
+          timestamp: new Date(),
+        });
+        await this.invokeProviderHook(config, 'onProviderFailure', {
+          ...baseHookContext,
+          error: err,
+        });
 
         // Only retry on network errors
         if (this.shouldRetry(error, retryConfig) && attempt < maxRetries) {
@@ -338,6 +413,21 @@ export class CompositeFallbackDriver implements NotificationDriver {
 
     // All retries exhausted
     throw lastError || new Error('All retries failed');
+  }
+
+  private async invokeProviderHook(
+    config: DriverSendConfig | undefined,
+    hookName: 'onProviderAttempt' | 'onProviderSuccess' | 'onProviderFailure',
+    context: Record<string, unknown>,
+  ): Promise<void> {
+    const hook = config?.__townkrierHooks?.[hookName];
+    if (!hook) return;
+
+    try {
+      await hook(context as any);
+    } catch (error) {
+      Logger.warn(`Provider hook '${hookName}' failed`, error);
+    }
   }
 
   /**
