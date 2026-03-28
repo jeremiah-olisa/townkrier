@@ -14,6 +14,11 @@ import { NotificationConfigurationException, NotificationSendException } from '.
 import { FallbackStrategy } from './types/fallback-strategy.enum'; // Import the enum
 import { ChannelConfig, FallbackStrategyConfig } from './interfaces';
 import { DriverEntry } from './drivers/driver-entry.interface';
+import {
+  NotificationSendHookContext,
+  NotificationSendHooks,
+} from './interfaces/notification-send-hooks.interface';
+import { NotificationSendOptions as SendOptions } from './interfaces/notification-send-options.interface';
 
 /**
  * The core orchestrator for sending notifications.
@@ -138,30 +143,83 @@ export class NotificationManager<ChannelNames extends string = string> {
   public async send(
     notifiable: Notifiable,
     notification: Notification<ChannelNames>,
+    options?: SendOptions<ChannelNames>,
   ): Promise<NotificationResult> {
-    const channels = notification.via(notifiable);
+    const channels = this.resolveChannels(notification.via(notifiable), options);
     const results: Map<string, unknown> = new Map();
     const errors: Map<string, Error> = new Map();
     const strategy = this.config.strategy || DeliveryStrategy.AllOrNothing;
+    const hooks = options?.hooks;
+
+    await this.runHook(hooks, 'onSendStart', {
+      notification,
+      notifiable,
+      metadata: options?.metadata,
+    });
 
     await this.eventDispatcher.dispatch(new NotificationSending(notification, channels as any[]));
 
     for (const channelName of channels) {
+      await this.runHook(hooks, 'onChannelStart', {
+        notification,
+        notifiable,
+        channel: channelName,
+        metadata: options?.metadata,
+      });
       try {
-        const result = await this.processChannel(channelName, notifiable, notification);
+        const result = await this.processChannel(channelName, notifiable, notification, options);
         results.set(channelName, result);
+        await this.runHook(hooks, 'onChannelSuccess', {
+          notification,
+          notifiable,
+          channel: channelName,
+          response: result,
+          metadata: options?.metadata,
+        });
       } catch (error: any) {
         errors.set(channelName, error);
         Logger.error(`Failed to send via ${channelName}:`, error);
+        await this.runHook(hooks, 'onChannelFailure', {
+          notification,
+          notifiable,
+          channel: channelName,
+          error,
+          metadata: options?.metadata,
+        });
 
         if (this.shouldAbortOnFailure(strategy)) {
           await this.dispatchFailure(notification, channels, error, channelName);
+          await this.runHook(hooks, 'onSendComplete', {
+            notification,
+            notifiable,
+            status: 'failed',
+            results,
+            errors,
+            metadata: options?.metadata,
+          } as NotificationSendHookContext<ChannelNames> & {
+            status: 'success' | 'partial' | 'failed';
+            results: Map<string, unknown>;
+            errors: Map<string, Error>;
+          });
           return { status: 'failed', results, errors };
         }
       }
     }
 
-    return this.finalizeResult(notification, channels, results, errors);
+    const finalized = await this.finalizeResult(notification, channels, results, errors);
+    await this.runHook(hooks, 'onSendComplete', {
+      notification,
+      notifiable,
+      status: finalized.status,
+      results,
+      errors,
+      metadata: options?.metadata,
+    } as NotificationSendHookContext<ChannelNames> & {
+      status: 'success' | 'partial' | 'failed';
+      results: Map<string, unknown>;
+      errors: Map<string, Error>;
+    });
+    return finalized;
   }
 
   /**
@@ -171,13 +229,22 @@ export class NotificationManager<ChannelNames extends string = string> {
     channelName: ChannelNames,
     notifiable: Notifiable,
     notification: Notification<ChannelNames>,
+    options?: SendOptions<ChannelNames>,
   ): Promise<unknown> {
     const driver = this.resolveDriver(channelName);
     const message = this.buildMessage(channelName, notification, notifiable);
 
     // The CompositeFallbackDriver handles its own retry logic
     // For single drivers, we could add circuit breaker here if needed
-    const result = await driver.send(notifiable, message);
+    const result = await driver.send(notifiable, message, {
+      __townkrierHookContext: {
+        channel: channelName,
+        notification,
+        notifiable,
+        metadata: options?.metadata,
+      },
+      __townkrierHooks: options?.hooks,
+    });
 
     if (result.status !== 'success') {
       throw (
@@ -270,5 +337,50 @@ export class NotificationManager<ChannelNames extends string = string> {
     await this.eventDispatcher.dispatch(
       new NotificationFailed(notification, channels as any[], error, failedChannel as any),
     );
+  }
+
+  /**
+   * Resolve effective channels from notification.via() and optional send-time filters.
+   */
+  private resolveChannels(
+    baseChannels: ChannelNames[],
+    options?: SendOptions<ChannelNames>,
+  ): ChannelNames[] {
+    let channels = baseChannels;
+
+    if (options?.channels && options.channels.length > 0) {
+      const selected = new Set(options.channels);
+      channels = channels.filter((channel) => selected.has(channel));
+    }
+
+    if (options?.channelFilter) {
+      channels = channels.filter((channel) => options.channelFilter!(channel));
+    }
+
+    return channels;
+  }
+
+  /**
+   * Safely run user callbacks without breaking the send workflow.
+   */
+  private async runHook(
+    hooks: NotificationSendHooks<ChannelNames> | undefined,
+    hookName: keyof NotificationSendHooks<ChannelNames>,
+    context: NotificationSendHookContext<ChannelNames> | (NotificationSendHookContext<ChannelNames> & {
+      status: 'success' | 'partial' | 'failed';
+      results: Map<string, unknown>;
+      errors: Map<string, Error>;
+    }),
+  ) {
+    const hook = hooks?.[hookName];
+    if (!hook) return;
+
+    try {
+      await hook(context as any);
+    } catch (error) {
+      Logger.warn(`Error in send hook '${String(hookName)}'`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
 }

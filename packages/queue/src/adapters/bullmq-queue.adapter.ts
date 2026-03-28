@@ -35,7 +35,7 @@ export class BullMQQueueAdapter implements IQueueAdapter {
   private connection: Redis;
   private jobMetadata: Map<
     string,
-    { notification: Notification; recipient: NotificationRecipient }
+    { notification: Notification; recipient: NotificationRecipient; sendOptions?: QueueJobConfig['sendOptions'] }
   > = new Map();
   private processingCallback?: (job: QueueJob) => Promise<void>;
 
@@ -118,7 +118,7 @@ export class BullMQQueueAdapter implements IQueueAdapter {
     const now = new Date();
 
     // Store notification and recipient metadata
-    this.jobMetadata.set(jobId, { notification, recipient });
+    this.jobMetadata.set(jobId, { notification, recipient, sendOptions: config?.sendOptions });
 
     // Calculate delay for scheduled jobs
     let delay = 0;
@@ -160,6 +160,7 @@ export class BullMQQueueAdapter implements IQueueAdapter {
       createdAt: now,
       updatedAt: now,
       metadata: config?.metadata,
+      sendOptions: config?.sendOptions,
       logs: [
         {
           timestamp: now,
@@ -388,6 +389,7 @@ export class BullMQQueueAdapter implements IQueueAdapter {
       error: bullJob.failedReason,
       result: bullJob.returnvalue,
       metadata: bullJob.data.metadata,
+      sendOptions: metadata.sendOptions,
       logs: await this.buildJobLogs(bullJob),
     };
 

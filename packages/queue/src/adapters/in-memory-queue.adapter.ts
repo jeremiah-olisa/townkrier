@@ -46,6 +46,7 @@ export class InMemoryQueueAdapter implements IQueueAdapter {
       createdAt: now,
       updatedAt: now,
       metadata: config?.metadata,
+      sendOptions: config?.sendOptions,
       logs: [
         {
           timestamp: now,

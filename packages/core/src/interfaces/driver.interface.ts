@@ -73,6 +73,11 @@ export interface SendResult<TResponse = unknown> {
    * Error object if the status is 'failed'.
    */
   error?: unknown;
+  /**
+   * Optional metadata about how the delivery was executed.
+   * This is additive and safe for existing consumers.
+   */
+  meta?: Record<string, unknown>;
 }
 
 /**

@@ -5,7 +5,7 @@ import {
   Logger,
   NotificationResult,
 } from 'townkrier-core';
-import { IQueueAdapter, QueueJobConfig, QueueJob } from '../interfaces';
+import { IQueueAdapter, QueueJobConfig, QueueJob, QueueSendOptions } from '../interfaces';
 import { JobStatus } from '../types';
 import { JobExecutionException } from '../exceptions';
 import { NotifiableRecipient } from '../utils/notifiable-recipient';
@@ -52,6 +52,7 @@ export class QueueManager {
   async sendNow(
     notification: Notification,
     recipient: NotificationRecipient,
+    options?: QueueSendOptions,
   ): Promise<NotificationResult> {
     if (!this.notificationManager) {
       throw new JobExecutionException(
@@ -60,7 +61,12 @@ export class QueueManager {
       );
     }
 
-    return this.notificationManager.send(new NotifiableRecipient(recipient), notification);
+    // Cast to preserve compatibility with older core versions that only accept 2 arguments.
+    return (this.notificationManager.send as any)(
+      new NotifiableRecipient(recipient),
+      notification,
+      options,
+    );
   }
 
   /**
@@ -141,9 +147,10 @@ export class QueueManager {
       ) {
         this.adapter.setProcessingCallback(async (job: QueueJob) => {
           try {
-            const result = await this.notificationManager!.send(
+            const result = await (this.notificationManager!.send as any)(
               new NotifiableRecipient(job.recipient),
               job.notification,
+              job.sendOptions,
             );
             await this.adapter.markCompleted(job.id, result);
           } catch (error) {
@@ -208,9 +215,10 @@ export class QueueManager {
 
       try {
         // Send the notification
-        const result = await this.notificationManager.send(
+        const result = await (this.notificationManager.send as any)(
           new NotifiableRecipient(job.recipient),
           job.notification,
+          job.sendOptions,
         );
 
         // Mark as completed
